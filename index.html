@@ -133,16 +133,7 @@ body{
 .ntext{margin-top:14px}
 .ntext p{line-height:2.0;font-size:16.5px;text-align:justify;text-indent:2em;margin-bottom:8px}
 .ntext q{color:var(--accent);quotes:"「" "」";font-weight:600}
-/* 剧本式对话行 */
-.say{display:flex;gap:8px;align-items:flex-start;margin:7px 0 7px 4px;padding:6px 10px;
-  background:rgba(156,47,36,.05);border-left:3px solid var(--accent-soft);border-radius:0 6px 6px 0}
-.say .speaker{flex-shrink:0;background:var(--accent);color:#f5e9d0;border-radius:4px;
-  padding:1px 8px;font-size:13px;letter-spacing:1px;margin-top:3px;white-space:nowrap}
-.say .line{font-size:16px;line-height:1.85;text-align:left}
 @media (max-width:900px){
-  .say{padding:5px 8px;margin:6px 0 6px 2px;gap:6px}
-  .say .speaker{font-size:12px;padding:1px 6px;margin-top:2px}
-  .say .line{font-size:15px;line-height:1.8}
   .ntext p{text-align:left} /* 窄屏两端对齐会拉大字距，改左对齐 */
 }
 .subblock{margin-top:14px;border-top:1px dashed var(--paper-edge);padding-top:10px}
@@ -458,7 +449,7 @@ const WORLD_RULES = `你是一个武侠文字游戏引擎。世界观为最通�
 铁律：
 - 严禁出现科幻、魔幻、玄幻、量子、机甲、时空穿梭内容；不得出现不符合古代背景的称谓、事物和剧情；不要有太多阴谋暗线。
 - 文风：参考金庸小说的笔法——通俗流畅的白话，叙事干净利落，一看就懂；不要文言腔，不要辞藻堆砌，不要长句套长句。对话生动自然、符合人物身份脾气。称呼用江湖叫法（少侠、姑娘、掌门、师兄、前辈、阁下等），武功、招式、门派、兵器用武侠风格的名字。人物言行须符合其年龄、身份和性格。除JSON键名外一律使用中文。
-- 对话排版（必须严格遵守）：所有人物对话用「」包裹，严禁用其他引号。每句对话单独成一行（用\\n分隔），一行只能有一个人说的话，格式为“姓名：「对话」”——冒号前只写说话人的姓名（不超过4个字），绝不能写动作、神态或任何描述；说完话之后的简短动作可以跟在「」后面。旁白叙述单独成行，严禁把多个人的对话或大段叙述挤在同一行。
+- 对话：所有人物对话一律用「」包裹，严禁用其他引号；对话自然融入叙述即可，写清楚是谁说的。
 - 缩骨功属于武功功法，不属于技能。
 属性规则（数值一律0-100）：
 - 谈吐：社交能力，越高越能取信于人、说服别人。才学：文化水平，读书写作可提升。颖悟：先天悟性，终生不变。武功：越高越强，练功可提升，中毒受伤会降低，伤愈恢复；可传功给别人（自己失去这部分武功值）；武功大于90可废掉武功小于75者的武功。
@@ -884,16 +875,7 @@ function showNpc(n){
 /* 剧情渲染 */
 function narrativeHtml(text){
   const hl=s=>s.replace(/「([^」]*)」/g,'<q>$1</q>').replace(/“([^”]*)”/g,'<q>$1</q>');
-  return String(text||'').split(/\n+/).filter(s=>s.trim()).map(s=>{
-    s=s.trim();
-    // 剧本式对话行：人名（≤4字）：「一句话」+ 简短动作。行内只许一对「」，否则按普通段落处理
-    const quoteCount=(s.match(/「/g)||[]).length;
-    const m=s.match(/^([一-龥A-Za-z·]{1,4})[：:]\s*(「[^」]*」)(.{0,50})$/);
-    if(m&&quoteCount===1) return `<div class="say"><span class="speaker">${esc(m[1])}</span><span class="line"><q>${esc(m[2].slice(1,-1))}</q>${esc(m[3])}</span></div>`;
-    const m2=s.match(/^(「[^」]*」)(.{0,50})$/);
-    if(m2&&quoteCount===1) return `<div class="say"><span class="line"><q>${esc(m2[1].slice(1,-1))}</q>${esc(m2[2])}</span></div>`;
-    return `<p>${hl(esc(s))}</p>`;
-  }).join('');
+  return String(text||'').split(/\n+/).filter(s=>s.trim()).map(s=>`<p>${hl(esc(s.trim()))}</p>`).join('');
 }
 function listBlock(title,arr,cls){
   if(!arr||!arr.length) return '';
@@ -917,10 +899,10 @@ function changeLines(d){
 }
 
 let liveChapter=null;
-function beginChapter(turnNo, dateStr, action){
+function beginChapter(label, dateStr, action){
   const div=document.createElement('div');
   div.className='chapter';
-  div.innerHTML=`<div class="chapmark">第 ${turnNo} 回</div><div class="chaptime">${esc(dateStr||'')}</div>
+  div.innerHTML=`<div class="chapmark">${esc(label)}</div><div class="chaptime">${esc(dateStr||'')}</div>
     ${action?`<div class="action-echo" style="margin-top:20px">➤ ${esc(action)}</div>`:'<div style="height:14px"></div>'}
     <div class="ntext"><p style="color:var(--ink-soft)">……</p></div>`;
   $('story').appendChild(div);
@@ -1024,7 +1006,7 @@ async function startNewGame(opts){
   $('choices').innerHTML='';
   S=null; localStorage.removeItem(LS_SAVE);
   setBusy(true,'天地初开，正在铸造你的江湖身世……');
-  beginChapter('壹','',null);
+  beginChapter('楔子','',null);
   try{
     const d=await llmJSON(initSchemaPrompt(opts),raw=>{
       const t=extractPartialField(raw,'opening')||extractPartialField(raw,'backstory');
@@ -1057,7 +1039,7 @@ async function act(action){
   setDrawer(false); // 手机上收起抽屉，专心看剧情
   $('choices').innerHTML='';
   setBusy(true,'笔走龙蛇，正在推演江湖……');
-  beginChapter(cnNum(S.turn),S.date,action);
+  beginChapter('第 '+cnNum(S.turn)+' 回',S.date,action);
   try{
     const d=await llmJSON(turnPrompt(action),raw=>{
       const t=extractPartialField(raw,'narrative');
