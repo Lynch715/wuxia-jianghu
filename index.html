@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>武侠江湖模拟器</title>
 <style>
 :root{
@@ -20,7 +20,8 @@
   --shadow:0 4px 18px rgba(0,0,0,.45);
 }
 *{box-sizing:border-box;margin:0;padding:0}
-html,body{height:100%}
+html,body{height:100%;touch-action:manipulation;-webkit-text-size-adjust:100%}
+button,input,select{touch-action:manipulation}
 body{
   background:var(--bg);
   background-image:radial-gradient(ellipse at 30% 10%,rgba(140,100,50,.10),transparent 55%),radial-gradient(ellipse at 80% 90%,rgba(120,40,30,.08),transparent 50%);
@@ -1053,6 +1054,19 @@ function toast(msg){
   clearTimeout(toastTimer);
   toastTimer=setTimeout(()=>t.style.display='none',3200);
 }
+
+/* ================= 锁死手机缩放（iOS Safari 会无视 viewport 设置，需 JS 兜底） ================= */
+document.addEventListener('gesturestart',e=>e.preventDefault(),{passive:false});
+document.addEventListener('gesturechange',e=>e.preventDefault(),{passive:false});
+let lastTouchEnd=0;
+document.addEventListener('touchend',e=>{ // 拦截双击放大
+  const now=Date.now();
+  if(now-lastTouchEnd<300&&e.target.tagName!=='INPUT'&&e.target.tagName!=='SELECT') e.preventDefault();
+  lastTouchEnd=now;
+},{passive:false});
+document.addEventListener('touchmove',e=>{ // 拦截双指捏合
+  if(e.touches.length>1) e.preventDefault();
+},{passive:false});
 
 /* ================= 启动 ================= */
 (function boot(){
