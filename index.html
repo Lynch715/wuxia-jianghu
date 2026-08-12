@@ -132,7 +132,18 @@ body{
 }
 .ntext{margin-top:14px}
 .ntext p{line-height:2.0;font-size:16.5px;text-align:justify;text-indent:2em;margin-bottom:8px}
-.ntext p q{color:var(--accent);quotes:"「" "」";font-weight:600}
+.ntext q{color:var(--accent);quotes:"「" "」";font-weight:600}
+/* 剧本式对话行 */
+.say{display:flex;gap:8px;align-items:flex-start;margin:7px 0 7px 4px;padding:6px 10px;
+  background:rgba(156,47,36,.05);border-left:3px solid var(--accent-soft);border-radius:0 6px 6px 0}
+.say .speaker{flex-shrink:0;background:var(--accent);color:#f5e9d0;border-radius:4px;
+  padding:1px 8px;font-size:13px;letter-spacing:1px;margin-top:3px;white-space:nowrap}
+.say .line{font-size:16px;line-height:1.85;text-align:justify}
+@media (max-width:900px){
+  .say{padding:5px 8px;margin:6px 0 6px 2px;gap:6px}
+  .say .speaker{font-size:12px;padding:1px 6px;margin-top:2px}
+  .say .line{font-size:15px;line-height:1.8}
+}
 .subblock{margin-top:14px;border-top:1px dashed var(--paper-edge);padding-top:10px}
 .subblock h4{font-size:14px;color:var(--gold);letter-spacing:2px;margin-bottom:6px}
 .subblock li{list-style:none;font-size:14.5px;line-height:1.9;color:var(--ink-soft);padding-left:1.2em;text-indent:-1.2em}
@@ -409,7 +420,8 @@ function newStateShell(){
 const WORLD_RULES = `你是一个武侠文字游戏引擎。世界观为最通俗的武侠江湖，没有朝廷官家；有门派、家族、隐世高人、武功秘籍、比武、恩怨情仇、拜师收徒、绝世神兵、蛊毒。
 铁律：
 - 严禁出现科幻、魔幻、玄幻、量子、机甲、时空穿梭内容；不得出现不符合古代背景的称谓、事物和剧情；不要有太多阴谋暗线。
-- 文风：白话为主——叙述和对话都用通俗易懂的现代白话，像讲故事一样好读，不要文言文、不要之乎者也、不要生僻字词；但武侠味的元素保留：人物称呼用江湖叫法（少侠、姑娘、掌门、师兄、前辈、阁下等），武功、招式、门派、兵器一律用武侠风格的名字。人物言行须符合其年龄、身份和性格。所有人物对话必须用「」包裹，严禁用其他引号。除JSON键名外一律使用中文。
+- 文风：白话为主——叙述和对话都用通俗易懂的现代白话，像讲故事一样好读，不要文言文、不要之乎者也、不要生僻字词；但武侠味的元素保留：人物称呼用江湖叫法（少侠、姑娘、掌门、师兄、前辈、阁下等），武功、招式、门派、兵器一律用武侠风格的名字。人物言行须符合其年龄、身份和性格。除JSON键名外一律使用中文。
+- 对话排版（必须遵守）：所有人物对话用「」包裹，严禁用其他引号；每句对话单独成行（用\\n分隔），格式为“说话人：「对话内容」”，如：柳掌柜：「客官里边请。」对话后的动作神态可跟在同一行「」之后；纯叙述旁白另起一行，不要把对话夹在大段叙述中间。
 - 缩骨功属于武功功法，不属于技能。
 属性规则（数值一律0-100）：
 - 谈吐：社交能力，越高越能取信于人、说服别人。才学：文化水平，读书写作可提升。颖悟：先天悟性，终生不变。武功：越高越强，练功可提升，中毒受伤会降低，伤愈恢复；可传功给别人（自己失去这部分武功值）；武功大于90可废掉武功小于75者的武功。
@@ -823,11 +835,15 @@ function showNpc(n){
 
 /* 剧情渲染 */
 function narrativeHtml(text){
+  const hl=s=>s.replace(/「([^」]*)」/g,'<q>$1</q>').replace(/“([^”]*)”/g,'<q>$1</q>');
   return String(text||'').split(/\n+/).filter(s=>s.trim()).map(s=>{
-    const withQ=esc(s.trim())
-      .replace(/「([^」]*)」/g,'<q>$1</q>')
-      .replace(/“([^”]*)”/g,'<q>$1</q>'); // 模型偶尔用中文引号，也一并高亮
-    return `<p>${withQ}</p>`;
+    s=s.trim();
+    // 剧本式对话行：说话人：「……」（后面可跟动作描写）
+    const m=s.match(/^([一-龥A-Za-z0-9·]{1,10})[：:]\s*(「.*)$/);
+    if(m) return `<div class="say"><span class="speaker">${esc(m[1])}</span><span class="line">${hl(esc(m[2]))}</span></div>`;
+    // 无名对话行：整行以「开头
+    if(/^「/.test(s)) return `<div class="say"><span class="line">${hl(esc(s))}</span></div>`;
+    return `<p>${hl(esc(s))}</p>`;
   }).join('');
 }
 function listBlock(title,arr,cls){
