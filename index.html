@@ -207,6 +207,16 @@ body{
 .field input:focus{border-color:var(--gold)}
 .field .note{font-size:12.5px;color:var(--ink-soft);margin-top:4px;line-height:1.6}
 .mbtnrow{display:flex;gap:10px;margin-top:22px}
+/* 捏人 */
+.seg{display:flex;gap:8px}
+.seg button{flex:1;padding:9px 0;border:1px solid var(--paper-edge);border-radius:5px;background:rgba(255,252,240,.6);font-family:inherit;font-size:15px;letter-spacing:3px;color:var(--ink-soft);cursor:pointer}
+.seg button.sel{border-color:var(--accent);background:rgba(156,47,36,.10);color:var(--accent);font-weight:700}
+#bgGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;max-height:38vh;overflow-y:auto;padding:2px}
+.bgopt{border:1px solid var(--paper-edge);border-radius:6px;padding:7px 5px;text-align:center;cursor:pointer;font-size:13.5px;background:rgba(255,252,240,.55);letter-spacing:1px}
+.bgopt small{display:block;color:var(--ink-soft);font-size:10.5px;margin-top:3px;line-height:1.4;letter-spacing:0}
+.bgopt.sel{border-color:var(--accent);background:rgba(156,47,36,.10);color:var(--accent);font-weight:700}
+.bgopt.sel small{color:var(--accent-soft)}
+@media (max-width:520px){#bgGrid{grid-template-columns:repeat(2,1fr)}}
 .mbtn{
   flex:1;padding:11px 0;border-radius:6px;font-family:inherit;font-size:16px;letter-spacing:4px;cursor:pointer;transition:.15s;
   border:1px solid var(--paper-edge);background:rgba(255,252,240,.6);color:var(--ink-soft);
@@ -350,6 +360,32 @@ body{
   </main>
 </div>
 
+<!-- 捏人弹窗 -->
+<div class="modal-mask" id="createMask">
+  <div class="modal">
+    <h2>初入江湖 · 捏人</h2>
+    <div class="sub">定下姓名、性别与出身，其余交给天意</div>
+    <div class="field">
+      <label>姓名（留空则随机取名）</label>
+      <input id="crName" maxlength="6" placeholder="如：沈燕回">
+    </div>
+    <div class="field">
+      <label>性别</label>
+      <div class="seg" id="crGender">
+        <button data-v="随机" class="sel">随机</button><button data-v="女">女</button><button data-v="男">男</button>
+      </div>
+    </div>
+    <div class="field">
+      <label>出身背景</label>
+      <div id="bgGrid"></div>
+    </div>
+    <div class="mbtnrow">
+      <button class="mbtn" id="crCancel" style="display:none">返回</button>
+      <button class="mbtn primary" id="crStart">⚔ 踏入江湖</button>
+    </div>
+  </div>
+</div>
+
 <!-- 设置弹窗 -->
 <div class="modal-mask" id="settingsMask">
   <div class="modal">
@@ -449,10 +485,16 @@ const JSON_RULE = `你必须只输出一个合法的JSON对象，不要输出任
 
 const NPC_SCHEMA = `NPC对象格式：{"name":"姓名","gender":"男/女","age":年龄数字,"identity":"身份，如：华山派三弟子","faction":"所属势力","alignment":"正派/邪道/中立","personality":["性格1","性格2"],"appearance":"大白话相貌简述","武功":数字,"谈吐":数字,"relation":"与主角关系，如：师傅/母亲/仇人/萍水相逢","好感度":数字,"爱恋值":null或数字,"alive":true,"notes":"重要备注，如恩怨、秘密"}`;
 
-function initSchemaPrompt(){
+function initSchemaPrompt(opts){
+  opts=opts||{};
+  const custom=[];
+  if(opts.name) custom.push(`主角姓名必须是「${opts.name}」，不得更改`);
+  if(opts.gender&&opts.gender!=='随机') custom.push(`主角性别必须是${opts.gender}`);
+  if(opts.bg&&opts.bg!=='随机') custom.push(`主角出身背景必须是「${opts.bg}」（${opts.bgDesc||''}），身世故事、家财、随身物品、初始NPC都要围绕这个出身来编`);
+  const customBlock=custom.length?`\n【玩家自定义（最高优先级，覆盖下面的随机规则）】\n${custom.map(s=>'- '+s).join('\n')}\n`:'';
   return `${WORLD_RULES}
-
-现在请随机生成一位主角并开局。要求：
+${customBlock}
+现在请生成一位主角并开局。要求：
 - 性别随机；年龄在6至60岁之间随机（不要偏向任何年龄段）；姓名符合古代背景且风格符合原生家庭出身；若家庭有虐待行径主角会自行改名（不要默认改名）。
 - 出身随机：有钱有势/家徒四壁/小富即安/年幼失怙/家庭美满/书香门第/习武世家/普通百姓/为奴作婢等，附一段大白话身世故事，把来龙去脉讲清楚。出身富贵或书香门第才可能有表字（不要默认有）。不要默认身世凄惨。
 - 相貌打扮用大白话描述，不一定好看，须符合年龄。
@@ -926,7 +968,57 @@ function setBusy(b,msg){
   document.querySelectorAll('.opt').forEach(x=>x.disabled=b);
 }
 
-async function startNewGame(){
+/* ================= 捏人 ================= */
+const BACKGROUNDS=[
+ ['随机','听天由命，一切随缘'],
+ ['习武世家','家传武学，自幼练功'],
+ ['书香门第','诗书传家，知书识礼'],
+ ['富商大贾','家财万贯，衣食无忧'],
+ ['普通农家','土里刨食，本分度日'],
+ ['门派养大','自幼被门派捡回抚养'],
+ ['镖局之家','走南闯北，见多识广'],
+ ['游医之家','悬壶济世，略通医毒'],
+ ['猎户人家','进山讨生活，身手矫健'],
+ ['渔家子弟','水上人家，谙熟水性'],
+ ['戏班出身','跑码头卖艺，见人说人话'],
+ ['街头乞儿','沿街讨饭，机灵求生'],
+ ['为奴作婢','大户人家为奴，看尽脸色'],
+ ['道观寺庙','出家人抚养长大'],
+ ['绿林山寨','山寨里长大，亦正亦邪'],
+ ['铁匠人家','炉火里长大，一身力气'],
+ ['客栈人家','迎来送往，消息灵通'],
+ ['年幼失怙','父母早亡，独自闯荡'],
+];
+let crSel={gender:'随机',bg:'随机'};
+function openCreate(){
+  const grid=$('bgGrid');
+  if(!grid.children.length){
+    grid.innerHTML=BACKGROUNDS.map(([n,d],i)=>`<div class="bgopt${n===crSel.bg?' sel':''}" data-i="${i}">${n}<small>${d}</small></div>`).join('');
+    grid.querySelectorAll('.bgopt').forEach(el=>el.onclick=()=>{
+      grid.querySelectorAll('.bgopt').forEach(x=>x.classList.remove('sel'));
+      el.classList.add('sel');
+      crSel.bg=BACKGROUNDS[+el.dataset.i][0];
+    });
+    $('crGender').querySelectorAll('button').forEach(b=>b.onclick=()=>{
+      $('crGender').querySelectorAll('button').forEach(x=>x.classList.remove('sel'));
+      b.classList.add('sel'); crSel.gender=b.dataset.v;
+    });
+  }
+  $('crCancel').style.display=S?'block':'none'; // 已有进行中的游戏才允许返回
+  $('createMask').classList.add('on');
+}
+$('crCancel').onclick=()=>$('createMask').classList.remove('on');
+$('crStart').onclick=()=>{
+  const bg=BACKGROUNDS.find(b=>b[0]===crSel.bg);
+  $('createMask').classList.remove('on');
+  startNewGame({
+    name:$('crName').value.trim()||null,
+    gender:crSel.gender,
+    bg:crSel.bg, bgDesc:bg?bg[1]:''
+  });
+};
+
+async function startNewGame(opts){
   if(busy) return;
   $('story').innerHTML='';
   $('choices').innerHTML='';
@@ -934,7 +1026,7 @@ async function startNewGame(){
   setBusy(true,'天地初开，正在铸造你的江湖身世……');
   beginChapter('壹','',null);
   try{
-    const d=await llmJSON(initSchemaPrompt(),raw=>{
+    const d=await llmJSON(initSchemaPrompt(opts),raw=>{
       const t=extractPartialField(raw,'opening')||extractPartialField(raw,'backstory');
       if(t) updateChapterNarrative(t);
     });
@@ -951,7 +1043,7 @@ async function startNewGame(){
     liveChapter=null;
     const retry=document.createElement('button');
     retry.className='opt'; retry.textContent='⟳ 重新开局';
-    retry.onclick=startNewGame;
+    retry.onclick=()=>startNewGame(opts);
     $('choices').appendChild(retry);
   }
   setBusy(false);
@@ -1031,7 +1123,7 @@ $('panelToggle').onclick=()=>setDrawer(!$('sidebar').classList.contains('open'))
 $('sideMask').onclick=()=>setDrawer(false);
 $('sendBtn').onclick=()=>act($('freeInput').value);
 $('freeInput').addEventListener('keydown',e=>{ if(e.key==='Enter') act($('freeInput').value); });
-$('btnNew').onclick=()=>{ if(!S||confirm('另起一局将覆盖当前进度（可先点「存档」导出）。确定？')) startNewGame(); };
+$('btnNew').onclick=()=>{ if(!S||confirm('另起一局将覆盖当前进度（可先点「存档」导出）。确定？')) openCreate(); };
 $('btnExport').onclick=()=>{
   if(!S){ toast('尚无进度可存'); return; }
   const blob=new Blob([JSON.stringify(S,null,1)],{type:'application/json'});
@@ -1067,7 +1159,7 @@ $('cfgSave').onclick=()=>{
   localStorage.setItem(LS_CFG,JSON.stringify(cfg));
   $('settingsMask').classList.remove('on');
   toast('设置已保存');
-  if(!S&&cfg.key) startNewGame();
+  if(!S&&cfg.key) openCreate();
 };
 $('npcMask').onclick=e=>{ if(e.target===$('npcMask')) $('npcMask').classList.remove('on'); };
 $('settingsMask').onclick=e=>{ if(e.target===$('settingsMask')&&cfg.key) $('settingsMask').classList.remove('on'); };
@@ -1097,7 +1189,7 @@ document.addEventListener('touchmove',e=>{ // 拦截双指捏合
 (function boot(){
   if(loadGame()){ toast('已载入上次进度'); return; }
   if(!cfg.key){ openSettings(); return; }
-  startNewGame();
+  openCreate();
 })();
 </script>
 </body>
