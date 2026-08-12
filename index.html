@@ -1,0 +1,1065 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>武侠江湖模拟器</title>
+<style>
+:root{
+  --bg:#171310;
+  --paper:#efe5cf;
+  --paper-dark:#e3d5b5;
+  --paper-edge:#c9b88f;
+  --ink:#2e2620;
+  --ink-soft:#5a4c3c;
+  --accent:#9c2f24;
+  --accent-soft:#b8564a;
+  --gold:#8a6d2f;
+  --green:#4a6b45;
+  --pink:#b05a72;
+  --shadow:0 4px 18px rgba(0,0,0,.45);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  background:var(--bg);
+  background-image:radial-gradient(ellipse at 30% 10%,rgba(140,100,50,.10),transparent 55%),radial-gradient(ellipse at 80% 90%,rgba(120,40,30,.08),transparent 50%);
+  color:var(--ink);
+  font-family:"Kaiti SC","STKaiti","KaiTi","Noto Serif SC","Songti SC",serif;
+  font-size:16px;
+  overflow:hidden;
+}
+/* ============ 布局 ============ */
+#topbar{
+  height:56px;display:flex;align-items:center;gap:14px;padding:0 18px;
+  background:linear-gradient(180deg,#241d16,#1b1511);
+  border-bottom:1px solid #3a2f22;
+  color:#d9c9a3;
+}
+#topbar h1{font-size:22px;letter-spacing:6px;font-weight:700;color:#e8d7ae;text-shadow:0 0 12px rgba(200,160,80,.25)}
+#topbar .seal{display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;background:var(--accent);color:#f5e9d0;border-radius:6px;font-size:15px;letter-spacing:0;line-height:1.05;text-align:center;box-shadow:inset 0 0 6px rgba(0,0,0,.4)}
+#topbar .grow{flex:1}
+#gameDate{font-size:14px;color:#bfa876;letter-spacing:2px}
+.tbtn{
+  background:#33291d;border:1px solid #55462f;color:#d9c9a3;padding:6px 14px;border-radius:4px;
+  font-family:inherit;font-size:14px;cursor:pointer;letter-spacing:2px;transition:.15s;
+}
+.tbtn:hover{background:#463826;border-color:#7a6540;color:#f0e2bd}
+#layout{display:flex;height:calc(100% - 56px)}
+/* ============ 侧栏 ============ */
+#sidebar{
+  width:370px;min-width:370px;display:flex;flex-direction:column;
+  background:linear-gradient(160deg,var(--paper) 0%,var(--paper-dark) 100%);
+  border-right:3px double var(--paper-edge);
+  box-shadow:var(--shadow);
+}
+#tabs{display:flex;border-bottom:2px solid var(--paper-edge)}
+#tabs button{
+  flex:1;padding:10px 0;background:transparent;border:none;border-right:1px solid var(--paper-edge);
+  font-family:inherit;font-size:16px;letter-spacing:4px;color:var(--ink-soft);cursor:pointer;
+}
+#tabs button:last-child{border-right:none}
+#tabs button.on{color:var(--accent);font-weight:700;background:rgba(156,47,36,.07);box-shadow:inset 0 -3px 0 var(--accent)}
+.tabpane{flex:1;overflow-y:auto;padding:16px 18px;display:none}
+.tabpane.on{display:block}
+/* 面板卡片 */
+.card{background:rgba(255,252,240,.55);border:1px solid var(--paper-edge);border-radius:6px;padding:12px 14px;margin-bottom:12px}
+.card h3{font-size:15px;color:var(--accent);letter-spacing:3px;margin-bottom:8px;border-bottom:1px dashed var(--paper-edge);padding-bottom:5px}
+#pName{font-size:26px;font-weight:700;letter-spacing:3px}
+#pBiaozi{font-size:14px;color:var(--ink-soft);margin-left:8px}
+#pMeta{font-size:14px;color:var(--ink-soft);margin-top:4px;letter-spacing:1px}
+.trait{display:inline-block;background:rgba(156,47,36,.10);color:var(--accent);border:1px solid rgba(156,47,36,.3);border-radius:12px;padding:1px 10px;font-size:13px;margin:3px 4px 0 0}
+.statusfx{display:inline-block;background:rgba(90,60,120,.12);color:#6a4a8a;border:1px solid rgba(90,60,120,.3);border-radius:12px;padding:1px 10px;font-size:13px;margin:3px 4px 0 0}
+#pLooks,#pStory{font-size:14.5px;line-height:1.8;color:var(--ink);text-align:justify}
+/* 属性条 */
+.attr{margin-bottom:9px}
+.attr .lab{display:flex;justify-content:space-between;font-size:14px;margin-bottom:3px}
+.attr .lab b{letter-spacing:2px}
+.attr .lab span{color:var(--ink-soft);font-variant-numeric:tabular-nums}
+.bar{height:9px;background:rgba(0,0,0,.12);border-radius:5px;overflow:hidden}
+.bar i{display:block;height:100%;border-radius:5px;transition:width .8s cubic-bezier(.2,.8,.3,1)}
+.delta{font-size:12px;margin-left:5px;font-weight:700}
+.delta.up{color:var(--green)} .delta.dn{color:var(--accent)}
+#pMoney{font-size:18px;color:var(--gold);font-weight:700}
+/* 行囊 */
+.item{border-bottom:1px dashed var(--paper-edge);padding:7px 0;font-size:14px}
+.item:last-child{border-bottom:none}
+.item b{color:var(--ink)}
+.item .idesc{color:var(--ink-soft);font-size:13px;line-height:1.6;margin-top:2px}
+.itag{font-size:12px;color:#fff;border-radius:3px;padding:0 6px;margin-right:6px}
+.empty{color:var(--ink-soft);font-size:13.5px;font-style:italic;padding:4px 0}
+/* 技能 */
+.skillrow{display:flex;align-items:center;gap:8px;margin-bottom:7px;font-size:14px}
+.skillrow .sname{width:74px;letter-spacing:1px}
+.skillrow .bar{flex:1}
+.skillrow .sv{width:32px;text-align:right;color:var(--ink-soft);font-size:13px}
+/* 人脉 */
+.npc{display:flex;align-items:center;gap:10px;padding:8px 6px;border-bottom:1px dashed var(--paper-edge);cursor:pointer;transition:.15s;border-radius:4px}
+.npc:hover{background:rgba(156,47,36,.06)}
+.npc .avatar{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:700;color:#f5e9d0;flex-shrink:0}
+.npc .ninfo{flex:1;min-width:0}
+.npc .nname{font-size:15.5px;font-weight:700}
+.npc .nrel{font-size:12.5px;color:var(--ink-soft)}
+.npc .nfav{text-align:right;font-size:13px;font-variant-numeric:tabular-nums}
+.npc .nfav .favnum{font-size:16px;font-weight:700}
+.dead{filter:grayscale(1);opacity:.55}
+#graphWrap{background:rgba(255,252,240,.5);border:1px solid var(--paper-edge);border-radius:6px;margin-bottom:12px}
+#graphWrap svg{display:block;width:100%}
+/* ============ 主区域 ============ */
+#main{flex:1;display:flex;flex-direction:column;min-width:0}
+#story{
+  flex:1;overflow-y:auto;padding:26px 8%;
+  scroll-behavior:smooth;
+}
+#story::-webkit-scrollbar,#sidebar .tabpane::-webkit-scrollbar{width:9px}
+#story::-webkit-scrollbar-thumb,#sidebar .tabpane::-webkit-scrollbar-thumb{background:#4a3c2a;border-radius:5px}
+.chapter{
+  background:linear-gradient(170deg,var(--paper),var(--paper-dark));
+  border:1px solid #3d3226;border-radius:8px;box-shadow:var(--shadow);
+  padding:26px 34px;margin-bottom:22px;position:relative;
+  animation:fadein .6s ease;
+}
+@keyframes fadein{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+.chapter .chapmark{
+  position:absolute;top:-1px;left:26px;background:var(--accent);color:#f5e9d0;
+  padding:3px 12px 6px;font-size:13px;letter-spacing:2px;border-radius:0 0 6px 6px;box-shadow:0 2px 6px rgba(0,0,0,.3);
+}
+.chapter .chaptime{position:absolute;top:8px;right:18px;font-size:13px;color:var(--ink-soft);letter-spacing:1px}
+.chapter .action-echo{
+  margin:14px 0 12px;padding:8px 14px;border-left:3px solid var(--gold);
+  background:rgba(138,109,47,.08);color:var(--ink-soft);font-size:14.5px;border-radius:0 4px 4px 0;
+}
+.ntext{margin-top:14px}
+.ntext p{line-height:2.0;font-size:16.5px;text-align:justify;text-indent:2em;margin-bottom:8px}
+.ntext p q{color:var(--accent);quotes:"「" "」"}
+.subblock{margin-top:14px;border-top:1px dashed var(--paper-edge);padding-top:10px}
+.subblock h4{font-size:14px;color:var(--gold);letter-spacing:2px;margin-bottom:6px}
+.subblock li{list-style:none;font-size:14.5px;line-height:1.9;color:var(--ink-soft);padding-left:1.2em;text-indent:-1.2em}
+.subblock li::before{content:"❖ ";color:var(--gold);font-size:12px}
+.rumorblock li::before{content:"📜 ";font-size:13px}
+.changeblock li::before{content:"✦ ";color:var(--accent-soft)}
+.endingblock{border:2px solid var(--accent);border-radius:8px;padding:14px 18px;margin-top:16px;background:rgba(156,47,36,.06)}
+.endingblock h4{color:var(--accent);letter-spacing:4px;font-size:17px;margin-bottom:8px;text-align:center}
+/* 选项 */
+#choices{padding:10px 8% 6px;display:flex;flex-direction:column;gap:9px;max-height:34vh;overflow-y:auto}
+.opt{
+  text-align:left;background:linear-gradient(170deg,#efe5cf,#e0d0ac);border:1px solid #b8a478;border-radius:6px;
+  padding:11px 16px;font-family:inherit;font-size:15.5px;color:var(--ink);cursor:pointer;transition:.15s;
+  box-shadow:0 2px 8px rgba(0,0,0,.3);line-height:1.6;
+}
+.opt:hover{transform:translateX(6px);border-color:var(--accent);box-shadow:0 3px 12px rgba(0,0,0,.4)}
+.opt .num{display:inline-block;background:var(--accent);color:#f5e9d0;width:22px;height:22px;border-radius:50%;text-align:center;line-height:22px;font-size:13px;margin-right:9px}
+.opt .hint{display:block;font-size:13px;color:var(--ink-soft);margin-top:3px;padding-left:31px}
+.opt:disabled{opacity:.5;cursor:default;transform:none}
+/* 输入 */
+#inputbar{display:flex;gap:10px;padding:12px 8% 18px}
+#freeInput{
+  flex:1;background:#26201855;border:1px solid #55462f;border-radius:6px;color:#e8dcc0;
+  font-family:inherit;font-size:15.5px;padding:11px 15px;outline:none;background:#241d16;
+}
+#freeInput:focus{border-color:#8a6d2f;box-shadow:0 0 0 2px rgba(138,109,47,.25)}
+#freeInput::placeholder{color:#7a6a50}
+#sendBtn{
+  background:var(--accent);color:#f5e9d0;border:none;border-radius:6px;padding:0 26px;
+  font-family:inherit;font-size:16px;letter-spacing:4px;cursor:pointer;transition:.15s;
+}
+#sendBtn:hover{background:#b13a2d}
+#sendBtn:disabled{background:#5a463c;cursor:default}
+/* 加载 */
+#loading{display:none;align-items:center;gap:12px;padding:8px 8%;color:#bfa876;font-size:14px;letter-spacing:2px}
+#loading.on{display:flex}
+.inkball{width:10px;height:10px;border-radius:50%;background:#bfa876;animation:pulse 1s infinite alternate}
+.inkball:nth-child(2){animation-delay:.25s}.inkball:nth-child(3){animation-delay:.5s}
+@keyframes pulse{from{opacity:.25;transform:scale(.7)}to{opacity:1;transform:scale(1)}}
+/* ============ 弹窗 ============ */
+.modal-mask{
+  display:none;position:fixed;inset:0;background:rgba(10,7,5,.72);z-index:50;
+  align-items:center;justify-content:center;backdrop-filter:blur(3px);
+}
+.modal-mask.on{display:flex}
+.modal{
+  width:min(560px,92vw);max-height:86vh;overflow-y:auto;
+  background:linear-gradient(165deg,var(--paper),var(--paper-dark));
+  border:1px solid #3d3226;border-radius:10px;box-shadow:0 12px 50px rgba(0,0,0,.7);
+  padding:28px 32px;
+}
+.modal h2{font-size:20px;letter-spacing:5px;color:var(--accent);text-align:center;margin-bottom:6px}
+.modal .sub{text-align:center;font-size:13.5px;color:var(--ink-soft);margin-bottom:20px}
+.field{margin-bottom:14px}
+.field label{display:block;font-size:14px;letter-spacing:2px;color:var(--ink-soft);margin-bottom:5px}
+.field input,.field select{
+  width:100%;background:rgba(255,252,240,.7);border:1px solid var(--paper-edge);border-radius:5px;
+  font-family:inherit;font-size:15px;padding:9px 12px;color:var(--ink);outline:none;
+}
+.field input:focus{border-color:var(--gold)}
+.field .note{font-size:12.5px;color:var(--ink-soft);margin-top:4px;line-height:1.6}
+.mbtnrow{display:flex;gap:10px;margin-top:22px}
+.mbtn{
+  flex:1;padding:11px 0;border-radius:6px;font-family:inherit;font-size:16px;letter-spacing:4px;cursor:pointer;transition:.15s;
+  border:1px solid var(--paper-edge);background:rgba(255,252,240,.6);color:var(--ink-soft);
+}
+.mbtn.primary{background:var(--accent);border-color:var(--accent);color:#f5e9d0}
+.mbtn.primary:hover{background:#b13a2d}
+.mbtn:hover{border-color:var(--gold)}
+/* NPC 详情 */
+#npcModal .nrow{display:flex;justify-content:space-between;border-bottom:1px dashed var(--paper-edge);padding:7px 2px;font-size:14.5px}
+#npcModal .nrow b{color:var(--ink-soft);font-weight:400;letter-spacing:2px;flex-shrink:0;margin-right:16px}
+#npcModal .nrow span{text-align:right;line-height:1.7}
+#toast{
+  position:fixed;top:70px;left:50%;transform:translateX(-50%);z-index:99;
+  background:#3a1f1a;color:#f0d9c0;border:1px solid #8a4a3a;border-radius:6px;
+  padding:10px 22px;font-size:14.5px;letter-spacing:1px;display:none;box-shadow:var(--shadow);max-width:80vw;
+}
+#panelToggle{display:none}
+#sideMask{display:none;position:fixed;inset:0;top:56px;background:rgba(10,7,5,.55);z-index:39;backdrop-filter:blur(2px)}
+/* ============ 手机适配 ============ */
+@supports (height:100dvh){
+  body{height:100dvh}
+  #layout{height:calc(100dvh - 56px)}
+}
+@media (max-width:900px){
+  body{font-size:15px}
+  /* 顶栏：紧凑单行，按钮可横向滑动 */
+  #topbar{height:52px;padding:0 10px;gap:8px;overflow-x:auto;overflow-y:hidden;scrollbar-width:none}
+  #topbar::-webkit-scrollbar{display:none}
+  #topbar h1{font-size:17px;letter-spacing:2px;white-space:nowrap}
+  #topbar .seal{width:28px;height:28px;font-size:12px;flex-shrink:0}
+  #gameDate{display:none}
+  .tbtn{padding:5px 10px;font-size:13px;letter-spacing:1px;white-space:nowrap;flex-shrink:0}
+  #panelToggle{display:inline-block;background:var(--accent);border-color:var(--accent);color:#f5e9d0}
+  #layout{height:calc(100% - 52px)}
+  @supports (height:100dvh){ #layout{height:calc(100dvh - 52px)} }
+  /* 侧栏：抽屉式，覆盖在剧情上 */
+  #sidebar{
+    position:fixed;left:0;top:52px;bottom:0;z-index:40;
+    width:min(86vw,370px);min-width:0;
+    transform:translateX(-102%);transition:transform .28s cubic-bezier(.3,.9,.3,1);
+    box-shadow:6px 0 30px rgba(0,0,0,.6);
+  }
+  #sidebar.open{transform:none}
+  #sideMask.on{display:block}
+  #sideMask{top:52px}
+  .tabpane{padding:12px 13px;-webkit-overflow-scrolling:touch}
+  #tabs button{padding:12px 0;font-size:15px;letter-spacing:3px}
+  /* 剧情区 */
+  #story{padding:14px 3.5%;-webkit-overflow-scrolling:touch}
+  .chapter{padding:20px 16px 16px;margin-bottom:14px;border-radius:7px}
+  .chapter .chapmark{left:14px;font-size:12px;padding:2px 9px 4px}
+  .chapter .chaptime{font-size:11.5px;right:12px}
+  .ntext p{font-size:15.5px;line-height:1.95;margin-bottom:7px}
+  .subblock li{font-size:13.5px}
+  /* 选项与输入：拇指友好 */
+  #choices{padding:8px 3.5% 4px;max-height:32vh;gap:8px;-webkit-overflow-scrolling:touch}
+  .opt{padding:12px 13px;font-size:15px;border-radius:8px}
+  .opt:hover{transform:none}
+  .opt:active{transform:scale(.985);border-color:var(--accent)}
+  .opt .hint{font-size:12.5px}
+  #loading{padding:6px 3.5%;font-size:13px}
+  #inputbar{
+    padding:10px 3.5% calc(12px + env(safe-area-inset-bottom));gap:8px;
+    background:linear-gradient(180deg,transparent,rgba(23,19,16,.9) 40%);
+  }
+  #freeInput{font-size:16px;padding:12px 14px}  /* 16px 防止 iOS 聚焦时自动放大 */
+  #sendBtn{padding:0 18px;font-size:15px;letter-spacing:2px}
+  /* 弹窗 */
+  .modal{width:94vw;padding:20px 18px;max-height:82vh}
+  .modal h2{font-size:18px;letter-spacing:3px}
+  #npcModal .nrow{font-size:14px}
+  /* 触屏上悬停态无意义，去掉 */
+  .npc:hover{background:transparent}
+  .npc:active{background:rgba(156,47,36,.08)}
+}
+@media (max-width:380px){
+  #topbar h1{display:none}
+  .chapter{padding:18px 12px 14px}
+}
+</style>
+</head>
+<body>
+
+<div id="topbar">
+  <span class="seal">江湖</span>
+  <h1>武侠江湖模拟器</h1>
+  <span id="gameDate"></span>
+  <div class="grow"></div>
+  <button class="tbtn" id="panelToggle">面板</button>
+  <button class="tbtn" id="btnNew">另起一局</button>
+  <button class="tbtn" id="btnExport">存档</button>
+  <button class="tbtn" id="btnImport">读档</button>
+  <button class="tbtn" id="btnSettings">设置</button>
+  <input type="file" id="importFile" accept=".json" style="display:none">
+</div>
+
+<div id="layout">
+  <aside id="sidebar">
+    <div id="tabs">
+      <button data-tab="panel" class="on">面板</button>
+      <button data-tab="bag">行囊</button>
+      <button data-tab="people">人脉</button>
+    </div>
+    <div class="tabpane on" id="tab-panel">
+      <div class="card">
+        <div><span id="pName">—</span><span id="pBiaozi"></span></div>
+        <div id="pMeta"></div>
+        <div id="pTraits" style="margin-top:6px"></div>
+        <div id="pStatus"></div>
+      </div>
+      <div class="card"><h3>❈ 四维</h3><div id="pAttrs"></div></div>
+      <div class="card"><h3>❈ 家财</h3><div id="pMoney">—</div></div>
+      <div class="card"><h3>❈ 技艺</h3><div id="pSkills"><div class="empty">尚无一技之长</div></div></div>
+      <div class="card"><h3>❈ 相貌打扮</h3><div id="pLooks">—</div></div>
+      <div class="card"><h3>❈ 身世</h3><div id="pStory">—</div></div>
+    </div>
+    <div class="tabpane" id="tab-bag">
+      <div class="card"><h3>⚔ 兵刃暗器</h3><div id="bagWeapons"></div></div>
+      <div class="card"><h3>📖 秘籍</h3><div id="bagManuals"></div></div>
+      <div class="card"><h3>🌿 医药</h3><div id="bagMeds"></div></div>
+      <div class="card"><h3>☠ 毒物</h3><div id="bagPoisons"></div></div>
+      <div class="card"><h3>📚 杂书</h3><div id="bagBooks"></div></div>
+      <div class="card"><h3>🎒 其他</h3><div id="bagMisc"></div></div>
+    </div>
+    <div class="tabpane" id="tab-people">
+      <div id="graphWrap"></div>
+      <div class="card"><h3>❈ 人物名录（点击查看详情）</h3><div id="npcList"></div></div>
+    </div>
+  </aside>
+
+  <div id="sideMask"></div>
+
+  <main id="main">
+    <div id="story"></div>
+    <div id="loading"><div class="inkball"></div><div class="inkball"></div><div class="inkball"></div><span id="loadingText">笔走龙蛇，正在推演江湖……</span></div>
+    <div id="choices"></div>
+    <div id="inputbar">
+      <input id="freeInput" placeholder="亦可自行书写你的行动，如：向老者抱拳问路……">
+      <button id="sendBtn">行动</button>
+    </div>
+  </main>
+</div>
+
+<!-- 设置弹窗 -->
+<div class="modal-mask" id="settingsMask">
+  <div class="modal">
+    <h2>行囊设置</h2>
+    <div class="sub">连接你自己的大模型接口，密钥只存于本机浏览器，绝不外传</div>
+    <div class="field">
+      <label>接口地址（OpenAI 兼容 Base URL）</label>
+      <input id="cfgBase" placeholder="https://api.deepseek.com">
+      <div class="note">DeepSeek 填 https://api.deepseek.com；其他兼容服务填各自地址</div>
+    </div>
+    <div class="field">
+      <label>密钥（API Key）</label>
+      <input id="cfgKey" type="password" placeholder="sk-...">
+    </div>
+    <div class="field">
+      <label>模型名</label>
+      <input id="cfgModel" placeholder="deepseek-v4-flash">
+      <div class="note">推荐 deepseek-v4-flash（快且便宜）；追求更强剧情可填 deepseek-v4-pro（较慢较贵）。旧模型名 deepseek-chat / deepseek-reasoner 已停用</div>
+    </div>
+    <div class="field">
+      <label>思考模式（仅 DeepSeek V4 生效）</label>
+      <select id="cfgThink">
+        <option value="off">关闭 —— 出剧情快，推荐</option>
+        <option value="on">开启 —— 剧情更缜密但等待更久</option>
+      </select>
+    </div>
+    <div class="mbtnrow">
+      <button class="mbtn" id="cfgCancel">关闭</button>
+      <button class="mbtn primary" id="cfgSave">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- NPC 详情弹窗 -->
+<div class="modal-mask" id="npcMask">
+  <div class="modal" id="npcModal">
+    <h2 id="npcMTitle">人物</h2>
+    <div class="sub" id="npcMSub"></div>
+    <div id="npcMBody"></div>
+    <div class="mbtnrow"><button class="mbtn" onclick="document.getElementById('npcMask').classList.remove('on')">合上</button></div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+"use strict";
+/* ================= 配置 ================= */
+const LS_CFG='wuxia_cfg', LS_SAVE='wuxia_save_v1';
+let cfg = JSON.parse(localStorage.getItem(LS_CFG)||'null') || {base:'https://api.deepseek.com', key:'', model:'deepseek-v4-flash', think:false};
+// 旧存量配置迁移：deepseek-chat / deepseek-reasoner 已于2026年7月停用
+if(cfg.model==='deepseek-chat'||cfg.model==='deepseek-reasoner'){ cfg.model='deepseek-v4-flash'; localStorage.setItem(LS_CFG,JSON.stringify(cfg)); }
+
+/* ================= 游戏状态（前端权威记账） ================= */
+let S = null;          // 整个游戏状态
+let busy = false;
+let lastDeltas = {};   // 最近一回合属性变化，用于面板显示 ▲▼
+
+function newStateShell(){
+  return {
+    turn:0, date:'', player:null, npcs:[],
+    history:[],        // {turn, action, summary}
+    recent:[],         // 最近几回合完整剧情 {action, narrative}
+    over:false, ending:null
+  };
+}
+
+/* ================= 系统提示词（由文档设定改编） ================= */
+const WORLD_RULES = `你是一个武侠文字游戏引擎。世界观为最通俗的武侠江湖，没有朝廷官家；有门派、家族、隐世高人、武功秘籍、比武、恩怨情仇、拜师收徒、绝世神兵、蛊毒。
+铁律：
+- 严禁出现科幻、魔幻、玄幻、量子、机甲、时空穿梭内容；不得出现不符合古代背景的称谓、事物和剧情；不要有太多阴谋暗线。
+- 文风古朴，仿中国古典小说；人物言行须符合其年龄、身份和性格。除JSON键名外一律使用中文。
+- 缩骨功属于武功功法，不属于技能。
+属性规则（数值一律0-100）：
+- 谈吐：社交能力，越高越能取信于人、说服别人。才学：文化水平，读书写作可提升。颖悟：先天悟性，终生不变。武功：越高越强，练功可提升，中毒受伤会降低，伤愈恢复；可传功给别人（自己失去这部分武功值）；武功大于90可废掉武功小于75者的武功。
+- 武器对武功有加成。秘籍可大幅提升武功，但往往残缺不全或条件极其严苛。
+好感度规则（引擎必须严格执行，好感度0-100，陌生人默认30）：
+- 对邪魔外道以外的人用暗器或下毒且被发现：名门正派人物好感度-10。
+- 为非作歹（未杀人）：正派-20，邪魔外道+10。杀害无辜、伤害无过错同门亲人：正派-40，邪道+20。被逐出/叛逃师门家族、伤害师傅双亲、杀死无过错同门亲人：正派-50，邪道+40。滥杀无辜成性或杀死师傅双亲：正派好感归0，邪道+20。
+- 行侠仗义：正派+20，邪道-20。救人一命：对方+50（对方薄情则不加）。
+- 长相好者初见+10，丑陋-10。风流成性：正派-10。
+爱情规则：
+- 好感度高于80，NPC可能生出爱慕、请求相恋，主角也可主动。确立恋爱关系后，好感度转为“爱恋值”且重置为30；爱恋值70以上可能触发求婚。主角可拒绝求爱求婚。
+- 爱恋值降到0感情破裂可能分开；冷淡、聚少离多、争吵都会降低爱恋值；出轨令伴侣爱恋值-50，若伴侣性情刚烈则直接反目成仇、好感归0；事先约定开放关系则不受影响。
+- 主角不一定是异性恋，会拒绝不符合自己性向的求爱。
+NPC规则：
+- 初次登场的NPC必须给出完整属性面板，不得简化，不得凭空产生，须与主角有联系或合乎逻辑。
+- 所有相识的NPC有自己的人生线并互相交往：生死、嫁娶、偷情、交好、交恶等奇闻琐事须有因果逻辑，并在每回合的npcEvents中体现。
+- NPC对主角好感度的变化参考现实人际交往。
+进程规则：
+- 回合制，时间自然流动，主角年龄随之增长。绝不替玩家做选择，绝不擅自推进到结局；只有主角死亡或玩家明确要求收尾时才可结束。
+- 选项后果玩家无法预知时，hint一律写“？？？”。
+- 每回合末尾须有江湖风闻。`;
+
+const JSON_RULE = `你必须只输出一个合法的JSON对象，不要输出任何其他文字，不要用markdown代码块包裹。所有字符串内的换行用\\n表示。`;
+
+const NPC_SCHEMA = `NPC对象格式：{"name":"姓名","gender":"男/女","age":年龄数字,"identity":"身份，如：华山派三弟子","faction":"所属势力","alignment":"正派/邪道/中立","personality":["性格1","性格2"],"appearance":"古典文风相貌简述","武功":数字,"谈吐":数字,"relation":"与主角关系，如：师傅/母亲/仇人/萍水相逢","好感度":数字,"爱恋值":null或数字,"alive":true,"notes":"重要备注，如恩怨、秘密"}`;
+
+function initSchemaPrompt(){
+  return `${WORLD_RULES}
+
+现在请随机生成一位主角并开局。要求：
+- 性别随机；年龄在6至60岁之间随机（不要偏向任何年龄段）；姓名符合古代背景且风格符合原生家庭出身；若家庭有虐待行径主角会自行改名（不要默认改名）。
+- 出身随机：有钱有势/家徒四壁/小富即安/年幼失怙/家庭美满/书香门第/习武世家/普通百姓/为奴作婢等，附古典文风身世故事。出身富贵或书香门第才可能有表字（不要默认有）。不要默认身世凄惨。
+- 相貌打扮用古典文风描述，不一定好看，须符合年龄。
+- 随机四维初始值；随机2-3项性格特征（性格会极大影响主角行为）；随机0-3项其他技能（算命、做饭、刺绣、医疗、乐器、易容、下毒等）。
+- 家财为主角个人资产（银两），符合出身。随身物品（武器/医药/毒药/秘籍/杂书）可有可无，符合出身。
+- 所属势力：武学家族出身默认归属家族，自幼被门派捡回则归属门派，否则酌情为散人。
+- 生成3至6位与主角关系紧密的初始NPC（家人、师傅、同门、朋友、仇人、情人等，须符合身世）。主角若年满30岁且非出家人、非风流成性，默认已有爱人小家庭（伴侣列入NPC，爱恋值给出），若没有须在身世中专门解释。
+- 写一段开场剧情（250-450字），主角可能已闯荡江湖多年，也可能初入江湖。
+
+${JSON_RULE}
+输出格式：
+{"player":{"name":"","biaozi":null,"gender":"","age":0,"orientation":"异性恋/同性恋/双性恋","appearance":"","personality":[],"backgroundType":"出身类型","backstory":"","attributes":{"谈吐":0,"才学":0,"颖悟":0,"武功":0},"money":0,"faction":"","skills":{},"items":{"武器":[{"name":"","desc":"","bonus":0}],"秘籍":[{"name":"","desc":""}],"医药":[],"毒药":[],"杂书":[],"其他":[]},"status":[]},
+"npcs":[${NPC_SCHEMA}],
+"date":"开局时间，干支纪年加季节，如：甲子年 暮春",
+"opening":"开场剧情",
+"rumors":["江湖风闻一","江湖风闻二"],
+"options":[{"text":"选项文字","hint":"可能的后果，未知则写？？？"}]}
+options给3至5个。`;
+}
+
+function turnPrompt(action){
+  const p=S.player;
+  const npcBrief=S.npcs.map(n=>({name:n.name,gender:n.gender,age:n.age,identity:n.identity,faction:n.faction,alignment:n.alignment,personality:n.personality,relation:n.relation,好感度:n['好感度'],爱恋值:n['爱恋值'],alive:n.alive,notes:n.notes}));
+  const summaries=S.history.map(h=>`第${h.turn}回合｜${h.action}｜${h.summary}`).join('\n')||'（无）';
+  const recents=S.recent.map(r=>`【玩家行动】${r.action}\n【剧情】${r.narrative}`).join('\n---\n')||'（无）';
+  return `${WORLD_RULES}
+
+【当前时间】${S.date}（第${S.turn}回合）
+【主角面板】${JSON.stringify(p)}
+【在场人物关系】${JSON.stringify(npcBrief)}
+【前情提要】
+${summaries}
+【最近剧情原文】
+${recents}
+
+【玩家本回合行动】${action}
+
+请推演本回合。要求：
+- 剧情250-500字，古典文风，对话用「」。时间自然流动。
+- 数值变化必须符合规则并如实写入playerChanges与npcUpdates（全部用增减量，如+5、-10；年龄用绝对值）。
+- 初次登场的新NPC写入newNpcs（完整面板，不得简化）。已有NPC的变化写入npcUpdates。
+- npcEvents写1-3条相识NPC之间的互动琐事或人生进展（嫁娶、交恶、生死等，须有因果）。
+- rumors写1-3条江湖风闻。
+- options给3-5个供玩家选择的行动，后果不可预知则hint写“？？？”。
+- 除非主角死亡或玩家明确要求收尾，gameOver必须为false。
+
+${JSON_RULE}
+输出格式：
+{"narrative":"本回合剧情","summary":"一句话概括本回合（30字内）","date":"更新后的时间","playerChanges":{"age":null或新年龄,"attributes":{"武功":0},"money":0,"faction":null,"skills":{"医疗":0},"personalityAdd":[],"statusAdd":[],"statusRemove":[],"itemsAdd":{"武器":[],"秘籍":[],"医药":[],"毒药":[],"杂书":[],"其他":[]},"itemsRemove":[]},
+"npcUpdates":[{"name":"","好感度":0,"爱恋值":null,"relation":null,"alive":true,"identity":null,"faction":null,"notes":null,"武功":0,"age":null}],
+"newNpcs":[${NPC_SCHEMA}],
+"npcEvents":[],"rumors":[],
+"options":[{"text":"","hint":""}],
+"gameOver":false,"ending":null}
+不需要变化的字段可省略或填0/null。`;
+}
+
+/* ================= LLM 调用 ================= */
+let lastFinish=null; // 最近一次请求的结束原因：stop / length（被截断）等
+async function callLLM(prompt, onPartial){
+  lastFinish=null;
+  if(!cfg.key){ openSettings(); throw new Error('请先在设置中填写密钥'); }
+  const base = cfg.base.replace(/\/+$/,'');
+  const url = base + (base.endsWith('/v1')?'':'') + '/chat/completions';
+  const body = {
+    model: cfg.model||'deepseek-v4-flash',
+    messages:[{role:'user',content:prompt}],
+    temperature:1.25,
+    max_tokens:12000,
+    stream:true,
+    response_format:{type:'json_object'}
+  };
+  // DeepSeek V4 默认开启思考模式；按设置显式开关（其他厂商模型不传此参数）
+  if(/deepseek/i.test(body.model)) body.thinking={type: cfg.think?'enabled':'disabled'};
+  const resp = await fetch(url,{
+    method:'POST',
+    headers:{'Content-Type':'application/json','Authorization':'Bearer '+cfg.key},
+    body:JSON.stringify(body)
+  });
+  if(!resp.ok){
+    let msg = 'HTTP '+resp.status;
+    try{ const e=await resp.json(); msg += '：'+(e.error?.message||JSON.stringify(e)); }catch(_){}
+    throw new Error('接口调用失败（'+msg+'）');
+  }
+  const reader = resp.body.getReader();
+  const dec = new TextDecoder();
+  let raw='', buf='';
+  while(true){
+    const {done,value} = await reader.read();
+    if(done) break;
+    buf += dec.decode(value,{stream:true});
+    const lines = buf.split('\n');
+    buf = lines.pop();
+    for(const line of lines){
+      const t=line.trim();
+      if(!t.startsWith('data:')) continue;
+      const payload=t.slice(5).trim();
+      if(payload==='[DONE]') continue;
+      try{
+        const j=JSON.parse(payload);
+        const d=j.choices?.[0]?.delta?.content;
+        if(d){ raw+=d; if(onPartial) onPartial(raw); }
+        const fr=j.choices?.[0]?.finish_reason;
+        if(fr) lastFinish=fr;
+      }catch(_){}
+    }
+  }
+  return raw;
+}
+
+function extractPartialField(raw, key){
+  // 从流式的半成品JSON里尽力提取某个字符串字段的已生成部分
+  const m = raw.match(new RegExp('"'+key+'"\\s*:\\s*"'));
+  if(!m) return null;
+  let i = m.index + m[0].length, out='';
+  while(i<raw.length){
+    const c=raw[i];
+    if(c==='\\'){
+      const n=raw[i+1];
+      if(n===undefined) break;
+      if(n==='n') out+='\n'; else if(n==='"') out+='"'; else if(n==='\\') out+='\\';
+      else if(n==='u'){ const h=raw.slice(i+2,i+6); if(h.length===4){ out+=String.fromCharCode(parseInt(h,16)||63); i+=4; } }
+      else out+=n;
+      i+=2; continue;
+    }
+    if(c==='"') break;
+    out+=c; i++;
+  }
+  return out;
+}
+
+function parseJSONLoose(raw){
+  let t = raw.trim();
+  t = t.replace(/^```(?:json)?/i,'').replace(/```$/,'').trim();
+  const a=t.indexOf('{');
+  if(a>=0) t=t.slice(a);
+  const b=t.lastIndexOf('}');
+  try{ return JSON.parse(b>0?t.slice(0,b+1):t); }
+  catch(_){ return JSON.parse(repairJSON(t)); }
+}
+
+// 抢救被截断的JSON：扫描字符串状态，把没写完的字符串和括号补齐
+function repairJSON(t){
+  let inStr=false, esc=false;
+  const stack=[];
+  let end=t.length;
+  for(let i=0;i<t.length;i++){
+    const c=t[i];
+    if(esc){ esc=false; continue; }
+    if(inStr){
+      if(c==='\\') esc=true;
+      else if(c==='"') inStr=false;
+      continue;
+    }
+    if(c==='"') inStr=true;
+    else if(c==='{'||c==='[') stack.push(c);
+    else if(c==='}'||c===']') stack.pop();
+  }
+  let out=t;
+  if(esc) out=out.slice(0,-1);            // 结尾是孤立反斜杠
+  if(inStr) out+='"';                      // 补上没关的引号
+  out=out.replace(/[,:\s]+$/,'');          // 去掉结尾悬空的逗号冒号
+  // 若截断处正是 "key": 后面没值，退回到上一个逗号
+  if(/"\s*:?\s*$/.test(out)&&!inStr){ const lc=out.lastIndexOf(','); if(lc>0) out=out.slice(0,lc); }
+  for(let i=stack.length-1;i>=0;i--) out+=(stack[i]==='{'?'}':']');
+  return out;
+}
+
+async function llmJSON(prompt, onPartial){
+  let raw;
+  try{
+    raw = await callLLM(prompt,onPartial);
+    return parseJSONLoose(raw);
+  }catch(e){
+    if(e.message && (e.message.startsWith('接口调用失败')||e.message==='请先在设置中填写密钥')) throw e;
+    // JSON坏了：判断是不是被截断，换提示语重试一次
+    const truncated = lastFinish==='length';
+    toast(truncated?'回复超长被截断，正在精简重试……':'回复格式有误，正在重试……');
+    const extra = truncated
+      ? '\n\n（注意：上次输出因过长被截断。请精简篇幅：剧情压缩到250字内，newNpcs最多1人，其余照常，务必输出完整合法的单个JSON对象）'
+      : '\n\n（上次输出的JSON格式有误，请务必输出严格合法的单个JSON对象）';
+    raw = await callLLM(prompt+extra,onPartial);
+    try{ return parseJSONLoose(raw); }
+    catch(_){ throw new Error(lastFinish==='length'?'回复两次都被截断，请稍后重试或换用思考模式关闭的flash模型':'模型两次都未能输出合法格式，请重试'); }
+  }
+}
+
+/* ================= 状态更新 ================= */
+const clamp=(v,lo=0,hi=100)=>Math.max(lo,Math.min(hi,Math.round(v)));
+function num(v){ const n=Number(v); return isNaN(n)?0:n; }
+
+function applyInit(d){
+  S = newStateShell();
+  const p = d.player;
+  p.biaozi = p.biaozi||null;
+  p.skills = p.skills||{};
+  p.status = p.status||[];
+  const it = p.items||{};
+  p.items = {'武器':it['武器']||[],'秘籍':it['秘籍']||[],'医药':it['医药']||[],'毒药':it['毒药']||[],'杂书':it['杂书']||[],'其他':it['其他']||[]};
+  for(const k of ['谈吐','才学','颖悟','武功']) p.attributes[k]=clamp(num(p.attributes[k]));
+  S.player = p;
+  S.npcs = (d.npcs||[]).map(normNpc);
+  S.date = d.date||'';
+  S.turn = 1;
+  lastDeltas={};
+  return d;
+}
+
+function normNpc(n){
+  return {
+    name:n.name||'无名氏', gender:n.gender||'', age:num(n.age), identity:n.identity||'',
+    faction:n.faction||'', alignment:n.alignment||'中立',
+    personality:n.personality||[], appearance:n.appearance||'',
+    '武功':clamp(num(n['武功'])), '谈吐':clamp(num(n['谈吐'])),
+    relation:n.relation||'', '好感度':clamp(num(n['好感度']!==undefined?n['好感度']:30)),
+    '爱恋值':(n['爱恋值']==null?null:clamp(num(n['爱恋值']))),
+    alive:n.alive!==false, notes:n.notes||''
+  };
+}
+
+function applyTurn(d, action){
+  lastDeltas={};
+  const p=S.player, ch=d.playerChanges||{};
+  if(ch.attributes) for(const k in ch.attributes){
+    const dv=num(ch.attributes[k]);
+    if(dv&&p.attributes[k]!==undefined){ if(k==='颖悟') continue; p.attributes[k]=clamp(p.attributes[k]+dv); lastDeltas[k]=dv; }
+  }
+  if(ch.money){ p.money=Math.max(0,Math.round(p.money+num(ch.money))); lastDeltas['家财']=num(ch.money); }
+  if(ch.age!=null && num(ch.age)>=p.age) p.age=num(ch.age);
+  if(ch.faction) p.faction=ch.faction;
+  if(ch.skills) for(const k in ch.skills){ const dv=num(ch.skills[k]); p.skills[k]=clamp(num(p.skills[k]||0)+dv); }
+  if(ch.personalityAdd) for(const t of ch.personalityAdd){ if(t&&!p.personality.includes(t)) p.personality.push(t); }
+  if(ch.statusAdd) for(const t of ch.statusAdd){ if(t&&!p.status.includes(t)) p.status.push(t); }
+  if(ch.statusRemove) p.status=p.status.filter(t=>!ch.statusRemove.includes(t));
+  if(ch.itemsAdd) for(const cat in ch.itemsAdd){
+    if(!p.items[cat]) p.items[cat]=[];
+    for(const item of (ch.itemsAdd[cat]||[])) if(item&&item.name) p.items[cat].push(item);
+  }
+  if(ch.itemsRemove) for(const nm of ch.itemsRemove){
+    for(const cat in p.items) p.items[cat]=p.items[cat].filter(x=>x.name!==nm);
+  }
+  // NPC 更新
+  for(const u of (d.npcUpdates||[])){
+    const n=S.npcs.find(x=>x.name===u.name);
+    if(!n) continue;
+    if(u['好感度']) n['好感度']=clamp(n['好感度']+num(u['好感度']));
+    if(u['爱恋值']!=null){
+      if(n['爱恋值']==null) n['爱恋值']=clamp(num(u['爱恋值'])); // 确立关系：直接设值
+      else n['爱恋值']=clamp(n['爱恋值']+num(u['爱恋值']));
+    }
+    if(u.relation) n.relation=u.relation;
+    if(u.alive===false) n.alive=false;
+    if(u.identity) n.identity=u.identity;
+    if(u.faction) n.faction=u.faction;
+    if(u.notes) n.notes=u.notes;
+    if(u['武功']) n['武功']=clamp(n['武功']+num(u['武功']));
+    if(u.age!=null&&num(u.age)>n.age) n.age=num(u.age);
+  }
+  for(const nn of (d.newNpcs||[])){
+    if(nn&&nn.name&&!S.npcs.find(x=>x.name===nn.name)) S.npcs.push(normNpc(nn));
+  }
+  if(d.date) S.date=d.date;
+  S.history.push({turn:S.turn, action, summary:d.summary||''});
+  S.recent.push({action, narrative:d.narrative||''});
+  while(S.recent.length>2) S.recent.shift();
+  S.turn++;
+  if(d.gameOver){ S.over=true; S.ending=d.ending||''; }
+  saveGame();
+}
+
+/* ================= 渲染 ================= */
+const $=id=>document.getElementById(id);
+const esc=s=>String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+
+const ATTR_COLORS={'谈吐':'#4a6b8a','才学':'#6a5a8a','颖悟':'#8a6d2f','武功':'#9c2f24'};
+function barColor(k){return ATTR_COLORS[k]||'#5a7a5a';}
+
+function renderPanel(){
+  if(!S||!S.player) return;
+  const p=S.player;
+  $('gameDate').textContent = S.date ? '⌛ '+S.date : '';
+  $('pName').textContent=p.name;
+  $('pBiaozi').textContent=p.biaozi?('字 '+p.biaozi):'';
+  $('pMeta').textContent=`${p.gender} · ${p.age}岁 · ${p.backgroundType||''} · ${p.faction||'散人'}`;
+  $('pTraits').innerHTML=(p.personality||[]).map(t=>`<span class="trait">${esc(t)}</span>`).join('');
+  $('pStatus').innerHTML=(p.status||[]).map(t=>`<span class="statusfx">${esc(t)}</span>`).join('');
+  let ah='';
+  for(const k of ['谈吐','才学','颖悟','武功']){
+    const v=p.attributes[k], d=lastDeltas[k];
+    const dtag=d?`<span class="delta ${d>0?'up':'dn'}">${d>0?'▲':'▼'}${Math.abs(d)}</span>`:'';
+    ah+=`<div class="attr"><div class="lab"><b>${k}${k==='颖悟'?'<small style="color:#8a7a60;font-weight:400">（先天）</small>':''}</b><span>${v}${dtag}</span></div><div class="bar"><i style="width:${v}%;background:${barColor(k)}"></i></div></div>`;
+  }
+  $('pAttrs').innerHTML=ah;
+  const md=lastDeltas['家财'];
+  $('pMoney').innerHTML=`${p.money.toLocaleString('zh-CN')} 两白银 ${md?`<span class="delta ${md>0?'up':'dn'}">${md>0?'▲':'▼'}${Math.abs(md).toLocaleString('zh-CN')}</span>`:''}`;
+  const sk=Object.entries(p.skills||{});
+  $('pSkills').innerHTML=sk.length?sk.map(([k,v])=>`<div class="skillrow"><span class="sname">${esc(k)}</span><div class="bar"><i style="width:${v}%;background:#5a7a5a"></i></div><span class="sv">${v}</span></div>`).join(''):'<div class="empty">尚无一技之长</div>';
+  $('pLooks').textContent=p.appearance||'—';
+  $('pStory').textContent=p.backstory||'—';
+  renderBag(); renderPeople();
+}
+
+function itemHtml(list,color,tag){
+  if(!list||!list.length) return '<div class="empty">空空如也</div>';
+  return list.map(x=>`<div class="item"><span class="itag" style="background:${color}">${tag}</span><b>${esc(x.name)}</b>${x.bonus?`<span style="color:var(--accent);font-size:13px">（武功+${x.bonus}）</span>`:''}<div class="idesc">${esc(x.desc||'')}</div></div>`).join('');
+}
+function renderBag(){
+  const it=S.player.items;
+  $('bagWeapons').innerHTML=itemHtml(it['武器'],'#9c2f24','兵');
+  $('bagManuals').innerHTML=itemHtml(it['秘籍'],'#8a6d2f','籍');
+  $('bagMeds').innerHTML=itemHtml(it['医药'],'#4a6b45','药');
+  $('bagPoisons').innerHTML=itemHtml(it['毒药'],'#5a3a6a','毒');
+  $('bagBooks').innerHTML=itemHtml(it['杂书'],'#4a6b8a','书');
+  $('bagMisc').innerHTML=itemHtml(it['其他'],'#7a6a50','物');
+}
+
+function favColor(n){
+  if(n['爱恋值']!=null) return 'var(--pink)';
+  const f=n['好感度'];
+  if(f>=70) return 'var(--green)';
+  if(f<=15) return 'var(--accent)';
+  return 'var(--ink-soft)';
+}
+function renderPeople(){
+  const list=$('npcList');
+  if(!S.npcs.length){ list.innerHTML='<div class="empty">江湖尚无故人</div>'; $('graphWrap').innerHTML=''; return; }
+  list.innerHTML=S.npcs.map((n,i)=>{
+    const love=n['爱恋值']!=null;
+    return `<div class="npc ${n.alive?'':'dead'}" data-i="${i}">
+      <div class="avatar" style="background:${love?'var(--pink)':(n.alignment==='邪道'?'#5a3a6a':(n.alignment==='正派'?'#4a6b45':'#7a6a50'))}">${esc(n.name[0]||'？')}</div>
+      <div class="ninfo"><div class="nname">${esc(n.name)} ${n.alive?'':'〔亡故〕'}</div><div class="nrel">${esc(n.relation)} · ${esc(n.identity)}</div></div>
+      <div class="nfav" style="color:${favColor(n)}"><span class="favnum">${love?n['爱恋值']:n['好感度']}</span><br><small>${love?'爱恋':'好感'}</small></div>
+    </div>`;
+  }).join('');
+  list.querySelectorAll('.npc').forEach(el=>el.onclick=()=>showNpc(S.npcs[+el.dataset.i]));
+  renderGraph();
+}
+
+function renderGraph(){
+  const alive=S.npcs;
+  const W=334,H=Math.max(240,120+alive.length*14);
+  const cx=W/2,cy=H/2,rx=W/2-52,ry=H/2-36;
+  let edges='',nodes='';
+  alive.forEach((n,i)=>{
+    const a=-Math.PI/2+i*2*Math.PI/alive.length;
+    const x=cx+rx*Math.cos(a),y=cy+ry*Math.sin(a);
+    const love=n['爱恋值']!=null;
+    const val=love?n['爱恋值']:n['好感度'];
+    let ec='#8a7a60';
+    if(!n.alive) ec='#aaa';
+    else if(love) ec='#b05a72';
+    else if(val>=70) ec='#4a6b45';
+    else if(val<=15) ec='#9c2f24';
+    const w=1+val/40;
+    edges+=`<line x1="${cx}" y1="${cy}" x2="${x}" y2="${y}" stroke="${ec}" stroke-width="${n.alive?w:1}" stroke-dasharray="${n.alive?'none':'4 4'}" opacity=".65"/>`;
+    nodes+=`<g class="gnode" data-i="${i}" style="cursor:pointer">
+      <circle cx="${x}" cy="${y}" r="17" fill="${n.alive?(love?'#b05a72':(n.alignment==='邪道'?'#5a3a6a':n.alignment==='正派'?'#4a6b45':'#7a6a50')):'#999'}" stroke="#efe5cf" stroke-width="1.5"/>
+      <text x="${x}" y="${y+5}" text-anchor="middle" font-size="13" fill="#f5e9d0">${esc(n.name[0]||'？')}</text>
+      <text x="${x}" y="${y+32}" text-anchor="middle" font-size="11" fill="#5a4c3c">${esc(n.name)}</text>
+      <text x="${x}" y="${y-24}" text-anchor="middle" font-size="10" fill="#8a6d2f">${esc(n.relation)}</text>
+    </g>`;
+  });
+  const me=`<circle cx="${cx}" cy="${cy}" r="21" fill="#9c2f24" stroke="#e8d7ae" stroke-width="2"/><text x="${cx}" y="${cy+5}" text-anchor="middle" font-size="14" fill="#f5e9d0">${esc(S.player.name[0])}</text>`;
+  $('graphWrap').innerHTML=`<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg">${edges}${me}${nodes}</svg>`;
+  $('graphWrap').querySelectorAll('.gnode').forEach(el=>el.onclick=()=>showNpc(S.npcs[+el.dataset.i]));
+}
+
+function showNpc(n){
+  $('npcMTitle').textContent=n.name+(n.alive?'':'〔亡故〕');
+  $('npcMSub').textContent=`${n.gender} · ${n.age}岁 · ${n.identity}`;
+  const love=n['爱恋值']!=null;
+  const rows=[
+    ['所属势力',n.faction||'散人'],['立场',n.alignment],['与主角',n.relation],
+    [love?'爱恋值':'好感度',(love?n['爱恋值']:n['好感度'])+' / 100'],
+    ['武功',n['武功']+' / 100'],['谈吐',n['谈吐']+' / 100'],
+    ['性格',(n.personality||[]).join('、')||'—'],['相貌',n.appearance||'—'],['备注',n.notes||'—']
+  ];
+  $('npcMBody').innerHTML=rows.map(([k,v])=>`<div class="nrow"><b>${k}</b><span>${esc(v)}</span></div>`).join('');
+  $('npcMask').classList.add('on');
+}
+
+/* 剧情渲染 */
+function narrativeHtml(text){
+  return String(text||'').split(/\n+/).filter(s=>s.trim()).map(s=>{
+    const withQ=esc(s.trim()).replace(/「([^」]*)」/g,'<q>$1</q>');
+    return `<p>${withQ}</p>`;
+  }).join('');
+}
+function listBlock(title,arr,cls){
+  if(!arr||!arr.length) return '';
+  return `<div class="subblock ${cls||''}"><h4>${title}</h4>${arr.map(x=>`<li>${esc(x)}</li>`).join('')}</div>`;
+}
+function changeLines(d){
+  const out=[];
+  const ch=d.playerChanges||{};
+  if(ch.attributes) for(const k in ch.attributes){ const v=num(ch.attributes[k]); if(v) out.push(`${k} ${v>0?'+':''}${v}`); }
+  if(ch.money&&num(ch.money)) out.push(`家财 ${num(ch.money)>0?'+':''}${num(ch.money)} 两`);
+  if(ch.skills) for(const k in ch.skills){ const v=num(ch.skills[k]); if(v) out.push(`技艺·${k} ${v>0?'+':''}${v}`); }
+  if(ch.itemsAdd) for(const c in ch.itemsAdd) for(const it of (ch.itemsAdd[c]||[])) if(it&&it.name) out.push(`得到【${it.name}】`);
+  if(ch.itemsRemove) for(const nm of ch.itemsRemove) out.push(`失去【${nm}】`);
+  for(const u of (d.npcUpdates||[])){
+    if(u['好感度']&&num(u['好感度'])) out.push(`${u.name} 好感 ${num(u['好感度'])>0?'+':''}${num(u['好感度'])}`);
+    if(u['爱恋值']!=null&&num(u['爱恋值'])) out.push(`${u.name} 爱恋 ${num(u['爱恋值'])>0?'+':''}${num(u['爱恋值'])}`);
+    if(u.alive===false) out.push(`${u.name} 亡故`);
+  }
+  for(const nn of (d.newNpcs||[])) if(nn&&nn.name) out.push(`结识新人物【${nn.name}】（${nn.relation||''}）`);
+  return out;
+}
+
+let liveChapter=null;
+function beginChapter(turnNo, dateStr, action){
+  const div=document.createElement('div');
+  div.className='chapter';
+  div.innerHTML=`<div class="chapmark">第 ${turnNo} 回</div><div class="chaptime">${esc(dateStr||'')}</div>
+    ${action?`<div class="action-echo" style="margin-top:20px">➤ ${esc(action)}</div>`:'<div style="height:14px"></div>'}
+    <div class="ntext"><p style="color:var(--ink-soft)">……</p></div>`;
+  $('story').appendChild(div);
+  liveChapter=div;
+  div.scrollIntoView({behavior:'smooth',block:'end'});
+  return div;
+}
+function updateChapterNarrative(text){
+  if(!liveChapter) return;
+  liveChapter.querySelector('.ntext').innerHTML=narrativeHtml(text)||'<p style="color:var(--ink-soft)">……</p>';
+  $('story').scrollTop=$('story').scrollHeight;
+}
+function finishChapter(d){
+  if(!liveChapter) return;
+  liveChapter.querySelector('.chaptime').textContent=d.date||S.date||'';
+  let extra='';
+  extra+=listBlock('人间琐记',d.npcEvents,'');
+  extra+=listBlock('起居注（数值变化）',changeLines(d),'changeblock');
+  extra+=listBlock('江湖风闻',d.rumors,'rumorblock');
+  if(d.gameOver) extra+=`<div class="endingblock"><h4>—— 终 ——</h4><div class="ntext">${narrativeHtml(d.ending||'')}</div></div>`;
+  liveChapter.insertAdjacentHTML('beforeend',extra);
+  liveChapter=null;
+}
+
+function renderOptions(opts){
+  const box=$('choices');
+  box.innerHTML='';
+  if(S.over){ box.innerHTML='<div style="text-align:center;color:#bfa876;padding:8px;letter-spacing:3px">此局已终，可点右上「另起一局」再入江湖</div>'; return; }
+  (opts||[]).forEach((o,i)=>{
+    const b=document.createElement('button');
+    b.className='opt';
+    b.innerHTML=`<span class="num">${i+1}</span>${esc(o.text)}${o.hint?`<span class="hint">└ ${esc(o.hint)}</span>`:''}`;
+    b.onclick=()=>act(o.text);
+    box.appendChild(b);
+  });
+  $('story').scrollTop=$('story').scrollHeight;
+}
+
+/* ================= 流程 ================= */
+function setBusy(b,msg){
+  busy=b;
+  $('loading').classList.toggle('on',b);
+  if(msg) $('loadingText').textContent=msg;
+  $('sendBtn').disabled=b;
+  document.querySelectorAll('.opt').forEach(x=>x.disabled=b);
+}
+
+async function startNewGame(){
+  if(busy) return;
+  $('story').innerHTML='';
+  $('choices').innerHTML='';
+  S=null; localStorage.removeItem(LS_SAVE);
+  setBusy(true,'天地初开，正在铸造你的江湖身世……');
+  beginChapter('壹','',null);
+  try{
+    const d=await llmJSON(initSchemaPrompt(),raw=>{
+      const t=extractPartialField(raw,'opening')||extractPartialField(raw,'backstory');
+      if(t) updateChapterNarrative(t);
+    });
+    applyInit(d);
+    updateChapterNarrative(d.opening);
+    finishChapter({date:S.date,rumors:d.rumors,npcEvents:null});
+    renderPanel();
+    renderOptions(d.options);
+    S.lastOptions=d.options;
+    saveGame();
+    toast('身世已定，江湖路远，好自为之');
+  }catch(e){
+    updateChapterNarrative('（开局失败：'+e.message+'）');
+    liveChapter=null;
+    const retry=document.createElement('button');
+    retry.className='opt'; retry.textContent='⟳ 重新开局';
+    retry.onclick=startNewGame;
+    $('choices').appendChild(retry);
+  }
+  setBusy(false);
+}
+
+async function act(action){
+  if(busy||!S||S.over) return;
+  action=String(action||'').trim();
+  if(!action) return;
+  $('freeInput').value='';
+  setDrawer(false); // 手机上收起抽屉，专心看剧情
+  $('choices').innerHTML='';
+  setBusy(true,'笔走龙蛇，正在推演江湖……');
+  beginChapter(cnNum(S.turn),S.date,action);
+  try{
+    const d=await llmJSON(turnPrompt(action),raw=>{
+      const t=extractPartialField(raw,'narrative');
+      if(t) updateChapterNarrative(t);
+    });
+    updateChapterNarrative(d.narrative);
+    applyTurn(d,action);
+    finishChapter(d);
+    renderPanel();
+    renderOptions(d.options);
+    S.lastOptions=d.options;
+    saveGame();
+  }catch(e){
+    updateChapterNarrative('（此回推演失败：'+e.message+'）');
+    liveChapter=null;
+    const retry=document.createElement('button');
+    retry.className='opt'; retry.innerHTML='<span class="num">⟳</span>重试此行动：'+esc(action);
+    retry.onclick=()=>{ retry.remove(); document.querySelectorAll('#story .chapter:last-child').forEach(x=>x.remove()); act(action); };
+    $('choices').appendChild(retry);
+  }
+  setBusy(false);
+}
+
+const CN='零壹贰叁肆伍陆柒捌玖';
+function cnNum(n){
+  if(n<=10) return ['零','壹','贰','叁','肆','伍','陆','柒','捌','玖','拾'][n];
+  if(n<20) return '拾'+CN[n%10];
+  if(n<100) return CN[Math.floor(n/10)]+'拾'+(n%10?CN[n%10]:'');
+  return String(n);
+}
+
+/* ================= 存档 ================= */
+function saveGame(){ if(S) localStorage.setItem(LS_SAVE,JSON.stringify(S)); }
+function loadGame(){
+  const raw=localStorage.getItem(LS_SAVE);
+  if(!raw) return false;
+  try{ S=JSON.parse(raw); }catch(_){ return false; }
+  if(!S||!S.player) return false;
+  // 重建界面
+  $('story').innerHTML='';
+  const div=document.createElement('div');
+  div.className='chapter';
+  div.innerHTML=`<div class="chapmark">存档已续</div><div class="chaptime">${esc(S.date)}</div><div class="ntext" style="margin-top:20px">
+    ${S.recent.map(r=>`<div class="action-echo">➤ ${esc(r.action)}</div>${narrativeHtml(r.narrative)}`).join('')||'<p>旧事历历，江湖路还长。</p>'}</div>`;
+  $('story').appendChild(div);
+  renderPanel();
+  renderOptions(S.lastOptions||[]);
+  return true;
+}
+
+/* ================= 界面事件 ================= */
+document.querySelectorAll('#tabs button').forEach(b=>b.onclick=()=>{
+  document.querySelectorAll('#tabs button').forEach(x=>x.classList.remove('on'));
+  document.querySelectorAll('.tabpane').forEach(x=>x.classList.remove('on'));
+  b.classList.add('on');
+  $('tab-'+b.dataset.tab).classList.add('on');
+});
+function setDrawer(open){
+  $('sidebar').classList.toggle('open',open);
+  $('sideMask').classList.toggle('on',open);
+}
+$('panelToggle').onclick=()=>setDrawer(!$('sidebar').classList.contains('open'));
+$('sideMask').onclick=()=>setDrawer(false);
+$('sendBtn').onclick=()=>act($('freeInput').value);
+$('freeInput').addEventListener('keydown',e=>{ if(e.key==='Enter') act($('freeInput').value); });
+$('btnNew').onclick=()=>{ if(!S||confirm('另起一局将覆盖当前进度（可先点「存档」导出）。确定？')) startNewGame(); };
+$('btnExport').onclick=()=>{
+  if(!S){ toast('尚无进度可存'); return; }
+  const blob=new Blob([JSON.stringify(S,null,1)],{type:'application/json'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download=`江湖存档_${S.player.name}_第${S.turn}回.json`;
+  a.click();
+};
+$('btnImport').onclick=()=>$('importFile').click();
+$('importFile').onchange=e=>{
+  const f=e.target.files[0]; if(!f) return;
+  const r=new FileReader();
+  r.onload=()=>{
+    try{
+      const d=JSON.parse(r.result);
+      if(!d.player) throw 0;
+      S=d; saveGame(); loadGame(); toast('读档成功，续写江湖');
+    }catch(_){ toast('存档文件无法识别'); }
+  };
+  r.readAsText(f);
+  e.target.value='';
+};
+
+function openSettings(){
+  $('cfgBase').value=cfg.base; $('cfgKey').value=cfg.key; $('cfgModel').value=cfg.model;
+  $('cfgThink').value=cfg.think?'on':'off';
+  $('settingsMask').classList.add('on');
+}
+$('btnSettings').onclick=openSettings;
+$('cfgCancel').onclick=()=>$('settingsMask').classList.remove('on');
+$('cfgSave').onclick=()=>{
+  cfg={base:$('cfgBase').value.trim()||'https://api.deepseek.com', key:$('cfgKey').value.trim(), model:$('cfgModel').value.trim()||'deepseek-v4-flash', think:$('cfgThink').value==='on'};
+  localStorage.setItem(LS_CFG,JSON.stringify(cfg));
+  $('settingsMask').classList.remove('on');
+  toast('设置已保存');
+  if(!S&&cfg.key) startNewGame();
+};
+$('npcMask').onclick=e=>{ if(e.target===$('npcMask')) $('npcMask').classList.remove('on'); };
+$('settingsMask').onclick=e=>{ if(e.target===$('settingsMask')&&cfg.key) $('settingsMask').classList.remove('on'); };
+
+let toastTimer=null;
+function toast(msg){
+  const t=$('toast');
+  t.textContent=msg; t.style.display='block';
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>t.style.display='none',3200);
+}
+
+/* ================= 启动 ================= */
+(function boot(){
+  if(loadGame()){ toast('已载入上次进度'); return; }
+  if(!cfg.key){ openSettings(); return; }
+  startNewGame();
+})();
+</script>
+</body>
+</html>
