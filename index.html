@@ -138,11 +138,12 @@ body{
   background:rgba(156,47,36,.05);border-left:3px solid var(--accent-soft);border-radius:0 6px 6px 0}
 .say .speaker{flex-shrink:0;background:var(--accent);color:#f5e9d0;border-radius:4px;
   padding:1px 8px;font-size:13px;letter-spacing:1px;margin-top:3px;white-space:nowrap}
-.say .line{font-size:16px;line-height:1.85;text-align:justify}
+.say .line{font-size:16px;line-height:1.85;text-align:left}
 @media (max-width:900px){
   .say{padding:5px 8px;margin:6px 0 6px 2px;gap:6px}
   .say .speaker{font-size:12px;padding:1px 6px;margin-top:2px}
   .say .line{font-size:15px;line-height:1.8}
+  .ntext p{text-align:left} /* 窄屏两端对齐会拉大字距，改左对齐 */
 }
 .subblock{margin-top:14px;border-top:1px dashed var(--paper-edge);padding-top:10px}
 .subblock h4{font-size:14px;color:var(--gold);letter-spacing:2px;margin-bottom:6px}
@@ -420,8 +421,8 @@ function newStateShell(){
 const WORLD_RULES = `你是一个武侠文字游戏引擎。世界观为最通俗的武侠江湖，没有朝廷官家；有门派、家族、隐世高人、武功秘籍、比武、恩怨情仇、拜师收徒、绝世神兵、蛊毒。
 铁律：
 - 严禁出现科幻、魔幻、玄幻、量子、机甲、时空穿梭内容；不得出现不符合古代背景的称谓、事物和剧情；不要有太多阴谋暗线。
-- 文风：白话为主——叙述和对话都用通俗易懂的现代白话，像讲故事一样好读，不要文言文、不要之乎者也、不要生僻字词；但武侠味的元素保留：人物称呼用江湖叫法（少侠、姑娘、掌门、师兄、前辈、阁下等），武功、招式、门派、兵器一律用武侠风格的名字。人物言行须符合其年龄、身份和性格。除JSON键名外一律使用中文。
-- 对话排版（必须遵守）：所有人物对话用「」包裹，严禁用其他引号；每句对话单独成行（用\\n分隔），格式为“说话人：「对话内容」”，如：柳掌柜：「客官里边请。」对话后的动作神态可跟在同一行「」之后；纯叙述旁白另起一行，不要把对话夹在大段叙述中间。
+- 文风：参考金庸小说的笔法——通俗流畅的白话，叙事干净利落，一看就懂；不要文言腔，不要辞藻堆砌，不要长句套长句。对话生动自然、符合人物身份脾气。称呼用江湖叫法（少侠、姑娘、掌门、师兄、前辈、阁下等），武功、招式、门派、兵器用武侠风格的名字。人物言行须符合其年龄、身份和性格。除JSON键名外一律使用中文。
+- 对话排版（必须严格遵守）：所有人物对话用「」包裹，严禁用其他引号。每句对话单独成一行（用\\n分隔），一行只能有一个人说的话，格式为“姓名：「对话」”——冒号前只写说话人的姓名（不超过4个字），绝不能写动作、神态或任何描述；说完话之后的简短动作可以跟在「」后面。旁白叙述单独成行，严禁把多个人的对话或大段叙述挤在同一行。
 - 缩骨功属于武功功法，不属于技能。
 属性规则（数值一律0-100）：
 - 谈吐：社交能力，越高越能取信于人、说服别人。才学：文化水平，读书写作可提升。颖悟：先天悟性，终生不变。武功：越高越强，练功可提升，中毒受伤会降低，伤愈恢复；可传功给别人（自己失去这部分武功值）；武功大于90可废掉武功小于75者的武功。
@@ -467,6 +468,7 @@ ${JSON_RULE}
 "npcs":[${NPC_SCHEMA}],
 "date":"开局时间，干支纪年加季节，如：甲子年 暮春",
 "opening":"开场剧情",
+"scene":{"location":"开场结束时主角所在的具体地点","unresolved":["开场留下的悬念或待办的事"]},
 "rumors":["江湖风闻一","江湖风闻二"],
 "options":[{"text":"选项文字","hint":"可能的后果，未知则写？？？"}]}
 options给3至5个。`;
@@ -480,6 +482,7 @@ function turnPrompt(action){
   return `${WORLD_RULES}
 
 【当前时间】${S.date}（第${S.turn}回合）
+【当前场景】${S.scene?`主角现在${S.scene.location||'未知地点'}。未了结的事：${(S.scene.unresolved||[]).join('；')||'无'}`:'见最近剧情'}
 【主角面板】${JSON.stringify(p)}
 【在场人物关系】${JSON.stringify(npcBrief)}
 【前情提要】
@@ -490,7 +493,8 @@ ${recents}
 【玩家本回合行动】${action}
 
 请推演本回合。要求：
-- 剧情250-500字，白话为主、称呼和招式名保留武侠味，所有对话必须用「」包裹。时间自然流动。
+- 剧情250-500字。剧情必须紧接上一回合结尾：地点、在场人物、正在发生的事都要衔接上，除非玩家的行动明确是转场离开；时间流动要合理，不要无故跳过大段时间，也不要凭空冒出前文没铺垫过的人和事。
+- 本回合结束时，把主角所在的具体地点和尚未了结的事写进scene字段（下一回合会据此接续）。
 - 数值变化必须符合规则并如实写入playerChanges与npcUpdates（全部用增减量，如+5、-10；年龄用绝对值）。
 - 初次登场的新NPC写入newNpcs（完整面板，不得简化）。已有NPC的变化写入npcUpdates。
 - npcEvents写1-3条相识NPC之间的互动琐事或人生进展（嫁娶、交恶、生死等，须有因果）。
@@ -500,7 +504,7 @@ ${recents}
 
 ${JSON_RULE}
 输出格式：
-{"narrative":"本回合剧情","summary":"一句话概括本回合（30字内）","date":"更新后的时间","playerChanges":{"age":null或新年龄,"attributes":{"武功":0},"money":0,"faction":null,"skills":{"医疗":0},"personalityAdd":[],"statusAdd":[],"statusRemove":[],"itemsAdd":{"武器":[],"秘籍":[],"医药":[],"毒药":[],"杂书":[],"其他":[]},"itemsRemove":[]},
+{"narrative":"本回合剧情","summary":"一句话概括本回合（30字内）","date":"更新后的时间","scene":{"location":"主角当前所在的具体地点","unresolved":["尚未了结的事或悬而未决的线索"]},"playerChanges":{"age":null或新年龄,"attributes":{"武功":0},"money":0,"faction":null,"skills":{"医疗":0},"personalityAdd":[],"statusAdd":[],"statusRemove":[],"itemsAdd":{"武器":[],"秘籍":[],"医药":[],"毒药":[],"杂书":[],"其他":[]},"itemsRemove":[]},
 "npcUpdates":[{"name":"","好感度":0,"爱恋值":null,"relation":null,"alive":true,"identity":null,"faction":null,"notes":null,"武功":0,"age":null}],
 "newNpcs":[${NPC_SCHEMA}],
 "npcEvents":[],"rumors":[],
@@ -519,7 +523,7 @@ async function callLLM(prompt, onPartial){
   const body = {
     model: cfg.model||'deepseek-v4-flash',
     messages:[{role:'user',content:prompt}],
-    temperature:1.25,
+    temperature:1.1,
     max_tokens:12000,
     stream:true,
     response_format:{type:'json_object'}
@@ -654,6 +658,7 @@ function applyInit(d){
   for(const k of ['谈吐','才学','颖悟','武功']) p.attributes[k]=clamp(num(p.attributes[k]));
   S.player = p;
   S.npcs = (d.npcs||[]).map(normNpc);
+  S.scene = d.scene||null;
   S.date = d.date||'';
   S.turn = 1;
   lastDeltas={};
@@ -714,9 +719,10 @@ function applyTurn(d, action){
     if(nn&&nn.name&&!S.npcs.find(x=>x.name===nn.name)) S.npcs.push(normNpc(nn));
   }
   if(d.date) S.date=d.date;
+  if(d.scene&&d.scene.location) S.scene=d.scene;
   S.history.push({turn:S.turn, action, summary:d.summary||''});
   S.recent.push({action, narrative:d.narrative||''});
-  while(S.recent.length>2) S.recent.shift();
+  while(S.recent.length>4) S.recent.shift();
   S.turn++;
   if(d.gameOver){ S.over=true; S.ending=d.ending||''; }
   saveGame();
@@ -838,11 +844,12 @@ function narrativeHtml(text){
   const hl=s=>s.replace(/「([^」]*)」/g,'<q>$1</q>').replace(/“([^”]*)”/g,'<q>$1</q>');
   return String(text||'').split(/\n+/).filter(s=>s.trim()).map(s=>{
     s=s.trim();
-    // 剧本式对话行：说话人：「……」（后面可跟动作描写）
-    const m=s.match(/^([一-龥A-Za-z0-9·]{1,10})[：:]\s*(「.*)$/);
-    if(m) return `<div class="say"><span class="speaker">${esc(m[1])}</span><span class="line">${hl(esc(m[2]))}</span></div>`;
-    // 无名对话行：整行以「开头
-    if(/^「/.test(s)) return `<div class="say"><span class="line">${hl(esc(s))}</span></div>`;
+    // 剧本式对话行：人名（≤4字）：「一句话」+ 简短动作。行内只许一对「」，否则按普通段落处理
+    const quoteCount=(s.match(/「/g)||[]).length;
+    const m=s.match(/^([一-龥A-Za-z·]{1,4})[：:]\s*(「[^」]*」)(.{0,50})$/);
+    if(m&&quoteCount===1) return `<div class="say"><span class="speaker">${esc(m[1])}</span><span class="line"><q>${esc(m[2].slice(1,-1))}</q>${esc(m[3])}</span></div>`;
+    const m2=s.match(/^(「[^」]*」)(.{0,50})$/);
+    if(m2&&quoteCount===1) return `<div class="say"><span class="line"><q>${esc(m2[1].slice(1,-1))}</q>${esc(m2[2])}</span></div>`;
     return `<p>${hl(esc(s))}</p>`;
   }).join('');
 }
