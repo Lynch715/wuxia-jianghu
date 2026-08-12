@@ -132,7 +132,7 @@ body{
 }
 .ntext{margin-top:14px}
 .ntext p{line-height:2.0;font-size:16.5px;text-align:justify;text-indent:2em;margin-bottom:8px}
-.ntext p q{color:var(--accent);quotes:"「" "」"}
+.ntext p q{color:var(--accent);quotes:"「" "」";font-weight:600}
 .subblock{margin-top:14px;border-top:1px dashed var(--paper-edge);padding-top:10px}
 .subblock h4{font-size:14px;color:var(--gold);letter-spacing:2px;margin-bottom:6px}
 .subblock li{list-style:none;font-size:14.5px;line-height:1.9;color:var(--ink-soft);padding-left:1.2em;text-indent:-1.2em}
@@ -142,15 +142,15 @@ body{
 .endingblock{border:2px solid var(--accent);border-radius:8px;padding:14px 18px;margin-top:16px;background:rgba(156,47,36,.06)}
 .endingblock h4{color:var(--accent);letter-spacing:4px;font-size:17px;margin-bottom:8px;text-align:center}
 /* 选项 */
-#choices{padding:8px 8% 4px;display:flex;flex-direction:column;gap:6px;max-height:30vh;overflow-y:auto}
+#choices{padding:6px 8% 3px;display:flex;flex-direction:column;gap:4px;max-height:26vh;overflow-y:auto}
 .opt{
-  text-align:left;background:linear-gradient(170deg,#efe5cf,#e0d0ac);border:1px solid #b8a478;border-radius:6px;
-  padding:7px 12px;font-family:inherit;font-size:14px;color:var(--ink);cursor:pointer;transition:.15s;
-  box-shadow:0 2px 8px rgba(0,0,0,.3);line-height:1.5;
+  text-align:left;background:linear-gradient(170deg,#efe5cf,#e0d0ac);border:1px solid #b8a478;border-radius:5px;
+  padding:5px 10px;font-family:inherit;font-size:13px;color:var(--ink);cursor:pointer;transition:.15s;
+  box-shadow:0 1px 5px rgba(0,0,0,.3);line-height:1.45;
 }
 .opt:hover{transform:translateX(6px);border-color:var(--accent);box-shadow:0 3px 12px rgba(0,0,0,.4)}
-.opt .num{display:inline-block;background:var(--accent);color:#f5e9d0;width:18px;height:18px;border-radius:50%;text-align:center;line-height:18px;font-size:11px;margin-right:7px}
-.opt .hint{display:block;font-size:12px;color:var(--ink-soft);margin-top:2px;padding-left:25px}
+.opt .num{display:inline-block;background:var(--accent);color:#f5e9d0;width:16px;height:16px;border-radius:50%;text-align:center;line-height:16px;font-size:10px;margin-right:6px}
+.opt .hint{display:block;font-size:11px;color:var(--ink-soft);margin-top:1px;padding-left:22px}
 .opt:disabled{opacity:.5;cursor:default;transform:none}
 /* 输入 */
 #inputbar{display:flex;gap:10px;padding:12px 8% 18px}
@@ -250,11 +250,11 @@ body{
   .ntext p{font-size:15.5px;line-height:1.95;margin-bottom:7px}
   .subblock li{font-size:13.5px}
   /* 选项与输入：拇指友好 */
-  #choices{padding:6px 3.5% 3px;max-height:28vh;gap:5px;-webkit-overflow-scrolling:touch}
-  .opt{padding:8px 10px;font-size:13.5px;border-radius:7px}
+  #choices{padding:5px 3.5% 2px;max-height:24vh;gap:4px;-webkit-overflow-scrolling:touch}
+  .opt{padding:6px 9px;font-size:12.5px;border-radius:6px}
   .opt:hover{transform:none}
   .opt:active{transform:scale(.985);border-color:var(--accent)}
-  .opt .hint{font-size:11.5px}
+  .opt .hint{font-size:10.5px}
   #loading{padding:6px 3.5%;font-size:13px}
   #inputbar{
     padding:10px 3.5% calc(12px + env(safe-area-inset-bottom));gap:8px;
@@ -409,7 +409,7 @@ function newStateShell(){
 const WORLD_RULES = `你是一个武侠文字游戏引擎。世界观为最通俗的武侠江湖，没有朝廷官家；有门派、家族、隐世高人、武功秘籍、比武、恩怨情仇、拜师收徒、绝世神兵、蛊毒。
 铁律：
 - 严禁出现科幻、魔幻、玄幻、量子、机甲、时空穿梭内容；不得出现不符合古代背景的称谓、事物和剧情；不要有太多阴谋暗线。
-- 文风：用通俗易懂的现代大白话讲故事，对话口语化、自然，像朋友聊天一样好读；不要文言文、不要之乎者也、不要生僻字词和骈句，武侠味靠情节和人物体现，不靠拽文。人物言行须符合其年龄、身份和性格。除JSON键名外一律使用中文。
+- 文风：白话为主——叙述和对话都用通俗易懂的现代白话，像讲故事一样好读，不要文言文、不要之乎者也、不要生僻字词；但武侠味的元素保留：人物称呼用江湖叫法（少侠、姑娘、掌门、师兄、前辈、阁下等），武功、招式、门派、兵器一律用武侠风格的名字。人物言行须符合其年龄、身份和性格。所有人物对话必须用「」包裹，严禁用其他引号。除JSON键名外一律使用中文。
 - 缩骨功属于武功功法，不属于技能。
 属性规则（数值一律0-100）：
 - 谈吐：社交能力，越高越能取信于人、说服别人。才学：文化水平，读书写作可提升。颖悟：先天悟性，终生不变。武功：越高越强，练功可提升，中毒受伤会降低，伤愈恢复；可传功给别人（自己失去这部分武功值）；武功大于90可废掉武功小于75者的武功。
@@ -478,7 +478,7 @@ ${recents}
 【玩家本回合行动】${action}
 
 请推演本回合。要求：
-- 剧情250-500字，大白话，好读易懂，对话用「」。时间自然流动。
+- 剧情250-500字，白话为主、称呼和招式名保留武侠味，所有对话必须用「」包裹。时间自然流动。
 - 数值变化必须符合规则并如实写入playerChanges与npcUpdates（全部用增减量，如+5、-10；年龄用绝对值）。
 - 初次登场的新NPC写入newNpcs（完整面板，不得简化）。已有NPC的变化写入npcUpdates。
 - npcEvents写1-3条相识NPC之间的互动琐事或人生进展（嫁娶、交恶、生死等，须有因果）。
@@ -824,7 +824,9 @@ function showNpc(n){
 /* 剧情渲染 */
 function narrativeHtml(text){
   return String(text||'').split(/\n+/).filter(s=>s.trim()).map(s=>{
-    const withQ=esc(s.trim()).replace(/「([^」]*)」/g,'<q>$1</q>');
+    const withQ=esc(s.trim())
+      .replace(/「([^」]*)」/g,'<q>$1</q>')
+      .replace(/“([^”]*)”/g,'<q>$1</q>'); // 模型偶尔用中文引号，也一并高亮
     return `<p>${withQ}</p>`;
   }).join('');
 }
