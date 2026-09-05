@@ -551,7 +551,8 @@ function newStateShell(){
     world:{factions:[],ranking:[],events:[]},
     quests:[], achievements:[],
     stats:{duelWins:0,duelLosses:0,kills:0,spares:0,escapes:0,secrets:0,talks:0,questsDone:0},
-    lastWorldEventTurn:-9, lastOptions:[]
+    lastWorldEventTurn:-9, lastOptions:[],
+    chapters:[], pending:null, duelState:null, convoState:null
   };
 }
 // 旧存档升级
@@ -569,6 +570,7 @@ function migrate(s){
     for(const n of s.npcs){ if(n.secret===undefined) n.secret=''; if(!n.mood) n.mood='平静'; if(!n.signature) n.signature=''; if(!n.memory) n.memory=[]; if(n.secretKnown===undefined) n.secretKnown=false; }
     s.v=2;
   }
+  if(!s.chapters) s.chapters=[];
   return s;
 }
 
@@ -1229,6 +1231,44 @@ function startDuel(opp, o){
   $('duelLog').innerHTML=`<div class="r sys">${esc(opp.name)}${duel.oppW>duel.pW+15?'气度沉凝，显然远胜于你':duel.oppW<duel.pW-15?'看似不足为惧，但不可轻敌':'与你旗鼓相当，胜负难料'}。你的武功${duel.pW}（含兵器加成），对方约${duel.oppW}。</div>`;
   renderDuel();
   $('duelMask').classList.add('on');
+  snapshotDuel();
+}
+// 比武进行中的状态写进存档，关页面也不丢
+function snapshotDuel(){
+  if(!S) return;
+  if(!duel){ S.duelState=null; return; }
+  const d=Object.assign({},duel); d.oppName=duel.opp.name; delete d.opp; d.logHtml=$('duelLog').innerHTML;
+  S.duelState=d;
+}
+function restoreDuel(){
+  const st=S.duelState; if(!st) return;
+  const opp=findNpc(st.oppName); if(!opp){ S.duelState=null; saveGame(); return; }
+  duel=Object.assign({},st,{opp}); delete duel.oppName; const lh=duel.logHtml; delete duel.logHtml;
+  $('duelTitle').textContent=(duel.friendly?'切磋':'比武')+' · '+opp.name;
+  $('duelSub').textContent=(duel.reason||'')+(duel.lethal?'　⚠ 对方不会留手，此战可能致命':'　点到为止');
+  $('duelLog').innerHTML=lh||'';
+  const el=document.createElement('div'); el.className='r sys'; el.textContent='（接着上次未打完的比武）'; $('duelLog').appendChild(el);
+  renderDuel(); $('duelMask').classList.add('on'); $('duelLog').scrollTop=$('duelLog').scrollHeight;
+  if(duel.over){
+    if(duel.dead) showDuelDeath();
+    else if(duel.resultText) showDuelGo();
+    else if(duel.result==='win') showWinChoice();
+    else { duel.resultText='比武结束。'; showDuelGo(); }
+  }
+}
+function snapshotConvo(){
+  if(!S) return;
+  if(!convo){ S.convoState=null; return; }
+  S.convoState={npcName:convo.npc.name,msgs:convo.msgs,favorTotal:convo.favorTotal,summary:convo.summary||'',secretRevealed:!!convo.secretRevealed,html:$('convoMsgs').innerHTML};
+}
+function restoreConvo(){
+  const st=S.convoState; if(!st) return;
+  const npc=findNpc(st.npcName); if(!npc||!npc.alive){ S.convoState=null; saveGame(); return; }
+  convo={npc,msgs:st.msgs||[],favorTotal:st.favorTotal||0,summary:st.summary||'',giftMode:false,secretRevealed:!!st.secretRevealed};
+  renderConvoHead();
+  $('convoMsgs').innerHTML=(st.html||'')+`<div class="bub sys">（接着上次没说完的话）</div>`;
+  $('convoGift').style.display='none'; $('convoText').value='';
+  $('convoMask').classList.add('on'); $('convoMsgs').scrollTop=$('convoMsgs').scrollHeight;
 }
 function renderDuel(){
   const p=S.player, o=duel.opp;
@@ -1322,7 +1362,7 @@ function duelRound(pk){
   const el=document.createElement('div'); el.className='r';
   el.innerHTML=`<span class="rn">第${cnNum(duel.round)}回合</span>${esc(parts.join(''))} ${pDmg?`<span class="dmg">你 -${pDmg}</span>`:''} ${oDmg?`<span class="dmg">${esc(him)} -${oDmg}</span>`:''}<span style="color:#a89a80;font-size:12px"> 〔骰 ${pr} : ${or}〕</span>`;
   $('duelLog').appendChild(el); $('duelLog').scrollTop=$('duelLog').scrollHeight;
-  renderDuel();
+  renderDuel(); snapshotDuel(); saveGame();
   if(special==='escape') return endDuel('escape');
   if(special==='oppEscape') return endDuel('oppEscape');
   if(duel.pHp<=0) return endDuel('lose');
@@ -1331,29 +1371,44 @@ function duelRound(pk){
   if(duel.oHp<=25&&!duel.profile.agg&&duel.opp.alignment!=='邪道'&&Math.random()<0.4) return endDuel('oppYield');
   if(duel.friendly&&duel.oHp<=35&&Math.random()<0.5) return endDuel('oppYield');
 }
+function duelSys(t){ const el=document.createElement('div'); el.className='r sys'; el.textContent=t; $('duelLog').appendChild(el); $('duelLog').scrollTop=$('duelLog').scrollHeight; }
+// 比武结束后的「续写此战」面板（读档恢复时也用它）
+function showDuelGo(){
+  $('duelActions').innerHTML=`<div class="duelend"><p>${esc(duel.resultText)}</p><button class="mbtn primary" id="duelGo">续写此战</button></div>`;
+  $('duelGo').onclick=()=>{ $('duelMask').classList.remove('on'); afterDuel(); };
+}
+function showDuelDeath(){
+  $('duelActions').innerHTML=`<div class="duelend"><div class="verdict">殒命</div><p>${esc(duel.resultText)}</p><button class="mbtn primary" id="duelGo">盖棺定论</button></div>`;
+  $('duelGo').onclick=()=>{ $('duelMask').classList.remove('on'); finalizeDuelHp(); S.player.hp=0; S.duelState=null; S.recent.push({action:duel.action,narrative:'【比武实录】'+duel.log.map(r=>r.plain).join('\n')+'\n'+duel.resultText}); gameOverFlow(duel.resultText); };
+}
+// 胜后处置面板（留手/重创/杀）
+function showWinChoice(){
+  const him=duel.opp.name, act=$('duelActions');
+  act.innerHTML=`<div class="duelend"><div class="verdict">胜</div><p>${esc(him)}倒在你脚下，生死只在你一念之间。</p>
+    <div class="mbtnrow"><button class="mbtn" id="dSpare">留手放过</button><button class="mbtn gold" id="dMaim">重创废其武功</button><button class="mbtn primary" id="dKill">杀</button></div></div>`;
+  const finish=txt=>{ duel.resultText=txt; snapshotDuel(); saveGame(); showDuelGo(); };
+  $('dSpare').onclick=()=>{ S.stats.spares++; S.player['侠名']=clamp(S.player['侠名']+2); finish(`主角获胜，留手放过了${him}。`); };
+  $('dMaim').onclick=()=>{ duel.opp['武功']=clamp(duel.opp['武功']-rnd(15,30)); duel.opp.notes=(duel.opp.notes?duel.opp.notes+'；':'')+`被${S.player.name}打成重伤，武功大损`; duel.opp['好感度']=clamp(duel.opp['好感度']-30); S.player['恶名']=clamp(S.player['恶名']+5); finish(`主角获胜，重创${him}并废了其大半武功（对方武功大降，结下深仇）。`); };
+  $('dKill').onclick=()=>{ duel.opp.alive=false; S.stats.kills++; const r=(S.world.ranking||[]).find(x=>x.name===duel.opp.name); if(r) r.alive=false; S.player['恶名']=clamp(S.player['恶名']+(duel.opp.alignment==='邪道'?4:15)); finish(`主角获胜，并杀死了${him}。`); };
+}
 function endDuel(kind){
   duel.over=true; duel.result=kind;
-  const him=duel.opp.name, act=$('duelActions');
-  const sys=t=>{ const el=document.createElement('div'); el.className='r sys'; el.textContent=t; $('duelLog').appendChild(el); $('duelLog').scrollTop=$('duelLog').scrollHeight; };
-  const finish=(txt,after)=>{ duel.resultText=txt; act.innerHTML=`<div class="duelend"><p>${esc(txt)}</p><button class="mbtn primary" id="duelGo">续写此战</button></div>`; $('duelGo').onclick=()=>{ $('duelMask').classList.remove('on'); after&&after(); afterDuel(); }; };
+  const him=duel.opp.name;
+  const finish=txt=>{ duel.resultText=txt; snapshotDuel(); saveGame(); showDuelGo(); };
   if(kind==='win'){
     S.stats.duelWins++;
-    sys(`${him}再也站不起来了。`);
-    if(duel.friendly){ return finish(`主角获胜，切磋点到为止，${him}认栽。`,()=>{S.stats.spares++;}); }
-    act.innerHTML=`<div class="duelend"><div class="verdict">胜</div><p>${esc(him)}倒在你脚下，生死只在你一念之间。</p>
-      <div class="mbtnrow"><button class="mbtn" id="dSpare">留手放过</button><button class="mbtn gold" id="dMaim">重创废其武功</button><button class="mbtn primary" id="dKill">杀</button></div></div>`;
-    $('dSpare').onclick=()=>{ S.stats.spares++; S.player['侠名']=clamp(S.player['侠名']+2); finish(`主角获胜，留手放过了${him}。`); };
-    $('dMaim').onclick=()=>{ duel.opp['武功']=clamp(duel.opp['武功']-rnd(15,30)); duel.opp.notes=(duel.opp.notes?duel.opp.notes+'；':'')+`被${S.player.name}打成重伤，武功大损`; duel.opp['好感度']=clamp(duel.opp['好感度']-30); S.player['恶名']=clamp(S.player['恶名']+5); finish(`主角获胜，重创${him}并废了其大半武功（对方武功大降，结下深仇）。`); };
-    $('dKill').onclick=()=>{ duel.opp.alive=false; S.stats.kills++; const r=(S.world.ranking||[]).find(x=>x.name===duel.opp.name); if(r) r.alive=false; S.player['恶名']=clamp(S.player['恶名']+(duel.opp.alignment==='邪道'?4:15)); finish(`主角获胜，并杀死了${him}。`); };
-    return;
+    duelSys(`${him}再也站不起来了。`);
+    if(duel.friendly){ S.stats.spares++; return finish(`主角获胜，切磋点到为止，${him}认栽。`); }
+    snapshotDuel(); saveGame();
+    return showWinChoice();
   }
-  if(kind==='oppYield'){ S.stats.duelWins++; sys(`${him}退开一步，拱手认输。`); return finish(`${him}不敌，主动认输，主角获胜。`); }
-  if(kind==='oppEscape'){ sys(`${him}逃了。`); return finish(`${him}不敌，趁隙逃走，主角未能留下他。`); }
-  if(kind==='escape'){ S.stats.escapes++; sys('你逃出了战圈。'); return finish(`主角不敌，成功脱身逃走，${him}未能追上。`); }
-  if(kind==='yield'){ S.stats.duelLosses++; sys('你放下兵器，认输。'); const k=duel.lethal&&(duel.opp.alignment==='邪道'||duel.opp['好感度']<=15)&&Math.random()<0.35; if(k) return duelDeath(`主角认输求饶，${him}却不肯放过，一招取了性命。`); return finish(`主角认输，${him}接受了，主角保住性命但颜面尽失。`); }
+  if(kind==='oppYield'){ S.stats.duelWins++; duelSys(`${him}退开一步，拱手认输。`); return finish(`${him}不敌，主动认输，主角获胜。`); }
+  if(kind==='oppEscape'){ duelSys(`${him}逃了。`); return finish(`${him}不敌，趁隙逃走，主角未能留下他。`); }
+  if(kind==='escape'){ S.stats.escapes++; duelSys('你逃出了战圈。'); return finish(`主角不敌，成功脱身逃走，${him}未能追上。`); }
+  if(kind==='yield'){ S.stats.duelLosses++; duelSys('你放下兵器，认输。'); const k=duel.lethal&&(duel.opp.alignment==='邪道'||duel.opp['好感度']<=15)&&Math.random()<0.35; if(k) return duelDeath(`主角认输求饶，${him}却不肯放过，一招取了性命。`); return finish(`主角认输，${him}接受了，主角保住性命但颜面尽失。`); }
   if(kind==='lose'){
     S.stats.duelLosses++;
-    sys('你倒下了，眼前一片昏黑……');
+    duelSys('你倒下了，眼前一片昏黑……');
     let kill=0.05;
     if(duel.opp.alignment==='邪道') kill+=0.35;
     if(duel.opp['好感度']<=15) kill+=0.3;
@@ -1369,9 +1424,8 @@ function endDuel(kind){
   }
 }
 function duelDeath(txt){
-  duel.resultText=txt;
-  $('duelActions').innerHTML=`<div class="duelend"><div class="verdict">殒命</div><p>${esc(txt)}</p><button class="mbtn primary" id="duelGo">盖棺定论</button></div>`;
-  $('duelGo').onclick=()=>{ $('duelMask').classList.remove('on'); finalizeDuelHp(); S.player.hp=0; S.recent.push({action:duel.action,narrative:'【比武实录】'+duel.log.map(r=>r.plain).join('\n')+'\n'+txt}); gameOverFlow(txt); };
+  duel.resultText=txt; duel.dead=true; snapshotDuel(); saveGame();
+  showDuelDeath();
 }
 function finalizeDuelHp(){ S.player.hp=clamp(duel.pHp,0,100); S.player.status=S.player.status.filter(t=>t!=='重伤'); if(S.player.hp<30&&S.player.hp>0) S.player.status.unshift('重伤'); }
 async function afterDuel(){
@@ -1381,7 +1435,7 @@ async function afterDuel(){
   const judge=duel.judge||{fate:d20(),check:null,worldEvent:null};
   judge.duel=true;
   const dl=duel;
-  duel=null;
+  duel=null; S.duelState=null; saveGame();
   await runTurn(dl.action, judge, {duelData:dl});
 }
 
@@ -1397,6 +1451,7 @@ function openConvo(npc){
   $('convoGift').style.display='none';
   $('convoText').value='';
   $('convoMask').classList.add('on');
+  snapshotConvo(); saveGame();
   setTimeout(()=>$('convoText').focus(),50);
 }
 function renderConvoHead(){
@@ -1433,7 +1488,7 @@ async function convoSend(text, gift){
     if(d.mood) n.mood=d.mood;
     if(d.revealSecret&&!n.secretKnown){ n.secretKnown=true; convo.secretRevealed=true; S.stats.secrets++; convoBubble(`✦ 你探知了${esc(n.name)}的秘密：${esc(n.secret)}`,'sys'); }
     if(d.summary) convo.summary=d.summary;
-    renderConvoHead(); renderPeople(); saveGame();
+    renderConvoHead(); renderPeople(); snapshotConvo(); saveGame();
     if(d.endTalk){ convoBubble(`${esc(n.name)}不愿再谈，这场对话到此为止。`,'sys'); setTimeout(()=>endConvo(),900); }
   }catch(e){
     wait.innerHTML='（对话失败：'+esc(e.message)+'）'; convo.msgs.pop();
@@ -1445,6 +1500,7 @@ function endConvo(){
   if(!convo) return;
   const n=convo.npc;
   $('convoMask').classList.remove('on');
+  S.convoState=null;
   if(convo.msgs.length>=2){
     S.stats.talks++;
     const sum=convo.summary||('与'+n.name+'交谈了一番');
@@ -1457,9 +1513,10 @@ function endConvo(){
     div.innerHTML=`<div class="chapmark">面谈 · ${esc(n.name)}</div><div class="chaptime">${esc(S.date)}</div><div class="ntext" style="margin-top:20px">${convo.msgs.map(m=>`<p>${m.role==='me'?`<b>${esc(S.player.name)}</b>：<q>${esc(m.text)}</q>`:`<b>${esc(n.name)}</b>：${esc(m.text).replace(/「([^」]*)」/g,'<q>$1</q>')}`}</p>`).join('')}
       <div class="subblock"><li>${esc(sum)}${convo.favorTotal?`　${esc(n.name)}好感 ${convo.favorTotal>0?'+':''}${convo.favorTotal}`:''}${convo.secretRevealed?'　✦ 探知一个秘密':''}</li></div></div>`;
     $('story').appendChild(div); div.scrollIntoView({behavior:'smooth',block:'end'});
+    logChapter(div);
     checkAchievements(); renderPanel(); saveGame();
   }
-  convo=null;
+  convo=null; saveGame();
 }
 $('convoSend').onclick=()=>convoSend($('convoText').value);
 $('convoText').addEventListener('keydown',e=>{ if(e.key==='Enter') convoSend($('convoText').value); });
@@ -1696,7 +1753,15 @@ function finishChapter(d, judge, duelData){
   extra+=listBlock('江湖风闻',d.rumors,'rumorblock');
   if(d.gameOver) extra+=`<div class="endingblock"><h4>—— 终 ——</h4><div class="ntext">${narrativeHtml(d.ending||'')}</div></div>`;
   liveChapter.insertAdjacentHTML('beforeend',extra);
+  logChapter(liveChapter);
   liveChapter=null;
+}
+// 把已完成的章节原样记进存档，读档时整段剧情都还在
+function logChapter(div){
+  if(!S||!div) return;
+  S.chapters=S.chapters||[];
+  S.chapters.push(div.outerHTML);
+  while(S.chapters.length>150) S.chapters.shift();
 }
 function renderOptions(opts){
   const box=$('choices');
@@ -1815,10 +1880,12 @@ async function runTurn(action, judge, extra){
   $('choices').innerHTML='';
   setBusy(true, extra.duelData?'刀光剑影，正在记下这一战……':'笔走龙蛇，正在推演江湖……');
   beginChapter('第 '+cnNum(S.turn)+' 回',S.date,action,judge);
+  S.pending={action,judge,duelData:extra.duelData?{opp:extra.duelData.opp,log:extra.duelData.log,resultText:extra.duelData.resultText}:null}; saveGame();
   try{
     const prompt=extra.duelData?duelAftermathPrompt(action,judge,extra.duelData):turnPrompt(action,judge);
     const d=await llmJSON(prompt,raw=>{ const t=extractPartialField(raw,'narrative'); if(t) updateChapterNarrative(t); });
     updateChapterNarrative(d.narrative);
+    S.pending=null;
     applyTurn(d,action,judge);
     finishChapter(d,judge,extra.duelData);
     renderPanel();
@@ -1862,7 +1929,7 @@ async function gameOverFlow(cause){
   const hall=JSON.parse(localStorage.getItem(LS_HALL)||'[]');
   hall.push({name:S.player.name,title:titleOf(S.player),age:S.player.age,turns:S.turn,score,verdict:bio.verdict||'',epitaph:bio.epitaph||'',cause,ts:Date.now()});
   localStorage.setItem(LS_HALL,JSON.stringify(hall.slice(-50)));
-  S.bio=bio; saveGame(); renderPanel(); renderOptions([]);
+  S.bio=bio; S.pending=null; logChapter(div); saveGame(); renderPanel(); renderOptions([]);
   setBusy(false);
 }
 
@@ -1876,21 +1943,56 @@ function cnNum(n){
 function setDot(tab,on){ const d=$(tab==='people'?'dotPeople':'dotWorld'); if(d) d.classList.toggle('on',!!on); }
 
 /* ================= 存档 ================= */
-function saveGame(){ if(S) localStorage.setItem(LS_SAVE,JSON.stringify(S)); }
+function saveGame(){
+  if(!S) return;
+  try{ localStorage.setItem(LS_SAVE,JSON.stringify(S)); }
+  catch(e){ // 超出浏览器容量：先砍旧章节再存
+    try{ S.chapters=(S.chapters||[]).slice(-40); localStorage.setItem(LS_SAVE,JSON.stringify(S)); }
+    catch(e2){ try{ S.chapters=[]; localStorage.setItem(LS_SAVE,JSON.stringify(S)); }catch(e3){ toast('存档失败：浏览器存储已满，请点「存档」导出备份'); } }
+  }
+}
+function saveCfgFromFields(){
+  if(!$('settingsMask').classList.contains('on')) return;
+  const c={base:$('cfgBase').value.trim()||'https://api.deepseek.com', key:$('cfgKey').value.trim(), model:$('cfgModel').value.trim()||'deepseek-v4-flash', think:$('cfgThink').value==='on'};
+  if(!c.key&&!cfg.key) return;
+  cfg=c; localStorage.setItem(LS_CFG,JSON.stringify(cfg));
+}
+// 退出/切后台时兜底保存（含比武、对话进行中的状态）
+function flushAll(){ try{ saveCfgFromFields(); snapshotDuel(); snapshotConvo(); saveGame(); }catch(_){} }
+window.addEventListener('pagehide',flushAll);
+window.addEventListener('beforeunload',flushAll);
+document.addEventListener('visibilitychange',()=>{ if(document.visibilityState==='hidden') flushAll(); });
 function loadGame(){
   const raw=localStorage.getItem(LS_SAVE);
   if(!raw) return false;
   try{ S=migrate(JSON.parse(raw)); }catch(_){ return false; }
   if(!S||!S.player) return false;
   $('story').innerHTML='';
-  const div=document.createElement('div');
-  div.className='chapter';
-  div.innerHTML=`<div class="chapmark">存档已续</div><div class="chaptime">${esc(S.date)}</div><div class="ntext" style="margin-top:20px">
-    ${S.recent.map(r=>`<div class="action-echo">➤ ${esc(r.action)}</div>${narrativeHtml(r.narrative)}`).join('')||'<p>旧事历历，江湖路还长。</p>'}</div>`;
-  $('story').appendChild(div);
-  if(S.over&&S.bio){ div.insertAdjacentHTML('beforeend',`<div class="endingblock"><h4>—— ${esc(S.player.name)}传 ——</h4><div class="ntext">${narrativeHtml(S.bio.biography)}</div>${S.bio.epitaph?`<div class="epitaph">「${esc(S.bio.epitaph)}」</div>`:''}</div>`); }
+  if(S.chapters&&S.chapters.length){
+    $('story').innerHTML=S.chapters.join('');
+    $('story').querySelectorAll('.chapter').forEach(c=>c.style.animation='none');
+  }else{
+    const div=document.createElement('div');
+    div.className='chapter';
+    div.innerHTML=`<div class="chapmark">存档已续</div><div class="chaptime">${esc(S.date)}</div><div class="ntext" style="margin-top:20px">
+      ${S.recent.map(r=>`<div class="action-echo">➤ ${esc(r.action)}</div>${narrativeHtml(r.narrative)}`).join('')||'<p>旧事历历，江湖路还长。</p>'}</div>`;
+    $('story').appendChild(div);
+    if(S.over&&S.bio){ div.insertAdjacentHTML('beforeend',`<div class="endingblock"><h4>—— ${esc(S.player.name)}传 ——</h4><div class="ntext">${narrativeHtml(S.bio.biography)}</div>${S.bio.epitaph?`<div class="epitaph">「${esc(S.bio.epitaph)}」</div>`:''}</div>`); }
+  }
   renderPanel();
   renderOptions(S.lastOptions||[]);
+  setTimeout(()=>{ $('story').scrollTop=$('story').scrollHeight; },50);
+  // 上次关页面时正在等模型回复：给一个「续上」按钮，不让那一步白做
+  if(S.pending&&!S.over){
+    const pd=S.pending;
+    const b=document.createElement('button'); b.className='opt';
+    b.innerHTML=`<span class="num">⟳</span>续上次中断的行动：${esc(pd.action)}<span class="hint">└ 上次关闭页面时这一步还没推演完，点此接着来；也可以直接选别的</span>`;
+    b.onclick=()=>{ runTurn(pd.action,pd.judge,pd.duelData?{duelData:pd.duelData}:{}); };
+    $('choices').prepend(b);
+  }
+  // 比武 / 对话打到一半关了页面：原地恢复
+  if(S.duelState&&!S.over) setTimeout(()=>restoreDuel(),100);
+  else if(S.convoState&&!S.over) setTimeout(()=>restoreConvo(),100);
   return true;
 }
 
@@ -1933,6 +2035,8 @@ function openSettings(){
   $('settingsMask').classList.add('on');
 }
 $('btnSettings').onclick=openSettings;
+['cfgBase','cfgKey','cfgModel','cfgThink'].forEach(id=>$(id).addEventListener('change',saveCfgFromFields));
+['cfgBase','cfgKey','cfgModel'].forEach(id=>$(id).addEventListener('input',saveCfgFromFields));
 $('cfgCancel').onclick=()=>$('settingsMask').classList.remove('on');
 $('cfgSave').onclick=()=>{
   cfg={base:$('cfgBase').value.trim()||'https://api.deepseek.com', key:$('cfgKey').value.trim(), model:$('cfgModel').value.trim()||'deepseek-v4-flash', think:$('cfgThink').value==='on'};
