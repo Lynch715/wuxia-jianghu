@@ -571,6 +571,7 @@ function migrate(s){
     s.v=2;
   }
   if(!s.chapters) s.chapters=[];
+  if(s.scene) s.scene=normScene(s.scene);
   return s;
 }
 
@@ -727,7 +728,7 @@ function stateBlocks(){
   const world=S.world&&S.world.ranking&&S.world.ranking.length?`江湖榜：${S.world.ranking.map((r,i)=>`${i+1}.${r.name}(${r.faction||'散人'},武功${r['武功']}${r.alive===false?',已亡':''})`).join('；')}\n势力：${(S.world.factions||[]).map(f=>`${f.name}(${f.alignment},势力${f.power},首领${f.leader})`).join('；')}\n当世大事：${(S.world.events||[]).join('；')}`:'（尚未铸造）';
   const pb=Object.assign({},p); delete pb.backstory;
   return `【当前时间】${S.date}（第${S.turn}回合）
-【当前场景】${S.scene?`主角现在${S.scene.location||'未知地点'}。未了结的事：${(S.scene.unresolved||[]).join('；')||'无'}`:'见最近剧情'}
+【当前场景】${S.scene?`主角现在${S.scene.location||'未知地点'}。未了结的事：${asArr(S.scene.unresolved).join('；')||'无'}`:'见最近剧情'}
 【主角面板】${JSON.stringify(pb)}（称号：${titleOf(p)}；江湖榜位次：${rankText()}）
 【主角身世】${p.backstory}
 【宿命】
@@ -977,6 +978,8 @@ async function llmJSON(prompt, onPartial, opt){
 /* ================= 状态更新 ================= */
 const clamp=(v,lo=0,hi=100)=>Math.max(lo,Math.min(hi,Math.round(v)));
 function num(v){ const n=Number(v); return isNaN(n)?0:n; }
+function asArr(v){ if(Array.isArray(v)) return v.filter(x=>x!=null&&x!=='').map(x=>typeof x==='string'?x:(x&&(x.text||x.desc||x.title||x.name))||String(x)); if(v==null||v==='') return []; if(typeof v==='string') return v.split(/[；;、\n|,，]+/).map(x=>x.trim()).filter(Boolean); if(typeof v==='object') return Object.values(v).map(x=>typeof x==='string'?x:JSON.stringify(x)).filter(Boolean); return [String(v)]; }
+function normScene(sc){ if(!sc||typeof sc!=='object') return null; return {location: typeof sc.location==='string'?sc.location:(sc.location?String(sc.location):''), unresolved: asArr(sc.unresolved)}; }
 function findNpc(name){
   if(!name) return null;
   name=String(name).trim();
@@ -1005,7 +1008,7 @@ function applyInit(d, opts){
   S.player = p;
   S.npcs = (d.npcs||[]).filter(n=>n&&n.name).map(normNpc);
   S.quests=(d.quests||[]).filter(q=>q&&q.title).slice(0,5).map(q=>({title:q.title,desc:q.desc||'',progress:0,status:'进行中'}));
-  S.scene = d.scene||null;
+  S.scene = normScene(d.scene);
   S.date = d.date||'';
   S.turn = 1;
   lastDeltas={};
@@ -1110,7 +1113,7 @@ function applyTurn(d, action, judge){
     if(t){ if(f.power) t.power=clamp(t.power+num(f.power)); if(f.leader) t.leader=f.leader; }
   }
   if(d.date) S.date=d.date;
-  if(d.scene&&d.scene.location) S.scene=d.scene;
+  if(d.scene&&d.scene.location) S.scene=normScene(d.scene);
   S.history.push({turn:S.turn, action, summary:d.summary||''});
   S.recent.push({action, narrative:d.narrative||''});
   while(S.recent.length>4) S.recent.shift();
