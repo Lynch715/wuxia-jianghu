@@ -20,7 +20,7 @@ function pickBody(prompt){
       arts:[{name:'伏虎拳',desc:'刚猛外家拳',style:'刚猛',level:25}],
       items:{武器:[{name:'柳叶刀',desc:'父亲遗物',bonus:5}],秘籍:[{name:'伏虎心法残卷',desc:'字迹斑驳'}],医药:[{name:'金创药'},{name:'金创药'}],毒药:[{name:'蚀骨散'}],杂书:[],其他:[]},
       status:[]},
-    npcs:[npc('岳师伯','师父','华山掌门',85,'正派','华山派'),npc('秃鹰','仇人','黑风寨主',66,'邪道','黑风寨'),npc('沈师姐','同门','华山二弟子',55,'正派','华山派')],
+    npcs:[Object.assign(npc('岳师伯','师父','华山掌门',85,'正派','华山派'),{age:62}),Object.assign(npc('秃鹰','仇人','黑风寨主',66,'邪道','黑风寨'),{age:44}),Object.assign(npc('沈师姐','同门','华山二弟子',55,'正派','华山派'),{gender:'女',age:24})],
     quests:[{title:'查明父亲死因',desc:'父亲死得蹊跷'}],
     opening:'雨下了整宿。李昭把刀往桌上一搁，要了两个馍。\n跑堂的看了看那刀，手一抖。',
     scene:{location:'城门客栈',unresolved:['父亲的死因']},

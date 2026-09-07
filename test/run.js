@@ -31,6 +31,8 @@ await page.click('#crFree button[data-v="free"]');
 const note=await page.textContent('#crFreeNote');
 ok('自由度说明：'+note.replace(/\s+/g,' ').slice(0,80), note.includes('不会落终身伤残'));
 await page.click('#crFree button[data-v="mid"]');
+ok('捏人可挑相貌（'+(await page.$$('#crAvatar .cell')).length+' 格，含随天意）', (await page.$$('#crAvatar .cell')).length>=25);
+await page.click('#crAvatar .cell:nth-child(10)');
 await page.click('#crStart');
 await page.waitForSelector('#choices .opt',{timeout:15000});
 ok('system 角色已发送', (global.__msgs||[]).length===2 && global.__msgs[0].role==='system');
@@ -39,6 +41,19 @@ const money=await page.textContent('#pMoney');
 ok('家财显示月耗与可撑月数：'+money.replace(/\s+/g,' ').trim().slice(0,40), /月耗约 \d+ 两/.test(money));
 ok('师门卡片：'+(await page.textContent('#pSect')).replace(/\s+/g,' ').trim().slice(0,30), (await page.textContent('#pSect')).includes('华山派'));
 ok('武学显示路数熟练度', (await page.textContent('#pArts')).includes('刚猛'));
+ok('主角用了捏人时挑的脸：'+await page.evaluate(()=>S.player.avatar), !!(await page.evaluate(()=>S.player.avatar)));
+const avInfo=await page.evaluate(()=>{
+  const list=Array.from(document.querySelectorAll('#npcList .avatar'));
+  return {n:list.length, sprite:list.filter(e=>e.classList.contains('av')).length,
+          slots:S.npcs.map(x=>avSlotOf(x)), me:document.querySelector('#pFace .avatar').className};
+});
+ok('名录头像全部走雪碧图（'+avInfo.sprite+'/'+avInfo.n+'）', avInfo.n>0&&avInfo.sprite===avInfo.n);
+ok('NPC 各自分到不同的脸：'+avInfo.slots.join(','), new Set(avInfo.slots).size===avInfo.slots.length);
+ok('关系图节点用了头像', (await page.$$('#graphWrap image')).length>0);
+const faceStable=await page.evaluate(()=>{
+  const n=S.npcs[0], before=n.avatar; n.age=n.age+20; return {before, after:avSlotOf(n)};
+});
+ok('长了岁数也不换脸（'+faceStable.before+' → '+faceStable.after+'）', faceStable.before===faceStable.after);
 const skRaw=await page.evaluate(()=>S.player.skills);
 const skOk=Object.values(skRaw).every(v=>v&&typeof v==='object'&&typeof v.level==='number'&&v.level>=0&&v.level<=100&&typeof v.desc==='string');
 ok('模型把技艺写成文字也能收敛成数字等级：'+JSON.stringify(skRaw['记帐']), skOk);
