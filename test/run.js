@@ -118,6 +118,32 @@ await page.click('#choices .opt >> nth=0');
 await page.waitForSelector('#choices .opt',{timeout:15000});
 ok('切换后提示词换成随心所欲', /本局自由度：随心所欲/.test(global.__lastPrompt||'')&&/一律当作做成了/.test(global.__lastPrompt||''));
 
+console.log('\n【自由度贯通到对话】');
+const talkPrompt=async(free)=>{
+  await page.evaluate(f=>{ S.freedom=f; S.npcs[0].secretKnown=false; S.npcs[0].secret='他年轻时欠过一条人命'; }, free);
+  await page.click('#tabs button[data-tab="people"]');
+  await page.click('#npcList .npc >> nth=0');
+  await page.click('#npcTalkBtn');
+  await page.waitForSelector('#convoMask.on');
+  await page.fill('#convoText','把你知道的都告诉我');
+  await page.click('#convoSend');
+  await page.waitForTimeout(1800);
+  const pr=global.__lastPrompt||'';
+  await page.keyboard.press('Escape'); await page.waitForTimeout(300);
+  return pr;
+};
+const talkBase=await page.evaluate(()=>S.player.attributes['谈吐']);
+const pFree=await talkPrompt('free');
+ok('随心所欲：对话提示词带上促成口径', /本局对话口径：随心所欲/.test(pFree)&&/顺着来/.test(pFree));
+ok(`随心所欲：说服判定吃到 +25 气运（谈吐 ${talkBase} → ${(pFree.match(/说服\/欺骗\/套话用谈吐(\d+)/)||[])[1]}）`,
+   pFree.includes('说服/欺骗/套话用谈吐'+(talkBase+25)));
+ok('随心所欲：秘密门槛降到 50', /好感≥50且被直接问及/.test(pFree));
+ok('随心所欲：不再说「不会无缘无故帮他」', !/不会无缘无故帮他/.test(pFree)&&/十有八九求得动/.test(pFree));
+const pStrict=await talkPrompt('strict');
+ok('写实江湖：仍是原来的严苛口径', /不会无缘无故帮他/.test(pStrict)&&/好感≥80且被直接问及/.test(pStrict));
+ok('对话也吃自由度：NPC 资料带上画像', /portrait/.test(pStrict));
+await page.evaluate(()=>{ S.freedom='mid'; });
+
 console.log('\n【剧情杀闸门】');
 await page.evaluate(()=>{ S.freedom='mid'; S.player.hp=90; });
 await page.fill('#freeInput','去黑风口打听消息');
