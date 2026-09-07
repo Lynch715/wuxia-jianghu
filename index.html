@@ -439,7 +439,14 @@ body{
       <div id="bgGrid"></div>
     </div>
     <div class="field">
-      <label>江湖凶险</label>
+      <label>自由度 <small style="color:var(--ink-soft);font-weight:400">—— 这个世界跟你较不较真</small></label>
+      <div class="seg" id="crFree">
+        <button data-v="free">随心所欲<small style="display:block;font-size:10px;letter-spacing:0">主角光环·想干啥干啥</small></button><button data-v="mid" class="sel">江湖传奇<small style="display:block;font-size:10px;letter-spacing:0">有规矩也有奇遇</small></button><button data-v="strict">写实江湖<small style="display:block;font-size:10px;letter-spacing:0">处处较真·寸步难行</small></button>
+      </div>
+      <div class="note" id="crFreeNote"></div>
+    </div>
+    <div class="field">
+      <label>江湖凶险 <small style="color:var(--ink-soft);font-weight:400">—— 敌手强弱与判定门槛</small></label>
       <div class="seg" id="crDiff">
         <button data-v="easy">逍遥<small style="display:block;font-size:10px;letter-spacing:0">判定宽松·敌手较弱</small></button><button data-v="normal" class="sel">江湖<small style="display:block;font-size:10px;letter-spacing:0">标准</small></button><button data-v="hard">修罗<small style="display:block;font-size:10px;letter-spacing:0">判定严苛·敌手凶狠</small></button>
       </div>
@@ -494,6 +501,15 @@ body{
         <option value="off">关闭 —— 出剧情快，推荐</option>
         <option value="on">开启 —— 剧情更缜密但等待更久</option>
       </select>
+    </div>
+    <div class="field" id="cfgFreeWrap">
+      <label>本局自由度（可随时改，立刻生效）</label>
+      <select id="cfgFreedom">
+        <option value="free">随心所欲 —— 主角光环，想干啥干啥，不会残不会死</option>
+        <option value="mid">江湖传奇 —— 有规矩也有奇遇（推荐）</option>
+        <option value="strict">写实江湖 —— 处处较真，寸步难行</option>
+      </select>
+      <div class="note" id="cfgFreeNote"></div>
     </div>
     <div class="mbtnrow">
       <button class="mbtn" id="cfgCancel">关闭</button>
@@ -568,7 +584,7 @@ function newStateShell(){
   return {
     v:SAVE_VERSION, turn:0, date:'', player:null, npcs:[],
     history:[], recent:[], over:false, ending:null, scene:null,
-    difficulty:'normal',
+    difficulty:'normal', freedom:'mid',
     months:0, ganzhi:0, upkeepLast:0, destitute:false, starveMonths:0, oldAgeDeath:false,
     vendettas:[], scars:[], engineNews:[], ranked:false, lastChallengeMonth:-99, volumes:[],
     sect:null,
@@ -605,6 +621,7 @@ function migrate(s){
     if(s.ranked===undefined) s.ranked=!!(s.world&&s.world.ranking&&s.world.ranking.length&&s.player&&s.player.attributes['武功']>=Math.min.apply(null,s.world.ranking.map(r=>r['武功'])));
     if(s.lastChallengeMonth===undefined) s.lastChallengeMonth=-99;
     if(s.sect===undefined) s.sect=null;
+    if(!s.freedom) s.freedom='strict';   // 老存档保持原来的严苛口径，可在设置里随时改
     for(const nn of (s.npcs||[])) if(nn.lastSeen===undefined) nn.lastSeen=0;
     s.v=3;
   }
@@ -626,8 +643,8 @@ function upkeepPerMonth(){
   if(p.faction&&!/散人|^无$|^$/.test(p.faction)) c=Math.round(c*0.55);   // 有门派管饭
   if(p.hp<30) c+=12; else if(p.hp<60) c+=4;                              // 汤药钱
   if(p['侠名']>=60||p['恶名']>=60) c+=6;                                  // 名气大了排场也大
-  const m=S.difficulty==='hard'?1.5:(S.difficulty==='easy'?0.6:1);
-  return Math.max(2,Math.round(c*m));
+  const m=(S.difficulty==='hard'?1.5:(S.difficulty==='easy'?0.6:1))*fdm().upkeep;
+  return Math.max(1,Math.round(c*m));
 }
 // 武功单回合成长上限：颖悟决定天花板，年纪拖后腿
 function growthCap(){
@@ -636,7 +653,7 @@ function growthCap(){
   if(p.age>=36) cap-=1;
   if(p.age>=46) cap-=1;
   if(p.age>=56) cap-=1;
-  return Math.max(1,cap);
+  return Math.max(1,Math.round(Math.max(1,cap)*fdm().growth));
 }
 function ageNote(){
   const a=S.player.age;
@@ -674,7 +691,7 @@ function npcYearTick(){
     n.age=num(n.age)+1;
     if(n.age<40){ if(Math.random()<0.5) n['武功']=clamp(n['武功']+rnd(1,2)); }
     else if(n.age>=50){ if(Math.random()<0.6) n['武功']=clamp(n['武功']-(n.age>=65?3:1)); }
-    if(n.age>=68&&Math.random()<(n.age-66)*0.03){
+    if(n.age>=68&&Math.random()<(n.age-66)*0.03*Math.max(0.3,fdm().aging)){
       n.alive=false;
       n.notes=(n.notes?n.notes+'；':'')+`${dateStr()}病故`;
       news(`${n.name}于${dateStr()}辞世，享年${n.age}`);
@@ -688,7 +705,7 @@ function npcYearTick(){
     r.age++;
     if(r.age<45){ if(Math.random()<0.4) r['武功']=clamp(r['武功']+1); }
     else if(r.age>=55){ if(Math.random()<0.5) r['武功']=clamp(r['武功']-(r.age>=68?3:1)); }
-    if(r.age>=70&&Math.random()<(r.age-68)*0.05){
+    if(r.age>=70&&Math.random()<(r.age-68)*0.05*Math.max(0.3,fdm().aging)){
       r.alive=false;
       news(`江湖榜上的${r.name}（${r.faction||'散人'}）已然辞世，其位空悬`);
       const nn=findNpc(r.name); if(nn) nn.alive=false;
@@ -697,13 +714,14 @@ function npcYearTick(){
 }
 // 每逢生辰：衰老、寿数
 function agingTick(){
-  const p=S.player;
+  const p=S.player, ag=fdm().aging;
+  if(!ag) return;                                   // 随心所欲：青春常驻
   if(p.age>=45){
     const dec=p.age>=65?3:(p.age>=55?2:1);
-    const prob=p.age>=55?0.85:0.45;
+    const prob=(p.age>=55?0.85:0.45)*ag;
     if(Math.random()<prob&&p.attributes['武功']>0) p.attributes['武功']=clamp(p.attributes['武功']-dec);
   }
-  if(p.age>=62&&Math.random()<(p.age-60)*0.014) S.oldAgeDeath=true;
+  if(p.age>=62&&Math.random()<(p.age-60)*0.014*ag) S.oldAgeDeath=true;
 }
 // 推进 n 个月：扣开销、长年岁、判饥寒
 function advanceTime(n){
@@ -722,7 +740,7 @@ function advanceTime(n){
   sectTick(n);
   S.upkeepLast=cost; S.starveMonths=starve; S.destitute=starve>0;
   p.status=p.status.filter(t=>t!=='饥寒交迫'&&t!=='重伤');
-  if(S.destitute){ p.status.unshift('饥寒交迫'); p.hp=Math.max(1,p.hp-4*starve); }
+  if(S.destitute){ p.status.unshift('饥寒交迫'); p.hp=Math.max(1,p.hp-Math.round(4*starve*fdm().starve)); }
   if(p.hp<30&&p.hp>0) p.status.unshift('重伤');
   S.date=dateStr();
   return {cost,starve,months:n};
@@ -731,6 +749,34 @@ function advanceTime(n){
 /* ================= 难度 ================= */
 const DIFF={easy:{dc:-8,opp:-8,label:'逍遥'},normal:{dc:0,opp:0,label:'江湖'},hard:{dc:8,opp:8,label:'修罗'}};
 function diff(){ return DIFF[S&&S.difficulty]||DIFF.normal; }
+
+/* ================= 自由度 =================
+   与「江湖凶险」正交：凶险管敌手强弱与判定门槛，自由度管这个世界跟不跟你较真。 */
+const FREEDOM={
+  free:{ label:'随心所欲', hint:'主角光环·世界让着你',
+    check:25, growth:3, money:8, upkeep:0.3, starve:0, doom:0,
+    injury:0, kill:0, vendetta:0.35, aging:0, studyDC:-20, studyHurt:0.25, freeAct:true,
+    tone:`【本局自由度：随心所欲】这一局以玩家的兴致为先，你要帮他把想做的事写成。
+- 玩家写什么、想做什么，尽量促成，不要跟他较劲。除非荒诞到离谱，否则就让他做成，并把过程写得好看。
+- 主角有主角光环：奇遇、机缘、贵人相助、天赋异禀、绝世神功，都可以放开写。
+- 少写失败；即使失败也不必伤筋动骨，可以留转机、可以因祸得福。不必事事索取代价。
+- 江湖仍是武侠江湖（依旧不写科幻玄幻），但可以传奇、可以夸张、可以让玩家爽。` },
+  mid:{ label:'江湖传奇', hint:'有规矩，也有奇遇',
+    check:8, growth:1.8, money:3, upkeep:0.7, starve:0.5, doom:0.5,
+    injury:0.45, kill:0.45, vendetta:0.7, aging:0.5, studyDC:-8, studyHurt:0.5, freeAct:false,
+    tone:`【本局自由度：江湖传奇】按武侠小说的路数来写。
+- 玩家的行动多半推得动，但真正有分量的事仍要经历波折。失败有代价，却不该毁掉一整局。
+- 机缘与奇遇偶尔可有，不必每回合都有。
+- 江湖有规矩、有凶险，但主角毕竟是故事的主角，允许几分传奇色彩。` },
+  strict:{ label:'写实江湖', hint:'处处较真·寸步难行',
+    check:0, growth:1, money:1, upkeep:1, starve:1, doom:1,
+    injury:1, kill:1, vendetta:1, aging:1, studyDC:0, studyHurt:1, freeAct:false,
+    tone:`【本局自由度：写实江湖】按真实世道写，处处较真。
+- 主角不是天选之子：想成事就得有本钱，没本钱就得付代价。
+- 奇遇极其罕见；行差踏错会留下一辈子的痕迹；江湖的恶意是真实的。` }
+};
+function fdm(){ return FREEDOM[S&&S.freedom]||FREEDOM.mid; }
+function worldRules(){ return WORLD_RULES+'\n'+fdm().tone; }
 
 /* ================= 骰子 ================= */
 const d20=()=>1+Math.floor(Math.random()*20);
@@ -792,7 +838,8 @@ function attrVal(p,attr){
 function rollCheck(attr,need){
   const p=S.player;
   let val=attrVal(p,attr);
-  if(S.destitute) val-=5;                       // 饥寒交迫，做什么都差一口气
+  if(S.destitute) val-=Math.round(5*fdm().starve);   // 饥寒交迫，做什么都差一口气
+  val+=fdm().check;                                   // 自由度越高，主角越吃得开
   const roll=d20(), dc=Math.max(20,num(need)+diff().dc);
   const total=val+rollMod(roll);           // 属性定基准，骰子给 ±40 的浮动
   const crit=roll===20?'大成功':(roll===1?'大失败':'');
@@ -862,7 +909,8 @@ function pickInjury(allowCripple){
 // severity 0-1：越接近1越可能落下残疾
 function sufferInjury(severity, cause, allowCripple){
   const p=S.player;
-  if(Math.random()>severity) return null;
+  severity*=fdm().injury;
+  if(severity<=0||Math.random()>severity) return null;
   const inj=pickInjury(!!allowCripple);
   const text=inj.apply(p);
   if(!p.status.includes(inj.name)) p.status.unshift(inj.name);
@@ -885,7 +933,7 @@ function addVendetta(name, reason, lethal, heat){
 // 仇恨随光阴发酵；好感回升则渐消
 function tickVendettas(months){
   if(!S.vendettas||!S.vendettas.length) return;
-  const mul=S.difficulty==='hard'?1.4:(S.difficulty==='easy'?0.6:1);
+  const mul=(S.difficulty==='hard'?1.4:(S.difficulty==='easy'?0.6:1))*fdm().vendetta;
   for(const v of S.vendettas){
     const n=findNpc(v.name);
     if(!n||!n.alive){ v.heat=0; continue; }
@@ -925,10 +973,10 @@ function studyRoll(m){
   const p=S.player;
   let val=num(p.attributes['颖悟'])+Math.floor(num(p.attributes['才学'])/4);
   if(p.hp<30) val-=10;
-  if(S.destitute) val-=5;
+  if(S.destitute) val-=Math.round(5*fdm().starve);
   if((p.status||[]).includes('走火入魔')) val-=10;
-  const roll=d20(), dc=Math.max(20,m.need+diff().dc), total=val+rollMod(roll);
-  const crit=roll===20?'大成功':(roll===1?'走火入魔':'');
+  const roll=d20(), dc=Math.max(20,m.need+diff().dc+fdm().studyDC), total=val+rollMod(roll);
+  const crit=roll===20?'大成功':(roll===1&&fdm().studyHurt>=0.5?'走火入魔':'');
   const success=roll===20?true:(roll===1?false:total>=dc);
   return {val,roll,mod:rollMod(roll),dc,total,success,crit};
 }
@@ -941,9 +989,10 @@ function makeDoom(){
   const all=[]; for(const c in p.items){ if(c==='武器') continue; for(const it of (p.items[c]||[])) all.push({cat:c,item:it}); }
   if(all.length) pool.push('item');
   const k=pick(pool);
-  if(k==='money') return {type:'money', amount:Math.max(5,Math.round(p.money*(0.10+Math.random()*0.15)))};
+  const f=fdm().doom;
+  if(k==='money') return {type:'money', amount:Math.max(3,Math.round(p.money*(0.10+Math.random()*0.15)*f))};
   if(k==='item'){ const t=pick(all); return {type:'item', name:t.item.name, cat:t.cat}; }
-  return {type:'hp', amount:rnd(8,20)};
+  return {type:'hp', amount:Math.max(3,Math.round(rnd(8,20)*f))};
 }
 function doomText(dm){
   if(!dm) return '';
@@ -1074,7 +1123,7 @@ function initSchemaPrompt(opts){
   if(opts.gender&&opts.gender!=='随机') custom.push(`主角性别必须是${opts.gender}`);
   if(opts.bg&&opts.bg!=='随机') custom.push(`主角出身背景必须是「${opts.bg}」（${opts.bgDesc||''}），身世故事、家财、随身物品、初始NPC都要围绕这个出身来编`);
   const customBlock=custom.length?`\n【玩家自定义（最高优先级，覆盖下面的随机规则）】\n${custom.map(s=>'- '+s).join('\n')}\n`:'';
-  return `${WORLD_RULES}
+  return `${worldRules()}
 ${customBlock}
 现在请生成一位主角并开局。要求：
 - 性别随机；年龄在14至45岁之间随机；姓名符合古代背景且风格符合原生家庭出身；若家庭有虐待行径主角会自行改名（不要默认改名）。
@@ -1164,11 +1213,16 @@ function judgeBlock(judge){
   const f=fateInfo(judge.fate);
   let s=`- 天命骰：${judge.fate}（${f.label}）——${f.desc}\n`;
   if(judge.doom) s+=`- 引擎已定死的实损：${doomText(judge.doom)}。剧情必须交代这是怎么发生的，不许化解、不许找补。\n`;
+  else if(judge.fate<=3) s+=`- 本回合虽是大凶，但本局自由度宽松，不必让主角伤筋动骨，写成有惊无险或小挫折即可。\n`;
   if(judge.check){
     const c=judge.check;
     s+=`- 属性判定：${c.attr}${c.val}，掷骰${c.roll}（修正${c.mod>=0?'+':''}${c.mod}）＝${c.total}，难度${c.need}，判定【${c.success?'成功':'失败'}】${c.crit?'（'+c.crit+'）':''}。剧情必须如实体现这个结果。\n`;
   }else{
-    s+=`- 属性判定：本行动未预设判定。若你认为该行动有成败风险，请按判定制度自行判定：本回合骰面修正为【${rollMod(judge.fate)>=0?'+':''}${rollMod(judge.fate)}】，总值＝相关属性${rollMod(judge.fate)>=0?'+':''}${rollMod(judge.fate)}，与你设定的need比较，结果写入check；无风险则check为null。\n`;
+    if(fdm().freeAct){
+      s+=`- 属性判定：本局为「随心所欲」。玩家自己写的行动，只要不荒诞，一律当作做成了（check填null或success为true），把过程写得精彩即可，不必掷骰刁难。\n`;
+    }else{
+      s+=`- 属性判定：本行动未预设判定。若你认为该行动有成败风险，请按判定制度自行判定：本回合骰面修正为【${rollMod(judge.fate)>=0?'+':''}${rollMod(judge.fate)}】，总值＝相关属性${rollMod(judge.fate)>=0?'+':''}${rollMod(judge.fate)}（本局主角另有 +${fdm().check} 的气运加成，已算进这个数）与你设定的need比较，结果写入check；无风险则check为null。\n`;
+    }
   }
   s+=`- 世界事件：${judge.worldEvent?judge.worldEvent+'（必须在剧情或江湖风闻中体现）':'无'}\n`;
   if((S.engineNews||[]).length) s+=`- 引擎已判定的人事变动（既成事实，必须在剧情或江湖风闻中体现，不可否认、不可改写）：${S.engineNews.join('；')}\n`;
@@ -1184,7 +1238,7 @@ function judgeBlock(judge){
 }
 
 function turnPrompt(action, judge){
-  return `${WORLD_RULES}
+  return `${worldRules()}
 
 ${stateBlocks()}
 
@@ -1223,7 +1277,7 @@ ${JSON_RULE}
 function duelAftermathPrompt(action, judge, duel){
   const log=duel.log.map(r=>r.plain).join('\n');
   const res=duel.resultText;
-  return `${WORLD_RULES}
+  return `${worldRules()}
 
 ${stateBlocks()}
 
@@ -1254,6 +1308,7 @@ function convoPrompt(npc, line, roll, gift){
   const log=convo.msgs.slice(-14).map(m=>m.role==='me'?`主角：${m.text}`:`${npc.name}：${m.text}`).join('\n')||'（刚开口）';
   const recent=S.recent.slice(-2).map(r=>r.narrative.slice(0,300)).join('\n');
   return `${WORLD_RULES.split('属性规则')[0]}
+${fdm().tone}
 你现在扮演武侠世界中的人物「${npc.name}」，正与主角面对面交谈。你不是旁白，只输出${npc.name}的言行。
 【${npc.name}的资料】${JSON.stringify({name:npc.name,gender:npc.gender,age:npc.age,identity:npc.identity,faction:npc.faction,alignment:npc.alignment,personality:npc.personality,appearance:npc.appearance,武功:npc['武功'],谈吐:npc['谈吐'],signature:npc.signature,relation:npc.relation,notes:npc.notes,alive:npc.alive})}
 【${npc.name}的秘密】${npc.secret||'无'}${npc.secretKnown?'（主角已经知道这个秘密）':'（主角不知道。除非主角说服/欺骗/威胁成功，或好感≥80且被直接问及，绝不透露；被追问可以撒谎、打岔、翻脸）'}
@@ -1447,6 +1502,7 @@ function applyInit(d, opts){
   const keepWorld=S&&S.world;
   S = newStateShell();
   S.difficulty=(opts&&opts.difficulty)||'normal';
+  S.freedom=(opts&&opts.freedom)||'mid';
   if(keepWorld) S.world=keepWorld;
   const p = d.player;
   p.biaozi = p.biaozi||null;
@@ -1519,7 +1575,7 @@ function applyTurn(d, action, judge){
   if(hpd) { p.hp=clamp(p.hp+hpd,0,100); lastDeltas['气血']=hpd; }
   if(hpd>=0&&!(judge&&judge.duel)&&p.hp<100){
     // 自然将养：饥寒交迫时几乎养不好伤
-    const regen=Math.round(Math.min(40,(p.hp<30?4:8)*months*(S.destitute?0.25:1)*(p.status.includes('暗伤')?0.4:1)));
+    const regen=Math.round(Math.min(40,(p.hp<30?4:8)*months*(S.destitute?(1-0.75*fdm().starve):1)*(p.status.includes('暗伤')?0.4:1)));
     if(regen){ p.hp=clamp(p.hp+regen,0,100); lastDeltas['气血']=(lastDeltas['气血']||0)+regen; }
   }
   if(p.hp<=0&&!d.gameOver){ p.hp=1; }
@@ -1529,7 +1585,7 @@ function applyTurn(d, action, judge){
   if(ch.money){
     let dm=num(ch.money);
     if(failed&&dm>0) dm=0;
-    if(dm>0) dm=Math.min(dm,(fate>=19?3000:600)*months);   // 防通胀：横财要有来由
+    if(dm>0) dm=Math.min(dm,Math.round((fate>=19?3000:600)*months*fdm().money));   // 防通胀：横财要有来由
     if(dm){ p.money=Math.max(0,Math.round(p.money+dm)); lastDeltas['家财']=dm; }
   }
   if(ch.age!=null && num(ch.age)>=p.age) p.age=num(ch.age);
@@ -2038,7 +2094,7 @@ function endDuel(kind){
   if(kind==='escape'){ S.stats.escapes++; duelSys('你逃出了战圈。'); return finish(`主角不敌，成功脱身逃走，${him}未能追上。`); }
   if(kind==='yield'){
     S.stats.duelLosses++; duelSys('你放下兵器，认输。');
-    const k=duel.lethal&&(duel.opp.alignment==='邪道'||duel.opp['好感度']<=15)&&Math.random()<0.35;
+    const k=duel.lethal&&(duel.opp.alignment==='邪道'||duel.opp['好感度']<=15)&&Math.random()<0.35*fdm().kill;
     if(k) return duelDeath(`主角认输求饶，${him}却不肯放过，一招取了性命。`);
     let txt=`主角认输，${him}接受了，主角保住性命但颜面尽失`;
     const wp=(S.player.items['武器']||[]);
@@ -2060,6 +2116,7 @@ function endDuel(kind){
     if(duel.friendly) kill=0;
     if(duel.profile.agg) kill+=0.1;
     if(S.difficulty==='easy') kill*=0.5; if(S.difficulty==='hard') kill+=0.1;
+    kill*=fdm().kill;
     if(Math.random()<kill) return duelDeath(`主角败于${him}之手，${him}没有留手，一招毙命。`);
     const rob=!duel.friendly&&duel.opp.alignment!=='正派'&&Math.random()<0.5&&S.player.money>0;
     let txt=`主角落败重伤，${him}${duel.friendly?'收招不再追击':'手下留情没有杀他'}`;
@@ -2204,7 +2261,7 @@ function renderPanel(){
   $('gameDate').textContent = S.date ? '⌛ '+S.date : '';
   $('pName').textContent=p.name;
   $('pBiaozi').textContent=p.biaozi?('字 '+p.biaozi):'';
-  $('pMeta').textContent=`${p.gender} · ${p.age}岁（${ageNote()}） · ${p.backgroundType||''} · ${p.faction||'散人'}`;
+  $('pMeta').textContent=`${p.gender} · ${p.age}岁（${ageNote()}） · ${p.backgroundType||''} · ${p.faction||'散人'} · ${diff().label}/${fdm().label}`;
   const evil=(p['恶名']||0)>(p['侠名']||0)&&p['恶名']>=35;
   const rk=playerRank();
   $('pTitle').innerHTML=`<span class="titlebadge ${evil?'evil':''}">${esc(titleOf(p))}</span>${rk!=null&&rk<=10?`<span class="titlebadge">江湖榜 第${rk}</span>`:''}`;
@@ -2255,7 +2312,7 @@ function manualHtml(list){
     const m=manualMeta(x);
     const p=S.player;
     const val=num(p.attributes['颖悟'])+Math.floor(num(p.attributes['才学'])/4);
-    const dc=Math.max(20,m.need+diff().dc);
+    const dc=Math.max(20,m.need+diff().dc+fdm().studyDC);
     let hit=0; for(let r=1;r<=20;r++){ if(r===20||(r!==1&&val+rollMod(r)>=dc)) hit++; }
     const chance=hit*5;
     return `<div class="item"><span class="itag" style="background:#8a6d2f">籍</span><b>${esc(x.name)}</b>
@@ -2502,8 +2559,8 @@ function logChapter(div){
 // 新标尺下光看 need 没概念，直接把成算算给玩家
 function optChance(attr,need){
   const p=S.player;
-  let val=attrVal(p,attr);
-  if(S.destitute) val-=5;
+  let val=attrVal(p,attr)+fdm().check;
+  if(S.destitute) val-=Math.round(5*fdm().starve);
   const dc=Math.max(20,num(need)+diff().dc);
   let hit=0;
   for(let r=1;r<=20;r++){ if(r===20||(r!==1&&val+rollMod(r)>=dc)) hit++; }
@@ -2549,7 +2606,18 @@ const BACKGROUNDS=[
  ['为奴作婢','大户人家为奴，看尽脸色'],['道观寺庙','出家人抚养长大'],['绿林山寨','山寨里长大，亦正亦邪'],['铁匠人家','炉火里长大，一身力气'],
  ['客栈人家','迎来送往，消息灵通'],['年幼失怙','父母早亡，独自闯荡'],
 ];
-let crSel={gender:'随机',bg:'随机',difficulty:'normal'};
+let crSel={gender:'随机',bg:'随机',difficulty:'normal',freedom:'mid'};
+function freedomNote(k){
+  const f=FREEDOM[k]||FREEDOM.mid;
+  const parts=[];
+  parts.push(f.check?`判定气运 +${f.check}`:'判定无加成');
+  parts.push(`练功涨得 ${f.growth===1?'正常':'快 '+f.growth+' 倍'}`);
+  parts.push(`月耗 ×${f.upkeep}`);
+  parts.push(f.injury?`会落终身伤残（概率 ×${f.injury}）`:'不会落终身伤残');
+  parts.push(f.kill?(f.kill<1?`比武丧命概率 ×${f.kill}`:'比武真会死'):'比武不会丧命');
+  parts.push(f.aging?(f.aging<1?'衰老减半':'会衰老会老死'):'不衰老不老死');
+  return f.hint+'　·　'+parts.join('，');
+}
 function openCreate(){
   const grid=$('bgGrid');
   if(!grid.children.length){
@@ -2557,15 +2625,17 @@ function openCreate(){
     grid.querySelectorAll('.bgopt').forEach(el=>el.onclick=()=>{ grid.querySelectorAll('.bgopt').forEach(x=>x.classList.remove('sel')); el.classList.add('sel'); crSel.bg=BACKGROUNDS[+el.dataset.i][0]; });
     $('crGender').querySelectorAll('button').forEach(b=>b.onclick=()=>{ $('crGender').querySelectorAll('button').forEach(x=>x.classList.remove('sel')); b.classList.add('sel'); crSel.gender=b.dataset.v; });
     $('crDiff').querySelectorAll('button').forEach(b=>b.onclick=()=>{ $('crDiff').querySelectorAll('button').forEach(x=>x.classList.remove('sel')); b.classList.add('sel'); crSel.difficulty=b.dataset.v; });
+    $('crFree').querySelectorAll('button').forEach(b=>b.onclick=()=>{ $('crFree').querySelectorAll('button').forEach(x=>x.classList.remove('sel')); b.classList.add('sel'); crSel.freedom=b.dataset.v; $('crFreeNote').textContent=freedomNote(crSel.freedom); });
   }
   $('crCancel').style.display=S?'block':'none';
+  $('crFreeNote').textContent=freedomNote(crSel.freedom);
   $('createMask').classList.add('on');
 }
 $('crCancel').onclick=()=>$('createMask').classList.remove('on');
 $('crStart').onclick=()=>{
   const bg=BACKGROUNDS.find(b=>b[0]===crSel.bg);
   $('createMask').classList.remove('on');
-  startNewGame({name:$('crName').value.trim()||null,gender:crSel.gender,bg:crSel.bg,bgDesc:bg?bg[1]:'',difficulty:crSel.difficulty});
+  startNewGame({name:$('crName').value.trim()||null,gender:crSel.gender,bg:crSel.bg,bgDesc:bg?bg[1]:'',difficulty:crSel.difficulty,freedom:crSel.freedom});
 };
 
 async function startNewGame(opts){
@@ -2614,7 +2684,7 @@ function optMonths(opt){
 }
 function makeJudge(opt){
   const judge={fate:d20(),check:null,worldEvent:pickWorldEvent(),duel:false,months:optMonths(opt)};
-  if(judge.fate<=3) judge.doom=makeDoom();
+  if(judge.fate<=3&&fdm().doom>0) judge.doom=makeDoom();
   if(opt&&opt.type==='check'&&opt.check&&opt.check.attr&&S.player.attributes[opt.check.attr]!==undefined) judge.check=rollCheck(opt.check.attr,opt.check.need||55);
   return judge;
 }
@@ -2667,12 +2737,13 @@ async function studyManual(i){
     outcome=`参悟${r.crit==='大成功'?'豁然贯通':'有成'}：习得【${art.name}】（${art.style}），武功+${gain}`;
   }else{
     const bad=r.crit==='走火入魔';
-    const lose=bad?rnd(8,15):rnd(2,8);
-    const hurt=bad?40:rnd(10,30);
+    const hf=fdm().studyHurt;
+    const lose=Math.max(1,Math.round((bad?rnd(8,15):rnd(2,8))*hf));
+    const hurt=Math.max(3,Math.round((bad?40:rnd(10,30))*hf));
     p.attributes['武功']=clamp(p.attributes['武功']-lose);
     p.hp=Math.max(1,p.hp-hurt);
     carryDeltas['武功']=-lose; carryDeltas['气血']=-hurt;
-    if(bad||Math.random()<0.4){ if(!p.status.includes('走火入魔')) p.status.unshift('走火入魔'); outcome=`参悟不成，真气逆行【走火入魔】：武功-${lose}，气血-${hurt}（武功判定额外-10，须设法调理）`; }
+    if((bad||Math.random()<0.4)&&hf>=0.5){ if(!p.status.includes('走火入魔')) p.status.unshift('走火入魔'); outcome=`参悟不成，真气逆行【走火入魔】：武功-${lose}，气血-${hurt}（武功判定额外-10，须设法调理）`; }
     else outcome=`参悟不成，白耗光阴、内息紊乱：武功-${lose}，气血-${hurt}`;
   }
   judge.study={manual:it.name, style:m.style, months:m.months, roll:r, outcome, success:r.success, crit:r.crit};
@@ -3014,10 +3085,27 @@ $('importFile').onchange=e=>{
 function openSettings(){
   $('cfgBase').value=cfg.base; $('cfgKey').value=cfg.key; $('cfgModel').value=cfg.model;
   $('cfgThink').value=cfg.think?'on':'off';
+  $('cfgFreeWrap').style.display=S?'block':'none';
+  if(S){ $('cfgFreedom').value=S.freedom||'mid'; $('cfgFreeNote').textContent=freedomNote(S.freedom||'mid'); }
   $('settingsMask').classList.add('on');
+}
+function applyFreedomChange(){
+  if(!S) return;
+  const v=$('cfgFreedom').value;
+  if(v===S.freedom) return;
+  S.freedom=v;
+  $('cfgFreeNote').textContent=freedomNote(v);
+  // 松了口气就把老账一并松掉
+  if(v==='free'){
+    S.player.status=S.player.status.filter(t=>t!=='饥寒交迫');
+    S.destitute=false; S.oldAgeDeath=false;
+  }
+  renderPanel(); saveGame();
+  toast('自由度已改为「'+FREEDOM[v].label+'」，下一回合起生效');
 }
 $('btnSettings').onclick=openSettings;
 ['cfgBase','cfgKey','cfgModel','cfgThink'].forEach(id=>$(id).addEventListener('change',saveCfgFromFields));
+$('cfgFreedom').addEventListener('change',applyFreedomChange);
 ['cfgBase','cfgKey','cfgModel'].forEach(id=>$(id).addEventListener('input',saveCfgFromFields));
 $('cfgCancel').onclick=()=>$('settingsMask').classList.remove('on');
 $('cfgSave').onclick=()=>{
