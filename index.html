@@ -1495,6 +1495,14 @@ function convoPrompt(npc, line, roll, gift){
 【${npc.name}当下心情】${npc.mood||'平静'}
 【${npc.name}对主角】${npc['爱恋值']!=null?`爱恋值${npc['爱恋值']}`:`好感度${npc['好感度']}`}（关系：${npc.relation}）
 【${npc.name}记得的往事】${(npc.memory||[]).join('；')||'无'}
+【此人眼下能为主角做到什么】${(()=>{const c=convoCaps(npc);const t=[];
+  t.push(c.money>0?`拿得出的银钱大约${c.money}两以内`:'不会给钱');
+  t.push(c.canItem?'可以送一件随身之物':'不会送东西');
+  t.push(c.fav>=c.artGate&&num(npc['武功'])>num(S.player.attributes['武功'])+5?'交情已到，可以传授武学':'还不到传功授艺的份上');
+  t.push(c.fav>=c.factionGate?'可以引荐入门':'不会引荐入门');
+  if(npc.taught) t.push('已经传过一次功，不会再传');
+  if(num(npc.gave)>0) t.push(`此前已接济过主角${num(npc.gave)}两`);
+  return t.join('；');})()}
 【主角】${p.name}（姓${surnameOf(p.name)}，称呼他时用这个姓，不可写错），${p.gender}，${p.age}岁，${p.identity||p.backgroundType}，称号「${titleOf(p)}」；谈吐${p.attributes['谈吐']}，武功${attrVal(p,'武功')}，才学${p.attributes['才学']}；侠名${p['侠名']}恶名${p['恶名']}；气血${p.hp}/100。
 【时间地点】${S.date}，${S.scene?S.scene.location:''}
 【最近发生的事】${recent||'无'}
@@ -1509,9 +1517,24 @@ ${log}
 - innerThought：${npc.name}此刻真实想法（20-50字），可以与嘴上说的完全相反。
 - favor：本次好感增减（-15到+15；日常闲聊0到+3；被冒犯、被识破欺骗为负；收到合心意的礼物可+5到+15，不合心意0或负）。
 - revealSecret：本次是否吐露了秘密。
+- effects：这场谈话真正在世上留下的痕迹。求人办事、讨要东西、借钱、拜师学艺、请人疗伤、
+  引荐入门、受人所托、打听消息——凡是谈成了的，都要写进 effects，否则玩家嘴上答应了却什么也没到手。
+  谈不成、或对方不肯，就把 effects 留空，并在 reply 里说明白为什么不肯。
+  可用字段（不用的填 null 或省略）：
+  {"money":正数=对方给你银两/负数=你付给对方, "give":[{"cat":"武器|秘籍|医药|毒药|杂书|其他","name":"","desc":"","bonus":0}],
+   "take":["你交出去的东西名"], "art":{"name":"","desc":"","style":"刚猛/守御/诡变/绝学/身法","level":10到30},
+   "skill":{"name":"技艺名","level":1到12,"desc":""}, "hp":对方替你疗伤回复的气血,
+   "relation":"关系变成什么，如 师父/义兄/未婚妻", "faction":"经他引荐归入的门派", "contrib":门派贡献增减,
+   "fame":{"侠名":-5到5,"恶名":-5到5}, "quest":{"title":"他托付你的事","desc":""},
+   "questProgress":{"title":"已有宿命名","progress":-20到20},
+   "vendetta":{"reason":"把他得罪狠了","lethal":false}, "appease":true表示旧怨化解,
+   "info":"打听到的一句要紧消息"}
+  分寸：给东西、给钱、传功、引荐都要合乎此人的身份、家底与对主角的好感——好感不到就别给，
+  一个穷酸书生掏不出百两银子。引擎会按好感与身份卡上限，超出的部分会被削掉，硬编也没用。
+  同一个人不会反复给你钱，也只会传你一次功。
 - summary：对话至今的一句话摘要（30字内），供日后回忆。
 ${JSON_RULE}
-输出：{"reply":"","innerThought":"","mood":"两字心情","favor":0,"attempt":null或{"type":"说服","attr":"谈吐","need":70,"total":0,"success":true},"revealSecret":false,"endTalk":false,"summary":""}`;
+输出：{"reply":"","innerThought":"","mood":"两字心情","favor":0,"attempt":null或{"type":"说服","attr":"谈吐","need":70,"total":0,"success":true},"revealSecret":false,"endTalk":false,"effects":null或上面那个对象,"summary":""}`;
 }
 
 // 走过的路太长，早年的事压成一卷，省得每回合都背一遍
@@ -1788,7 +1811,7 @@ function normNpcRaw(n){
     relation:n.relation||'', '好感度':clamp(num(n['好感度']!==undefined?n['好感度']:30)), lastSeen:(S?S.turn:0),
     '爱恋值':(n['爱恋值']==null?null:clamp(num(n['爱恋值']))),
     alive:n.alive!==false, secret:n.secret||'', secretKnown:false, memory:[], notes:n.notes||'',
-    avatar:null
+    gave:0, taught:false, skillGiven:{}, healedTurn:-1, avatar:null
   };
 }
 
@@ -2112,12 +2135,12 @@ function restoreDuel(){
 function snapshotConvo(){
   if(!S) return;
   if(!convo){ S.convoState=null; return; }
-  S.convoState={npcName:convo.npc.name,msgs:convo.msgs,favorTotal:convo.favorTotal,summary:convo.summary||'',secretRevealed:!!convo.secretRevealed,html:$('convoMsgs').innerHTML};
+  S.convoState={npcName:convo.npc.name,msgs:convo.msgs,favorTotal:convo.favorTotal,summary:convo.summary||'',secretRevealed:!!convo.secretRevealed,gains:convo.gains||[],html:$('convoMsgs').innerHTML};
 }
 function restoreConvo(){
   const st=S.convoState; if(!st) return;
   const npc=findNpc(st.npcName); if(!npc||!npc.alive){ S.convoState=null; saveGame(); return; }
-  convo={npc,msgs:st.msgs||[],favorTotal:st.favorTotal||0,summary:st.summary||'',giftMode:false,secretRevealed:!!st.secretRevealed};
+  convo={npc,msgs:st.msgs||[],favorTotal:st.favorTotal||0,summary:st.summary||'',giftMode:false,secretRevealed:!!st.secretRevealed,gains:st.gains||[]};
   renderConvoHead();
   $('convoMsgs').innerHTML=(st.html||'')+`<div class="bub sys">（接着上次没说完的话）</div>`;
   $('convoGift').style.display='none'; $('convoText').value='';
@@ -2412,12 +2435,156 @@ async function afterDuel(){
   await runTurn(dl.action, judge, {duelData:dl});
 }
 
+/* ================= 对话的实效 =================
+   以前谈半天只动好感，求人办事全是空话。现在 NPC 可以真给东西、真传功、
+   真答应带你入门、真托付一桩事——但额度由引擎按好感与身份卡死，谈不到就拿不到。 */
+function convoCaps(n){
+  const f=fdm();
+  const fav = (n['爱恋值']!=null) ? Math.max(num(n['爱恋值']),60) : num(n['好感度']);
+  const mul = f.check>=25?2.5 : (f.check>=8?1.5:1);
+  return {
+    fav,
+    money: Math.round((fav>=80?120:fav>=65?60:fav>=45?25:fav>=30?8:0)*mul),
+    lifetime: Math.round((fav>=80?480:fav>=65?240:fav>=45?100:32)*mul),
+    canItem: fav>=(f.check>=25?30:45),
+    artGate:   f.check>=25?50:(f.check>=8?65:75),
+    skillGate: f.check>=25?35:(f.check>=8?45:55),
+    factionGate: f.check>=25?45:60,
+    questGate: f.check>=25?25:40,
+    hp: fav>=40?30:10
+  };
+}
+// eff 是模型给的，attemptOk 是它自己判的成败；引擎在这里逐条卡上限
+function applyConvoEffects(n, eff, attemptOk){
+  const out=[];
+  if(!eff||typeof eff!=='object'||!S||!S.player) return out;
+  const p=S.player, c=convoCaps(n), f=fdm();
+  const risky = attemptOk!==false;   // 判定失败就什么也别想拿到
+
+  // 银钱
+  let dm=num(eff.money);
+  if(dm&&risky){
+    if(dm>0){
+      n.gave=num(n.gave);
+      dm=Math.min(dm, c.money, Math.max(0,c.lifetime-n.gave));
+      if(dm>0){ p.money+=dm; n.gave+=dm; out.push(`${n.name}给了你 ${dm} 两银子`); }
+      else if(c.money<=0) out.push(`${n.name}并没有掏钱的意思`);
+      else out.push(`${n.name}已经接济过你不少，这回没再给钱`);
+    }else{
+      const give=Math.min(-dm, p.money);
+      if(give>0){ p.money-=give; out.push(`你给了${n.name} ${give} 两银子`); }
+    }
+  }
+  // 给东西 / 收东西
+  for(const it of (eff.give||[]).slice(0,1)){
+    if(!it||!it.name) continue;
+    if(!risky||!c.canItem){ out.push(`${n.name}到底没舍得把【${it.name}】给你`); continue; }
+    const cat=(p.items[it.cat]!==undefined)?it.cat:'其他';
+    p.items[cat]=p.items[cat]||[];
+    p.items[cat].push({name:it.name, desc:it.desc||'', bonus:cat==='武器'?clamp(num(it.bonus),0,20):undefined});
+    out.push(`${n.name}给了你【${it.name}】`);
+  }
+  for(const nm of (eff.take||[]).slice(0,2)){
+    if(!nm) continue;
+    let hit=false;
+    for(const cat in p.items){ const before=p.items[cat].length; p.items[cat]=p.items[cat].filter(x=>x.name!==nm); if(p.items[cat].length<before) hit=true; }
+    if(hit) out.push(`你把【${nm}】交给了${n.name}`);
+  }
+  // 传授武学：一人只传一次，且对方确实比你强
+  if(eff.art&&eff.art.name&&risky){
+    if(n.taught) out.push(`${n.name}该教的都教过了`);
+    else if(c.fav<c.artGate) out.push(`${n.name}与你交情还不到传功授艺的份上`);
+    else if(num(n['武功'])<=num(p.attributes['武功'])+5) out.push(`${n.name}的功夫并不比你高明，教不了你什么`);
+    else{
+      const a=normArt({name:eff.art.name, desc:eff.art.desc||`得自${n.name}`, style:eff.art.style, level:Math.min(30,num(eff.art.level)||18)});
+      if(a&&!p.arts.find(x=>x.name===a.name)){ p.arts.push(a); n.taught=true; out.push(`${n.name}传你一套【${a.name}】（${a.style}，熟练${a.level}）`); }
+    }
+  }
+  // 传授技艺
+  if(eff.skill&&eff.skill.name&&risky){
+    n.skillGiven=n.skillGiven||{};
+    const sk=String(eff.skill.name).slice(0,6);
+    if(c.fav<c.skillGate) out.push(`${n.name}不肯把这门手艺教给你`);
+    else if(num(n.skillGiven[sk])>=24) out.push(`${n.name}会的${sk}都倒给你了，再问也问不出新东西`);
+    else{
+      const k=sk, left=24-num(n.skillGiven[sk]);
+      const cur=(p.skills[k]&&typeof p.skills[k]==='object')?p.skills[k]:{level:skillLevel(p.skills[k]),desc:skillDesc(p.skills[k])};
+      const dv=Math.min(12,left,Math.max(1,num(eff.skill.level)||6));
+      cur.level=pw(cur.level+dv);
+      if(eff.skill.desc) cur.desc=String(eff.skill.desc);
+      p.skills[k]=cur;
+      n.skillGiven[k]=num(n.skillGiven[k])+dv;
+      out.push(`${n.name}指点你${k}（+${dv}）`);
+    }
+  }
+  // 疗伤
+  const hp=num(eff.hp);
+  if(hp>0&&risky){
+    if(n.healedTurn===S.turn) out.push(`${n.name}方才已经替你看过伤，一时也没别的法子`);
+    else{
+      const h=Math.min(hp,c.hp,100-p.hp);
+      if(h>0){ p.hp=clamp(p.hp+h,0,100); n.healedTurn=S.turn; out.push(`${n.name}替你疗伤，气血 +${h}`); }
+    }
+  }
+  // 关系与门庭
+  if(eff.relation&&String(eff.relation).trim()&&risky){
+    const r=String(eff.relation).trim().slice(0,8);
+    if(/师父|师傅/.test(r)&&(c.fav<c.artGate||num(n['武功'])<=num(p.attributes['武功'])+5)) out.push(`${n.name}还不肯认你这个徒弟`);
+    else if(r!==n.relation){ n.relation=r; out.push(`你与${n.name}的关系变成了「${r}」`); }
+  }
+  if(eff.faction&&String(eff.faction).trim()&&risky){
+    const fc=String(eff.faction).trim().slice(0,10);
+    if(c.fav<c.factionGate) out.push(`${n.name}没答应引荐你入${fc}`);
+    else if(fc!==p.faction){ p.faction=fc; syncSect(); out.push(`经${n.name}引荐，你归入${fc}`); }
+  }
+  const cb=num(eff.contrib);
+  if(cb&&S.sect){ S.sect.contrib=Math.max(0,S.sect.contrib+clamp(cb,-30,30)); out.push(`门派贡献 ${cb>0?'+':''}${clamp(cb,-30,30)}`); }
+  // 名声
+  if(eff.fame){
+    for(const k of ['侠名','恶名']){
+      let dv=clamp(num(eff.fame[k]),-5,5);
+      if(dv>0&&!risky) dv=0;          // 没谈成就别涨名声
+      if(dv){ p[k]=clamp(p[k]+dv); out.push(`${k} ${dv>0?'+':''}${dv}`); }
+    }
+  }
+  // 托付之事 → 宿命
+  if(eff.quest&&eff.quest.title&&risky&&c.fav>=c.questGate){
+    const t=String(eff.quest.title).slice(0,20);
+    if(!S.quests.find(x=>x.title===t)&&S.quests.filter(x=>x.status==='进行中').length<5){
+      S.quests.push({title:t,desc:String(eff.quest.desc||`${n.name}所托`),progress:0,status:'进行中'});
+      out.push(`${n.name}托付了一桩事：${t}`);
+    }
+  }
+  if(eff.questProgress&&eff.questProgress.title){
+    const q=S.quests.find(x=>x.title===eff.questProgress.title)||S.quests.find(x=>String(eff.questProgress.title).includes(x.title));
+    if(q&&q.status==='进行中'){ const dv=clamp(num(eff.questProgress.progress),-20,20); if(dv){ q.progress=pw(q.progress+dv); out.push(`宿命「${q.title}」进度 ${dv>0?'+':''}${dv}`); } }
+  }
+  // 谈崩了结仇 / 化干戈
+  if(eff.vendetta&&String(eff.vendetta.reason||'').trim()){
+    addVendetta(n.name, String(eff.vendetta.reason).slice(0,30), !!eff.vendetta.lethal, 35);
+    out.push(`⚑ ${n.name}把这笔账记下了`);
+  }
+  if(eff.appease){
+    const v=(S.vendettas||[]).find(x=>x.name===n.name&&x.heat>0);
+    if(v){ v.heat=Math.max(0,v.heat-40); S.vendettas=S.vendettas.filter(x=>x.heat>0); out.push(`${n.name}的火气消了不少`); }
+  }
+  // 打听到的事，记进未了之事，主线接得上
+  if(eff.info&&String(eff.info).trim()&&risky){
+    const t=String(eff.info).trim().slice(0,40);
+    S.scene=S.scene||{location:'',unresolved:[]};
+    S.scene.unresolved=asArr(S.scene.unresolved);
+    if(!S.scene.unresolved.includes(t)){ S.scene.unresolved.push(t); while(S.scene.unresolved.length>6) S.scene.unresolved.shift(); }
+    out.push(`打听到：${t}`);
+  }
+  return out;
+}
+
 /* ================= NPC 对话系统 ================= */
 let convo=null;
 function openConvo(npc){
   if(busy||!S||S.over) return;
   if(!npc.alive){ toast(npc.name+'已经不在人世了'); return; }
-  convo={npc, msgs:[], favorTotal:0, giftMode:false, secretRevealed:false};
+  convo={npc, msgs:[], favorTotal:0, giftMode:false, secretRevealed:false, gains:[]};
   $('npcMask').classList.remove('on');
   renderConvoHead();
   $('convoMsgs').innerHTML=`<div class="bub sys">你找到了${esc(npc.name)}（${esc(npc.identity)}）。${esc(npc.name)}此刻心情：${esc(npc.mood||'平静')}。${S.player.attributes['谈吐']>=60?'你谈吐过人，能察言观色，看得出对方心里在想什么。':'你谈吐尚浅，看不透对方心思（谈吐达60可察言观色）。'}</div>`;
@@ -2463,6 +2630,13 @@ async function convoSend(text, gift){
     if(fav){ if(n['爱恋值']!=null) n['爱恋值']=clamp(n['爱恋值']+fav); else n['好感度']=clamp(n['好感度']+fav); convo.favorTotal+=fav; convoBubble(`${esc(n.name)}${fav>0?'好感 +'+fav:'好感 '+fav}`,'sys'); }
     if(d.mood) n.mood=d.mood;
     if(d.revealSecret&&!n.secretKnown){ n.secretKnown=true; convo.secretRevealed=true; S.stats.secrets++; convoBubble(`✦ 你探知了${esc(n.name)}的秘密：${esc(n.secret)}`,'sys'); }
+    // 谈成的事要真的落到账上
+    const gains=applyConvoEffects(n, d.effects, d.attempt?d.attempt.success!==false:true);
+    if(gains.length){
+      convo.gains=(convo.gains||[]).concat(gains);
+      for(const g of gains) convoBubble('✦ '+esc(g),'sys');
+      renderPanel();
+    }
     if(d.summary) convo.summary=d.summary;
     renderConvoHead(); renderPeople(); snapshotConvo(); saveGame();
     if(d.endTalk){ convoBubble(`${esc(n.name)}不愿再谈，这场对话到此为止。`,'sys'); setTimeout(()=>endConvo(),900); }
@@ -2481,16 +2655,17 @@ function endConvo(){
   S.convoState=null;
   if(convo.msgs.length>=2){
     S.stats.talks++;
-    const sum=convo.summary||('与'+n.name+'交谈了一番');
+    const gains=convo.gains||[];
+    const sum=(convo.summary||('与'+n.name+'交谈了一番'))+(gains.length?`（${gains.slice(0,3).join('；')}）`:'');
     n.lastSeen=S.turn;
     n.memory=(n.memory||[]); n.memory.push(`${S.date}：${sum}`); while(n.memory.length>4) n.memory.shift();
     const transcript=convo.msgs.map(m=>m.role==='me'?`${S.player.name}：「${m.text}」`:`${n.name}：${m.text}`).join('\n');
-    S.recent.push({action:`与${n.name}面谈`,narrative:transcript.slice(0,1200)});
+    S.recent.push({action:`与${n.name}面谈`,narrative:transcript.slice(0,1200)+(gains.length?`\n【这场谈话的结果（引擎已记账，后文须承认）】${gains.join('；')}`:'')});
     while(S.recent.length>4) S.recent.shift();
     S.history.push({turn:S.turn,action:`与${n.name}面谈`,summary:sum+(convo.favorTotal?`（好感${convo.favorTotal>0?'+':''}${convo.favorTotal}）`:'')});
     const div=document.createElement('div'); div.className='chapter';
     div.innerHTML=`<div class="chapmark">面谈 · ${esc(n.name)}</div><div class="chaptime">${esc(S.date)}</div><div class="ntext" style="margin-top:20px">${convo.msgs.map(m=>`<p>${m.role==='me'?`<b>${esc(S.player.name)}</b>：<q>${esc(m.text)}</q>`:`<b>${esc(n.name)}</b>：${esc(m.text).replace(/「([^」]*)」/g,'<q>$1</q>')}`}</p>`).join('')}
-      <div class="subblock"><li>${esc(sum)}${convo.favorTotal?`　${esc(n.name)}好感 ${convo.favorTotal>0?'+':''}${convo.favorTotal}`:''}${convo.secretRevealed?'　✦ 探知一个秘密':''}</li></div></div>`;
+      <div class="subblock"><li>${esc(convo.summary||('与'+n.name+'交谈了一番'))}${convo.favorTotal?`　${esc(n.name)}好感 ${convo.favorTotal>0?'+':''}${convo.favorTotal}`:''}${convo.secretRevealed?'　✦ 探知一个秘密':''}</li>${gains.map(g=>`<li>✦ ${esc(g)}</li>`).join('')}</div></div>`;
     $('story').appendChild(div); div.scrollIntoView({behavior:'smooth',block:'end'});
     logChapter(div);
     checkAchievements(); renderPanel(); saveGame();

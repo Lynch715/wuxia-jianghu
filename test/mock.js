@@ -60,8 +60,11 @@ function pickBody(prompt){
     return body;
   }
   if(prompt.includes('你现在扮演武侠世界中的人物')) return {
-    reply:'（她抬眼看你）「师弟，你脸色不好。」',innerThought:'他又在想他爹的事',mood:'关切',favor:4,
-    attempt:null,revealSecret:false,endTalk:false,summary:'与沈师姐说了几句'};
+    reply:'（她抬眼看你）「师弟，你脸色不好，这瓶伤药拿去。」',innerThought:'他又在想他爹的事',mood:'关切',favor:4,
+    attempt:{type:'求助',attr:'谈吐',need:40,total:60,success:true},revealSecret:false,endTalk:false,
+    effects:{money:300,give:[{cat:'医药',name:'白玉续命膏',desc:'师姐私藏的伤药'}],hp:25,
+             info:'黑风口近来有埋伏',quest:{title:'替师姐带一封信',desc:'送到山下的镖局'}},
+    summary:'与沈师姐说了几句'};
   if(prompt.includes('请把它压成一段')) return {text:'早年在华山学艺，与沈师姐交好，与秃鹰结仇。'};
   if(prompt.includes('墓志铭')) return {biography:'李昭一生……',epitaph:'刀在人在',verdict:'性烈如火'};
   return {narrative:'（未知提示）',summary:'',options:[]};

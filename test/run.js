@@ -191,6 +191,16 @@ await page.click('#convoSend');
 await page.waitForTimeout(250);
 const btnState=await page.evaluate(()=>({end:$('convoEnd').disabled,send:$('convoSend').disabled}));
 ok('等回复时「告辞」仍可点（送出被禁用）', btnState.end===false&&btnState.send===true);
+await page.waitForTimeout(1800);
+const eff=await page.evaluate(()=>({money:S.player.money,hp:S.player.hp,
+  med:(S.player.items['医药']||[]).map(x=>x.name), quests:S.quests.map(q=>q.title),
+  unresolved:(S.scene&&S.scene.unresolved)||[], gains:(typeof convo!=='undefined'&&convo&&convo.gains)||[],
+  fav:S.npcs[0]['好感度'], gave:S.npcs[0].gave}));
+ok('谈成的事真的落账（'+eff.gains.join('｜')+'）', eff.gains.length>0);
+ok('讨到的银子按好感被削（模型想给300，实到 '+eff.gave+' 两）', eff.gave>0&&eff.gave<300);
+ok('讨到的东西进了行囊：'+eff.med.join(','), eff.med.includes('白玉续命膏'));
+ok('受人所托变成宿命：'+eff.quests.join(','), eff.quests.includes('替师姐带一封信'));
+ok('打听到的消息进了未了之事：'+eff.unresolved.join(','), eff.unresolved.some(x=>x.includes('黑风口')));
 await page.keyboard.press('Escape');
 await page.waitForTimeout(200);
 ok('Esc 能退出对话', !(await page.$('#convoMask.on')));
