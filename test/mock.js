@@ -37,6 +37,10 @@ function pickBody(prompt){
     newVendettas:[],questUpdates:[],newQuests:[],rankingUpdates:[],factionUpdates:[],duel:null,
     options:[{text:'就地歇口气',hint:'',type:'rest',months:1},{text:'回华山复命',hint:'',type:'normal',months:2}],
     gameOver:false,ending:null};
+  if(prompt.includes('【玩家本回合行动】去黑风口打听消息')) return {
+    narrative:'他一脚踏空，坠下崖去。',summary:'主角身死',scene:{location:'崖下',unresolved:[]},check:null,
+    playerChanges:{},npcUpdates:[],newNpcs:[],npcEvents:[],rumors:[],newVendettas:[],questUpdates:[],newQuests:[],
+    rankingUpdates:[],factionUpdates:[],duel:null,options:[],gameOver:true,ending:'李昭殒命于黑风口'};
   if(prompt.includes('闭关参悟') || prompt.includes('请推演本回合')){
     turnNo++;
     const body={

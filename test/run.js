@@ -13,12 +13,13 @@ const exe=process.env.PW_CHROME||undefined;   // 容器里用 PW_CHROME 指定�
 const br=await chromium.launch(exe?{executablePath:exe}:{});
 const ctx=await br.newContext({viewport:{width:1400,height:900}});
 const page=await ctx.newPage();
-const errs=[]; page.on('pageerror',e=>errs.push(String(e)));
+const errs=global.__errs=[]; page.on('pageerror',e=>errs.push(String(e)));
 page.on('console',m=>{ if(m.type()==='error') errs.push('console:'+m.text()); });
 await page.route('**/chat/completions',async route=>{
   const body=JSON.parse(route.request().postData());
   const prompt=body.messages[body.messages.length-1].content;
   global.__lastPrompt=prompt; global.__msgs=body.messages;
+  if(prompt.includes('你现在扮演武侠世界中的人物')) await new Promise(r=>setTimeout(r,1500));
   await route.fulfill({status:200,headers:{'Content-Type':'text/event-stream'},body:sse(pickBody(prompt))});
 });
 await page.addInitScript(()=>{ localStorage.setItem('wuxia_cfg',JSON.stringify({base:'https://api.deepseek.com',key:'sk-test',model:'deepseek-v4-flash',think:false})); });
@@ -95,6 +96,55 @@ await page.click('#cfgCancel');
 await page.click('#choices .opt >> nth=0');
 await page.waitForSelector('#choices .opt',{timeout:15000});
 ok('切换后提示词换成随心所欲', /本局自由度：随心所欲/.test(global.__lastPrompt||'')&&/一律当作做成了/.test(global.__lastPrompt||''));
+
+console.log('\n【剧情杀闸门】');
+await page.evaluate(()=>{ S.freedom='mid'; S.player.hp=90; });
+await page.fill('#freeInput','去黑风口打听消息');
+await page.click('#sendBtn');
+await page.waitForSelector('#choices .opt',{timeout:15000});
+const st=await page.evaluate(()=>({over:S.over,hp:S.player.hp,status:S.player.status.slice()}));
+ok('江湖传奇下模型写死主角被引擎驳回（over='+st.over+' 气血='+st.hp+' 状态='+st.status+'）', st.over===false&&st.hp<=22&&st.status.includes('重伤'));
+ok('章节里写明引擎裁定', (await page.textContent('#story')).includes('引擎裁定'));
+ok('模型交白卷时引擎补上选项（'+(await page.$$('#choices .opt')).length+' 个）', (await page.$$('#choices .opt')).length>=3);
+const strictAllows=await page.evaluate(()=>{ const f=FREEDOM['strict']; return f.storyDeath>=1; });
+ok('写实江湖仍允许剧情杀', strictAllows);
+
+console.log('\n【对话退得出去】');
+await page.evaluate(()=>{ S.freedom='mid'; });
+await page.click('#tabs button[data-tab="people"]');
+await page.click('#npcList .npc >> nth=0');
+await page.click('#npcTalkBtn');
+await page.waitForSelector('#convoMask.on');
+await page.fill('#convoText','你怎么看这件事');
+await page.click('#convoSend');
+await page.waitForTimeout(250);
+const btnState=await page.evaluate(()=>({end:$('convoEnd').disabled,send:$('convoSend').disabled}));
+ok('等回复时「告辞」仍可点（送出被禁用）', btnState.end===false&&btnState.send===true);
+await page.keyboard.press('Escape');
+await page.waitForTimeout(200);
+ok('Esc 能退出对话', !(await page.$('#convoMask.on')));
+await page.waitForTimeout(2000);
+ok('迟到的回复不会把人拽回对话框', !(await page.$('#convoMask.on')));
+await page.click('#npcList .npc >> nth=0');
+await page.click('#npcTalkBtn');
+await page.waitForSelector('#convoMask.on');
+await page.click('#convoMask',{position:{x:8,y:8}});
+await page.waitForTimeout(200);
+ok('点空白处也能退出对话', !(await page.$('#convoMask.on')));
+await page.click('#tabs button[data-tab="world"]');
+
+console.log('\n【桌面图标】');
+const ic=await page.evaluate(()=>{
+  const a=document.querySelector('link[rel="apple-touch-icon"]');
+  const f=document.querySelector('link[rel="icon"]');
+  const m=document.querySelector('link[rel="manifest"]');
+  return {apple:a?a.href.slice(0,30):null, len:a?a.href.length:0, fav:!!f, mf:m?m.href.slice(0,5):null};
+});
+ok('apple-touch-icon 已内嵌（'+Math.round(ic.len/1024)+'KB data URI）', ic.apple&&ic.apple.startsWith('data:image/png'));
+ok('favicon 与 manifest 已注入（'+ic.mf+'）', ic.fav&&ic.mf==='blob:');
+const mfJson=await page.evaluate(async()=>{ const m=document.querySelector('link[rel=manifest]'); return await (await fetch(m.href)).json(); });
+ok('manifest 名称与图标：'+mfJson.name+' / '+mfJson.icons[0].sizes, mfJson.name.includes('武侠')&&mfJson.icons[0].sizes==='384x384'&&mfJson.display==='standalone');
+
 await page.evaluate(()=>{ S.freedom='strict'; });
 
 console.log('\n【大凶：引擎定死的实损】');
@@ -157,4 +207,4 @@ console.log('\n页面错误：', errs.length?errs.slice(0,5):'无');
 console.log(`\n结果：${oks.length} 通过，${fails.length} 失败`);
 if(fails.length) console.log('失败项：',fails.join('；'));
 await br.close(); srv.close(); process.exit(fails.length||errs.length?1:0);
-})().catch(e=>{console.error(e);process.exit(1)});
+})().catch(e=>{console.error('FAILED:',e.message);console.error('page errors:',(global.__errs||[]).slice(0,6));process.exit(1)});
