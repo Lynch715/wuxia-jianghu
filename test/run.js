@@ -37,6 +37,30 @@ await page.click('#crStart');
 await page.waitForSelector('#choices .opt',{timeout:15000});
 ok('system 角色已发送', (global.__msgs||[]).length===2 && global.__msgs[0].role==='system');
 ok('开局剧情已渲染', (await page.textContent('#story')).includes('雨下了整宿'));
+const nameCase=await page.evaluate(()=>{
+  const keepName=S.player.name, keepNpcs=S.npcs;
+  S.player.name='田伯光';
+  S.npcs=[{name:'徐三娘',alive:true},{name:'欧阳锋',alive:true}];
+  const r={
+    wrong: fixSelfRef('我王某说到做到！',[]),
+    npcOwn: fixSelfRef('我徐某人今日便走。',[]),
+    notName: fixSelfRef('我有某人相助。',[]),
+    elder: fixSelfRef('老夫赵某闯荡四十年。',[]),
+    right: fixSelfRef('我田某说话算数。',[]),
+    compound: surnameOf('欧阳锋')+'/'+surnameOf('田伯光'),
+    block: stateBlocks()
+  };
+  S.player.name=keepName; S.npcs=keepNpcs;   // 测完还回去，别弄脏后面的用例
+  return r;
+});
+ok('写错的自称被改回主角的姓：'+nameCase.wrong, nameCase.wrong==='我田某说到做到！');
+ok('在场NPC的姓不动：'+nameCase.npcOwn, nameCase.npcOwn==='我徐某人今日便走。');
+ok('「我有某人」不是自称，不动', nameCase.notName==='我有某人相助。');
+ok('「老夫X某」多半是长辈NPC，不动', nameCase.elder==='老夫赵某闯荡四十年。');
+ok('本来就对的不动', nameCase.right==='我田某说话算数。');
+ok('复姓识别正确（'+nameCase.compound+'）', nameCase.compound==='欧阳/田');
+ok('提示词把主角姓名单拎出来强调：'+(nameCase.block.match(/【主角姓名】[^\n]{0,40}/)||[''])[0],
+   /【主角姓名】田伯光/.test(nameCase.block)&&/绝不可换成别的姓/.test(nameCase.block));
 const money=await page.textContent('#pMoney');
 ok('家财显示月耗与可撑月数：'+money.replace(/\s+/g,' ').trim().slice(0,40), /月耗约 \d+ 两/.test(money));
 ok('师门卡片：'+(await page.textContent('#pSect')).replace(/\s+/g,' ').trim().slice(0,30), (await page.textContent('#pSect')).includes('华山派'));
