@@ -39,6 +39,12 @@ const money=await page.textContent('#pMoney');
 ok('家财显示月耗与可撑月数：'+money.replace(/\s+/g,' ').trim().slice(0,40), /月耗约 \d+ 两/.test(money));
 ok('师门卡片：'+(await page.textContent('#pSect')).replace(/\s+/g,' ').trim().slice(0,30), (await page.textContent('#pSect')).includes('华山派'));
 ok('武学显示路数熟练度', (await page.textContent('#pArts')).includes('刚猛'));
+const skRaw=await page.evaluate(()=>S.player.skills);
+const skOk=Object.values(skRaw).every(v=>v&&typeof v==='object'&&typeof v.level==='number'&&v.level>=0&&v.level<=100&&typeof v.desc==='string');
+ok('模型把技艺写成文字也能收敛成数字等级：'+JSON.stringify(skRaw['记帐']), skOk);
+const badWidth=await page.evaluate(()=>Array.from(document.querySelectorAll('#pSkills .bar i')).map(i=>i.style.width));
+ok('技艺进度条宽度都是合法百分比（'+badWidth.join(',')+'）', badWidth.length===3&&badWidth.every(w=>/^\d+%$/.test(w)));
+ok('技艺说明另起一行显示', (await page.$$('#pSkills .sdesc')).length===3);
 const opts=await page.$$eval('#choices .opt',es=>es.map(e=>e.textContent));
 ok('选项标出耗时：'+(opts[1]||'').replace(/\s+/g,' ').trim().slice(0,40), opts.some(t=>t.includes('耗时 3 月')));
 
@@ -56,7 +62,7 @@ ok('武学熟练度增长', story.includes('伏虎拳 熟练 +'));
 console.log('\n【参悟秘籍】');
 await page.click('#tabs button[data-tab="bag"]');
 const man=await page.textContent('#bagManuals');
-ok('秘籍显示参悟参数：'+man.replace(/\s+/g,' ').trim().slice(0,70), /参悟需 \d+ 个月/.test(man)&&/约 \d+% 成算/.test(man));
+ok('秘籍显示参悟参数：'+man.replace(/\s+/g,' ').trim().slice(0,70), /闭关 \d+ 个月/.test(man)&&/成算约 \d+%/.test(man));
 await page.click('#bagManuals button[data-mi="0"]');
 await page.waitForSelector('#choices .opt',{timeout:15000});
 const st2=await page.textContent('#story');
@@ -87,7 +93,7 @@ if(await page.$('#duelGo')){ await page.click('#duelGo'); await page.waitForSele
 ok('比武后续写完成', (await page.textContent('#story')).includes('刀光闪过'));
 
 console.log('\n【自由度：随时切换与提示词口径】');
-ok('面板标出凶险/自由度：'+(await page.textContent('#pMeta')).split('·').pop().trim(), (await page.textContent('#pMeta')).includes('江湖传奇'));
+ok('面板徽章标出凶险/自由度：'+(await page.textContent('#pTitle')).replace(/\s+/g,' ').trim(), (await page.textContent('#pTitle')).includes('江湖传奇'));
 ok('提示词带自由度口径', /本局自由度：江湖传奇/.test(global.__lastPrompt||''));
 await page.click('#btnSettings');
 await page.selectOption('#cfgFreedom','free');

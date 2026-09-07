@@ -16,7 +16,7 @@ function pickBody(prompt){
   if(prompt.includes('现在请生成一位主角并开局')) return {
     player:{name:'李昭',biaozi:null,gender:'男',age:22,orientation:'异性恋',appearance:'瘦高',personality:['执拗','重义'],
       backgroundType:'习武世家',backstory:'家道中落，父亲死于非命。',
-      attributes:{谈吐:42,才学:35,颖悟:60,武功:38},侠名:8,恶名:2,money:120,faction:'华山派',skills:{医疗:10},
+      attributes:{谈吐:42,才学:35,颖悟:60,武功:38},侠名:8,恶名:2,money:120,faction:'华山派',skills:{'记帐':'识文断字（粗浅），能记些账目','烹饪':'做得一手家常便饭（大户人家厨房帮工经验）','暗器':'扔掷石块有准头（虽未及暗器功夫，但手头准）'},
       arts:[{name:'伏虎拳',desc:'刚猛外家拳',style:'刚猛',level:25}],
       items:{武器:[{name:'柳叶刀',desc:'父亲遗物',bonus:5}],秘籍:[{name:'伏虎心法残卷',desc:'字迹斑驳'}],医药:[{name:'金创药'},{name:'金创药'}],毒药:[{name:'蚀骨散'}],杂书:[],其他:[]},
       status:[]},
