@@ -23,7 +23,13 @@ await page.route('**/chat/completions',async route=>{
 });
 await page.addInitScript(()=>{ localStorage.setItem('wuxia_cfg',JSON.stringify({base:'https://api.deepseek.com',key:'sk-test',model:'deepseek-v4-flash',think:false})); });
 await page.goto('http://localhost:8931/');
-console.log('\n【开局】');
+console.log('\n【开局：自由度选择】');
+ok('捏人有自由度三档', (await page.$$('#crFree button')).length===3);
+ok('默认选中江湖传奇', (await page.getAttribute('#crFree button[data-v="mid"]','class')||'').includes('sel'));
+await page.click('#crFree button[data-v="free"]');
+const note=await page.textContent('#crFreeNote');
+ok('自由度说明：'+note.replace(/\s+/g,' ').slice(0,80), note.includes('不会落终身伤残'));
+await page.click('#crFree button[data-v="mid"]');
 await page.click('#crStart');
 await page.waitForSelector('#choices .opt',{timeout:15000});
 ok('system 角色已发送', (global.__msgs||[]).length===2 && global.__msgs[0].role==='system');
@@ -78,6 +84,18 @@ ok('战报含毒发', dlog.includes('毒性'));
 if(await page.$('#dKill')){ await page.click('#dKill'); }
 if(await page.$('#duelGo')){ await page.click('#duelGo'); await page.waitForSelector('#choices .opt',{timeout:15000}); }
 ok('比武后续写完成', (await page.textContent('#story')).includes('刀光闪过'));
+
+console.log('\n【自由度：随时切换与提示词口径】');
+ok('面板标出凶险/自由度：'+(await page.textContent('#pMeta')).split('·').pop().trim(), (await page.textContent('#pMeta')).includes('江湖传奇'));
+ok('提示词带自由度口径', /本局自由度：江湖传奇/.test(global.__lastPrompt||''));
+await page.click('#btnSettings');
+await page.selectOption('#cfgFreedom','free');
+ok('设置里可改自由度', await page.evaluate(()=>S.freedom)==='free');
+await page.click('#cfgCancel');
+await page.click('#choices .opt >> nth=0');
+await page.waitForSelector('#choices .opt',{timeout:15000});
+ok('切换后提示词换成随心所欲', /本局自由度：随心所欲/.test(global.__lastPrompt||'')&&/一律当作做成了/.test(global.__lastPrompt||''));
+await page.evaluate(()=>{ S.freedom='strict'; });
 
 console.log('\n【大凶：引擎定死的实损】');
 await page.evaluate(()=>{ S.player.hp=80; S.player.money=500; window.__realRandom=Math.random; Math.random=()=>0.0001; });
