@@ -7,12 +7,14 @@ const html=fs.readFileSync(require('path').join(__dirname,'..','index.html'));
 const srv=http.createServer((q,r)=>{ r.writeHead(200,{'Content-Type':'text/html; charset=utf-8'}); r.end(html); });
 const fails=[]; const oks=[];
 const ok=(n,c)=>{ (c?oks:fails).push(n); console.log((c?'  ✓ ':'  ✗ ')+n); };
+let page;
+const idle=()=>page.waitForFunction(()=>!busy&&(typeof convo==='undefined'||!convo),null,{timeout:25000});
 (async()=>{
 srv.listen(8931);
 const exe=process.env.PW_CHROME||undefined;   // 容器里用 PW_CHROME 指定，本机留空走 playwright 自带
 const br=await chromium.launch(exe?{executablePath:exe}:{});
 const ctx=await br.newContext({viewport:{width:1400,height:900}});
-const page=await ctx.newPage();
+page=await ctx.newPage();
 const errs=global.__errs=[]; page.on('pageerror',e=>errs.push(String(e)));
 page.on('console',m=>{ if(m.type()==='error') errs.push('console:'+m.text()); });
 await page.route('**/chat/completions',async route=>{
@@ -75,7 +77,10 @@ ok('名录头像全部走雪碧图（'+avInfo.sprite+'/'+avInfo.n+'）', avInfo.
 ok('NPC 各自分到不同的脸：'+avInfo.slots.join(','), new Set(avInfo.slots).size===avInfo.slots.length);
 ok('关系图节点用了头像', (await page.$$('#graphWrap image')).length>0);
 const faceStable=await page.evaluate(()=>{
-  const n=S.npcs[0], before=n.avatar; n.age=n.age+20; return {before, after:avSlotOf(n)};
+  const n=S.npcs[0], keep=n.age, before=n.avatar;
+  n.age=keep+20; const after=avSlotOf(n);
+  n.age=keep;                        // 测完还回去，否则他会随机老死，后面的用例就没人可谈了
+  return {before, after};
 });
 ok('长了岁数也不换脸（'+faceStable.before+' → '+faceStable.after+'）', faceStable.before===faceStable.after);
 const skRaw=await page.evaluate(()=>S.player.skills);
@@ -138,6 +143,7 @@ await page.click('#btnSettings');
 await page.selectOption('#cfgFreedom','free');
 ok('设置里可改自由度', await page.evaluate(()=>S.freedom)==='free');
 await page.click('#cfgCancel');
+await idle();
 await page.click('#choices .opt >> nth=0');
 await page.waitForSelector('#choices .opt',{timeout:15000});
 ok('切换后提示词换成随心所欲', /本局自由度：随心所欲/.test(global.__lastPrompt||'')&&/一律当作做成了/.test(global.__lastPrompt||''));
@@ -154,6 +160,7 @@ const talkPrompt=async(free)=>{
   await page.waitForTimeout(1800);
   const pr=global.__lastPrompt||'';
   await page.keyboard.press('Escape'); await page.waitForTimeout(300);
+  await idle();
   return pr;
 };
 const talkBase=await page.evaluate(()=>S.player.attributes['谈吐']);
@@ -163,6 +170,12 @@ ok(`随心所欲：说服判定吃到 +25 气运（谈吐 ${talkBase} → ${(pFr
    pFree.includes('说服/欺骗/套话用谈吐'+(talkBase+25)));
 ok('随心所欲：秘密门槛降到 50', /好感≥50且被直接问及/.test(pFree));
 ok('随心所欲：不再说「不会无缘无故帮他」', !/不会无缘无故帮他/.test(pFree)&&/十有八九求得动/.test(pFree));
+ok('随心所欲：NPC 主动想帮他，不必等他开口', /主动想帮他/.test(pFree)&&/不必等他开口/.test(pFree));
+ok('随心所欲：每句话末尾留一个邀约或线索', /末尾留一个邀约或一条线索/.test(pFree));
+ok('随心所欲：不许拂袖而去（endTalk 恒 false）', /endTalk 一律填 false/.test(pFree));
+ok('随心所欲：请求门槛往低里设（随口小事30）', /随口小事30/.test(pFree));
+const convoGate=await page.evaluate(()=>['free','mid','strict'].map(f=>{const x=FREEDOM[f];return f+':'+x.check+'/'+x.secretGate;}).join(' '));
+ok('三档对话门槛依次放宽：'+convoGate, /free:25\/50/.test(convoGate)&&/strict:0\/80/.test(convoGate));
 const pStrict=await talkPrompt('strict');
 ok('写实江湖：仍是原来的严苛口径', /不会无缘无故帮他/.test(pStrict)&&/好感≥80且被直接问及/.test(pStrict));
 ok('对话也吃自由度：NPC 资料带上画像', /portrait/.test(pStrict));
@@ -206,13 +219,84 @@ await page.waitForTimeout(200);
 ok('Esc 能退出对话', !(await page.$('#convoMask.on')));
 await page.waitForTimeout(2000);
 ok('迟到的回复不会把人拽回对话框', !(await page.$('#convoMask.on')));
+await idle();
+await page.click('#tabs button[data-tab="people"]');
 await page.click('#npcList .npc >> nth=0');
 await page.click('#npcTalkBtn');
 await page.waitForSelector('#convoMask.on');
 await page.click('#convoMask',{position:{x:8,y:8}});
 await page.waitForTimeout(200);
 ok('点空白处也能退出对话', !(await page.$('#convoMask.on')));
+await idle();
 await page.click('#tabs button[data-tab="world"]');
+
+console.log('\n【面谈余波：谈完接得上主线】');
+await page.evaluate(()=>{ S.freedom='mid'; });
+await page.click('#tabs button[data-tab="people"]');
+await page.click('#npcList .npc >> nth=0');
+await page.click('#npcTalkBtn');
+await page.waitForSelector('#convoMask.on');
+const beforeTalk=await page.evaluate(()=>({date:S.date,money:S.player.money,chapters:document.querySelectorAll('#story .chapter').length}));
+await page.fill('#convoText','这事你怎么打算');
+await page.click('#convoSend');
+await page.waitForTimeout(1800);
+await page.click('#convoEnd');
+await page.waitForFunction(n=>document.querySelectorAll('#story .chapter').length>=n+2,beforeTalk.chapters,{timeout:15000});
+await idle();
+await page.waitForSelector('#choices .opt:not([disabled])',{timeout:15000});
+const aftPrompt=global.__lastPrompt||'';
+ok('余波回合的提示词写明「刚才那场面谈的余波」', /刚才那场面谈的余波/.test(aftPrompt)&&/不要重述对话内容/.test(aftPrompt));
+ok('余波把已落账的结果交给模型认账：'+((aftPrompt.match(/已经落到账上的结果[^\n]{0,60}/)||[''])[0]).slice(0,60),
+   /既成事实，必须承认/.test(aftPrompt));
+ok('余波不推时间、不算生计', !/本回合历时/.test(aftPrompt)&&!/^- 生计/m.test(aftPrompt));
+const aft=await page.evaluate(()=>({date:S.date,money:S.player.money,
+  story:document.querySelector('#story').textContent,
+  opts:Array.from(document.querySelectorAll('#choices .opt')).map(e=>e.textContent.replace(/\s+/g,' ').trim())}));
+ok(`余波不吃光阴（${beforeTalk.date.trim()} → ${aft.date.trim()}）`, beforeTalk.date===aft.date);
+ok('余波不扣食宿汤药', aft.money>=beforeTalk.money);
+ok('余波续写落进正文', aft.story.includes('话头刚落'));
+ok('新选项接着这场谈话往下走：'+aft.opts[0], aft.opts.some(t=>t.includes('黑风口'))&&aft.opts.some(t=>t.includes('镖局')));
+
+console.log('\n【江湖榜的新陈代谢】');
+const rk1=await page.evaluate(()=>{
+  const keep=JSON.parse(JSON.stringify(S.world.ranking));
+  S.world.fallen=[]; S.rankVacantTurns=0;
+  S.world.ranking=[{name:'铁掌王',faction:'散人','武功':92,note:'一双铁掌',alive:true,age:70},
+                   {name:'冷月姑',faction:'月影宫','武功':80,note:'月影刀',alive:false,age:66},
+                   {name:'枯木道人',faction:'散人','武功':64,note:'枯木指',alive:true,age:80}];
+  const s=findNpc('沈师姐'); s['武功']=88; s.alive=true;   // 剧情里练上来的自己人
+  rankRefresh();
+  return {keep,names:S.world.ranking.map(r=>r.name),ws:S.world.ranking.map(r=>num(r['武功'])),
+          fallen:S.world.fallen.map(f=>f.name),dead:S.world.ranking.filter(r=>r.alive===false).length,
+          vacant:S.world.vacant};
+});
+ok('死者退榜，另记往生录：'+rk1.fallen.join(','), rk1.fallen.includes('冷月姑')&&!rk1.names.includes('冷月姑'));
+ok('榜上不再留死人', rk1.dead===0);
+ok('剧情里练上来的人物自动上榜：'+rk1.names.join('、'), rk1.names.includes('沈师姐'));
+ok('榜单按武功由高到低排：'+rk1.ws.join('>'), rk1.ws.every((v,i,a)=>i===0||a[i-1]>=v));
+ok('人不够时记下空缺（'+rk1.vacant+' 个）', rk1.vacant===10-rk1.names.length&&rk1.vacant>0);
+const rk2=await page.evaluate(()=>{ rankRefresh(); rankRefresh();
+  return {n:S.world.ranking.length,names:S.world.ranking.map(r=>r.name),
+          ws:S.world.ranking.map(r=>num(r['武功'])),vacant:S.world.vacant}; });
+ok('空缺挂了两回合，引擎自己补满十人：'+rk2.n, rk2.n===10&&rk2.vacant===0);
+ok('补进来的是新面孔，不与旧人重名', new Set(rk2.names).size===10);
+ok('补满后仍按武功排：'+rk2.ws.join('>'), rk2.ws.every((v,i,a)=>i===0||a[i-1]>=v));
+const rkLow=await page.evaluate(()=>{
+  const floor=rankFloor(), before=S.world.ranking.length;
+  applyTurn({rankingAdd:[{name:'张三脚',faction:'散人','武功':floor-20,note:'不入流'},
+                         {name:'秦无咎',faction:'散人','武功':floor+6,note:'一柄短戟'}],
+             options:[{text:'继续',hint:'',type:'normal',months:1}],narrative:'',summary:''},
+            {fate:11,check:null,worldEvent:null,duel:false,months:0});
+  return {floor,before,names:S.world.ranking.map(r=>r.name)};
+});
+ok('武功不够的硬塞不进榜（榜末线 '+rkLow.floor+'）', !rkLow.names.includes('张三脚'));
+ok('够格的新高手进得来', rkLow.names.includes('秦无咎'));
+await page.click('#tabs button[data-tab="world"]');
+await page.evaluate(()=>renderWorld());
+const wtxt=(await page.textContent('#wRanking')).replace(/\s+/g,' ');
+ok('世界页列出往生录：'+((wtxt.match(/往生录：[^ ]{0,24}/)||[''])[0]), /往生录：/.test(wtxt)&&wtxt.includes('冷月姑'));
+ok('榜上活人都带挑战按钮，死人不带', (await page.$$('#wRanking .rank:not(.deadr):not(.me) button[data-ch]')).length===(await page.$$('#wRanking .rank:not(.deadr):not(.me)')).length);
+await page.evaluate(()=>{ S.world.fallen=[]; S.rankVacantTurns=0; });
 
 console.log('\n【桌面图标】');
 const ic=await page.evaluate(()=>{
@@ -233,6 +317,7 @@ await page.evaluate(()=>{ S.player.hp=80; S.player.money=500; window.__realRando
 const moneyBefore=await page.evaluate(()=>S.player.money);
 const hpBefore=await page.evaluate(()=>S.player.hp);
 const itemsBefore=await page.evaluate(()=>JSON.stringify(S.player.items));
+await idle();
 await page.click('#choices .opt >> nth=0');
 await page.waitForSelector('#choices .opt',{timeout:15000});
 const doomPrompt=global.__lastPrompt||'';

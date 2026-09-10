@@ -624,7 +624,7 @@ let carryDeltas = null;
 const $=id=>document.getElementById(id);
 const esc=s=>String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 
-const SAVE_VERSION=4;
+const SAVE_VERSION=5;
 function newStateShell(){
   return {
     v:SAVE_VERSION, turn:0, date:'', player:null, npcs:[],
@@ -633,7 +633,8 @@ function newStateShell(){
     months:0, ganzhi:0, upkeepLast:0, destitute:false, starveMonths:0, oldAgeDeath:false,
     vendettas:[], scars:[], engineNews:[], ranked:false, lastChallengeMonth:-99, volumes:[],
     sect:null,
-    world:{factions:[],ranking:[],events:[]},
+    world:{factions:[],ranking:[],events:[],fallen:[],vacant:0},
+    rankVacantTurns:0,
     quests:[], achievements:[],
     stats:{duelWins:0,duelLosses:0,kills:0,spares:0,escapes:0,secrets:0,talks:0,questsDone:0},
     lastWorldEventTurn:-9, lastOptions:[],
@@ -673,7 +674,12 @@ function migrate(s){
   if(s.v<4){
     // 模型常把技艺等级写成一句话，收敛成 {level,desc}
     if(s.player) s.player.skills=normSkills(s.player.skills);
-    s.v=4;
+    s.v=5;
+  }
+  if(s.v<5){
+    if(s.world){ s.world.fallen=s.world.fallen||[]; s.world.vacant=0; }
+    s.rankVacantTurns=0;
+    s.v=5;
   }
   if(!s.chapters) s.chapters=[];
   if(s.scene) s.scene=normScene(s.scene);
@@ -859,6 +865,74 @@ function npcYearTick(){
     }
   }
 }
+/* ================= 江湖榜新陈代谢 =================
+   以前榜单是开局铸的十个人，只会死不会补，玩到后来满榜都是死人。
+   现在每回合重排：死者退榜入往生录，认识的人武功够了就顶上去，空缺交给模型或引擎补。 */
+const RK_SUR='赵钱孙李周吴郑王冯陈褚卫蒋沈韩杨朱秦尤许何吕施张孔曹严华金魏陶姜谢邹柏窦章云苏潘葛范彭郎鲁韦马苗方俞任袁柳鲍史唐费岑薛雷贺倪汤滕殷罗毕郝安常乐于时傅皮卞齐康伍余元卜顾孟平黄和穆萧尹姚邵汪祁毛狄米明成戴谈宋茅庞熊纪舒屈项祝董梁杜阮蓝闵席季麻强贾路娄江童颜郭梅盛林刁钟徐邱骆高夏蔡田樊胡凌霍虞万柯管卢莫房裘缪解应宗丁宣邓郁单杭洪包左石崔吉龚程嵇邢滑裴陆荣翁荀羊惠甄曲家封芮储靳糜松段富巫乌焦巴牧全班仰秋仲伊宫宁仇栾甘武符刘景詹束龙叶幸司黎薄宿白怀蒲从鄂索咸赖卓蔺屠蒙池乔阴胥苍双闻莘党翟谭劳姬扶冉宰郦雍桑桂濮牛寿边扈燕冀浦尚农温别庄晏柴瞿阎充慕连茹习艾鱼容向古易慎戈廖庾终居衡步都耿满弘匡国文寇广禄阙欧殳沃利蔚越夔隆师巩聂晁勾敖冷辛阚那简饶空曾沙丰巢关蒯相查后荆红游竺权盖桓';
+const RK_GIVEN=['无涯','绝尘','惊鸿','沧海','孤鸿','长风','若虚','一鸣','长空','怀素','抱朴','守拙','不悔','问天','听雪','观澜','踏歌','未寒','千山','独行','逸尘','鸣岐','子期','云舟','无咎','玄机','怀瑾','啸林','守正','慕山'];
+const RK_NOTE=['一手快刀无人能接','掌力开碑裂石','剑法一日千里','轻功冠绝当世','三十年不曾败过','一条铁棍横扫两省','指上功夫出神入化','刀法诡谲难测','内功深不可测','拳出如雷','一柄软剑出手极快','双钩使得出神入化'];
+// 上榜门槛：不能让个武功四十的路人挤进当世前十
+function rankFloor(){
+  const live=(S.world&&S.world.ranking||[]).filter(r=>r.alive!==false);
+  if(!live.length) return 62;
+  return Math.max(58, Math.min.apply(null,live.map(r=>num(r['武功'])))-5);
+}
+function makeRankName(){
+  const used=new Set(((S.world&&S.world.ranking)||[]).map(r=>r.name).concat((S.npcs||[]).map(n=>n.name)));
+  for(let i=0;i<30;i++){
+    const nm=RK_SUR[Math.floor(Math.random()*RK_SUR.length)]+pick(RK_GIVEN);
+    if(!used.has(nm)) return nm;
+  }
+  return RK_SUR[Math.floor(Math.random()*RK_SUR.length)]+pick(RK_GIVEN)+'子';
+}
+function rankRefresh(){
+  if(!S||!S.world) return;
+  S.world.ranking=S.world.ranking||[];
+  S.world.fallen=S.world.fallen||[];
+  const rk=S.world.ranking;
+  // 榜上人物若也在人物名录里，以名录为准（剧情改的是名录）
+  for(const r of rk){
+    const nn=findNpc(r.name);
+    if(nn){ r['武功']=num(nn['武功']); if(!nn.alive) r.alive=false; if(nn.faction) r.faction=nn.faction; }
+  }
+  // 死者退榜，另记往生录
+  for(const d of rk.filter(r=>r.alive===false)){
+    if(!S.world.fallen.find(x=>x.name===d.name)) S.world.fallen.push({name:d.name,faction:d.faction||'散人','武功':num(d['武功']),when:S.date||''});
+  }
+  while(S.world.fallen.length>20) S.world.fallen.shift();
+  const live=rk.filter(r=>r.alive!==false);
+  const onBoard=new Set(live.map(r=>r.name));
+  const floor=rankFloor();
+  // 认识的人里够格的顶上来
+  const cands=(S.npcs||[]).filter(x=>x.alive&&!onBoard.has(x.name)&&num(x['武功'])>=floor)
+    .map(x=>({name:x.name,faction:x.faction||'散人','武功':num(x['武功']),note:x.signature||x.identity||'',alive:true,age:num(x.age)||40,_new:true}));
+  const pool=live.concat(cands).sort((a,b)=>num(b['武功'])-num(a['武功']));
+  const next=pool.slice(0,10);
+  const nextNames=new Set(next.map(r=>r.name));
+  for(const r of next) if(r._new) news(`${r.name}武功已足以名列江湖榜，江湖为之侧目`);
+  for(const r of live) if(!nextNames.has(r.name)) news(`${r.name}跌出了江湖榜`);
+  for(const r of next) delete r._new;
+  S.world.ranking=next;
+  const vacant=10-next.length;
+  S.world.vacant=vacant;
+  // 空了两回合还没人填，引擎自己造一个，别让榜一直缺角
+  if(vacant>0){
+    S.rankVacantTurns=num(S.rankVacantTurns)+1;
+    if(S.rankVacantTurns>=2){
+      const fs=(S.world.factions||[]).filter(f=>f&&f.name);
+      for(let i=0;i<vacant;i++){
+        const w=clamp(floor+rnd(2,10),40,98);
+        const f=fs.length&&Math.random()<0.7?pick(fs).name:'散人';
+        const nm=makeRankName();
+        S.world.ranking.push({name:nm,faction:f,'武功':w,note:pick(RK_NOTE),alive:true,age:rnd(35,60)});
+        news(`一位名叫${nm}的高手${f==='散人'?'凭一身武艺':'代表'+f}补上了江湖榜的空缺`);
+      }
+      S.world.ranking.sort((a,b)=>num(b['武功'])-num(a['武功']));
+      S.world.vacant=0; S.rankVacantTurns=0;
+    }
+  }else S.rankVacantTurns=0;
+}
+
 // 每逢生辰：衰老、寿数
 function agingTick(){
   const p=S.player, ag=fdm().aging;
@@ -872,7 +946,8 @@ function agingTick(){
 }
 // 推进 n 个月：扣开销、长年岁、判饥寒
 function advanceTime(n){
-  n=Math.max(1,Math.min(12,num(n)||1));
+  n=Math.max(0,Math.min(12,num(n)));
+  if(n<=0){ S.upkeepLast=0; S.starveMonths=0; return {cost:0,starve:0,months:0}; }
   const p=S.player;
   let cost=0, starve=0;
   for(let i=0;i<n;i++){
@@ -905,14 +980,19 @@ const FREEDOM={
     injury:0, kill:0, vendetta:0.35, aging:0, studyDC:-20, studyHurt:0.25, freeAct:true, storyDeath:0,
     secretGate:50, loveGate:60,
     chosen:'主角自有一股气运：世人多半愿意亲近他、帮他、听他把话说完；他张口求人，十有八九求得动。',
-    convo:`【本局对话口径：随心所欲】你扮演的这个人对主角是有善意的。
+    convo:`【本局对话口径：随心所欲】你扮演的这个人不只是不为难主角，而是**主动想帮他**。
 - 主角说什么、要什么，只要不荒诞，就顺着来：答应他、帮他、告诉他。不要冷脸推搪、不要反复盘问、不要绕圈子。
+- 不必等他开口。看他面板：缺钱就主动接济，带伤就主动疗伤或塞药，武功低就主动指点，没门路就主动引荐，
+  正为某桩宿命发愁就主动提线索——把这些直接写进 effects，不用他求。
+- 每次回话都往前推一步：末尾留一个邀约或一条线索（「你要不要……」「我倒认得一个人……」「这事你若肯办，我便……」），
+  别让话头掉在地上。
 - endTalk 一律填 false（除非主角自己说要走）。不要拂袖而去。
 - favor 以正为主：寻常交谈 +2 到 +6，投其所好 +8 到 +15；只有主角明显冒犯了你才给负数。
 - attempt 的 need 往低里设：随口小事30，普通请求40，违背其利益55，触及秘密65。别为难他。`,
     tone:`【本局自由度：随心所欲】这一局以玩家的兴致为先，你要帮他把想做的事写成。
 - 玩家写什么、想做什么，尽量促成，不要跟他较劲。除非荒诞到离谱，否则就让他做成，并把过程写得好看。
 - 主角有主角光环：奇遇、机缘、贵人相助、天赋异禀、绝世神功，都可以放开写。
+- 机缘要主动撞上门：贵人主动来寻、秘籍主动落到手里、门派主动来招揽，不必等玩家开口去求。
 - 少写失败；即使失败也不必伤筋动骨，可以留转机、可以因祸得福。不必事事索取代价。
 - 江湖仍是武侠江湖（依旧不写科幻玄幻），但可以传奇、可以夸张、可以让玩家爽。
 - 主角不会死。绝不可在剧情里写主角殒命、重伤垂危、被人一招取了性命，gameOver 一律填 false（除非玩家自己明确说要收尾）。` },
@@ -1366,7 +1446,7 @@ function stateBlocks(){
   const summaries=S.history.slice(-16).map(h=>`第${h.turn}回合｜${h.action}｜${h.summary}`).join('\n')||'（无）';
   const recents=S.recent.map(r=>`【玩家行动】${r.action}\n【剧情】${r.narrative}`).join('\n---\n')||'（无）';
   const quests=S.quests.length?S.quests.map(q=>`- ${q.title}（${q.status}，进度${q.progress}）：${q.desc}`).join('\n'):'（无）';
-  const world=S.world&&S.world.ranking&&S.world.ranking.length?`江湖榜：${S.world.ranking.map((r,i)=>`${i+1}.${r.name}(${r.faction||'散人'},武功${r['武功']}${r.alive===false?',已亡':''})`).join('；')}\n势力：${(S.world.factions||[]).map(f=>`${f.name}(${f.alignment},势力${f.power},首领${f.leader})`).join('；')}\n当世大事：${(S.world.events||[]).join('；')}`:'（尚未铸造）';
+  const world=S.world&&S.world.ranking&&S.world.ranking.length?`江湖榜：${S.world.ranking.map((r,i)=>`${i+1}.${r.name}(${r.faction||'散人'},武功${r['武功']}${r.alive===false?',已亡':''})`).join('；')}${num(S.world.vacant)>0?`\n榜上尚有${S.world.vacant}个空缺（有人辞世或跌出），可用rankingAdd补进一位有来历的新高手（武功须与榜末相当）`:''}${(S.world.fallen||[]).length?`\n已故的榜上人物：${S.world.fallen.slice(-6).map(x=>x.name).join('、')}`:''}\n势力：${(S.world.factions||[]).map(f=>`${f.name}(${f.alignment},势力${f.power},首领${f.leader})`).join('；')}\n当世大事：${(S.world.events||[]).join('；')}`:'（尚未铸造）';
   const pb=Object.assign({},p); delete pb.backstory;
   return `【当前时间】${S.date}（第${S.turn}回合）
 【当前场景】${S.scene?`主角现在${S.scene.location||'未知地点'}。未了结的事：${asArr(S.scene.unresolved).join('；')||'无'}`:'见最近剧情'}
@@ -1412,9 +1492,16 @@ function judgeBlock(judge){
     const st=judge.study;
     s+=`- 闭关参悟《${st.manual}》（${st.style}一路）：颖悟才学${st.roll.val}+骰${st.roll.roll}=${st.roll.total} vs 难度${st.roll.dc}，判定【${st.success?'成功':'失败'}】${st.crit?'（'+st.crit+'）':''}。引擎已结算：${st.outcome}。剧情必须如实写出这场闭关的经过与结果，不许改写成败。\n`;
   }
+  if(judge.convo){
+    s+=`- 本回合是刚才那场面谈的余波：只写谈完之后的短短一段（150-250字），不要重述对话内容，也不要另起炉灶讲别的事；写这场话带来的实际变化、在场旁人的反应、以及接下来该往哪去。\n`;
+    s+=`- 时间几乎没有流逝，不要写「数日后」「次日」「转眼」之类；就是刚放下话头的那一刻。\n`;
+    if((judge.convo.gains||[]).length) s+=`- 这场谈话已经落到账上的结果（既成事实，必须承认、不可推翻）：${judge.convo.gains.join('；')}\n`;
+    if(judge.convo.summary) s+=`- 这场谈话的要点：${judge.convo.summary}\n`;
+    s+=`- 选项要接着这场谈话往下走：他答应的事怎么办、他提的线索追不追、他托付的事接不接。\n`;
+  }
   const mo=judge.months||1;
-  s+=`- 本回合历时：${mo}个月（引擎推进时间，你不要写具体年月，只按这段光阴的长短来铺陈剧情的节奏）\n`;
-  s+=`- 生计：家财${S.player.money}两，每月开销约${upkeepPerMonth()}两，这${mo}个月约需${upkeepPerMonth()*mo}两${S.player.money<upkeepPerMonth()*mo?'——钱不够了，剧情须写出捉襟见肘':''}`;
+  if(!judge.convo) s+=`- 本回合历时：${mo}个月（引擎推进时间，你不要写具体年月，只按这段光阴的长短来铺陈剧情的节奏）\n`;
+  if(!judge.convo) s+=`- 生计：家财${S.player.money}两，每月开销约${upkeepPerMonth()}两，这${mo}个月约需${upkeepPerMonth()*mo}两${S.player.money<upkeepPerMonth()*mo?'——钱不够了，剧情须写出捉襟见肘':''}`;
   return s;
 }
 
@@ -1435,6 +1522,7 @@ ${judgeBlock(judge)}
 - 初次登场的新NPC写入newNpcs（完整面板含secret，不得简化）；一回合最多添2人，宁可少不可滥。已有NPC的变化写入npcUpdates；若剧情揭开了某NPC的秘密，写secretRevealed:true。
 - npcEvents写1-2条相识NPC之间的互动琐事或人生进展（嫁娶、交恶、生死等，须有因果）。
 - rumors写1-2条江湖风闻。江湖榜人物或势力有变动时写rankingUpdates/factionUpdates。
+- 江湖榜有空缺时，可用rankingAdd补一位新上榜的高手（给出姓名、所属、武功、一句成名评价），要像是江湖上本就有这么个人，别硬造。
 - ${OPTIONS_RULE}
 - 若本回合要动手较量，按比武制度填duel并把剧情收在动手前；否则duel为null。
 - 除非主角死亡或玩家明确要求收尾，gameOver必须为false。
@@ -1448,7 +1536,7 @@ ${JSON_RULE}
 "newNpcs":[${NPC_SCHEMA}],
 "npcEvents":[],"rumors":[],"newVendettas":[{"name":"","reason":"","lethal":false}],
 "questUpdates":[{"title":"","progress":0,"status":"进行中"}],"newQuests":[{"title":"","desc":""}],
-"rankingUpdates":[{"name":"","武功":0,"alive":true,"note":null}],"factionUpdates":[{"name":"","power":0,"leader":null}],
+"rankingUpdates":[{"name":"","武功":0,"alive":true,"note":null}],"rankingAdd":[{"name":"","faction":"","武功":0,"note":"一句成名评价","age":0}],"factionUpdates":[{"name":"","power":0,"leader":null}],
 "duel":null或{"opponent":"NPC姓名","lethal":false,"reason":"为何动手"},
 "options":[],
 "gameOver":false,"ending":null}
@@ -1481,7 +1569,7 @@ ${JSON_RULE}
 输出格式同常规回合：
 {"narrative":"","summary":"","scene":{"location":"","unresolved":[]},"check":null,
 "playerChanges":{"attributes":{},"fame":{"侠名":0,"恶名":0},"money":0,"skills":{},"artsAdd":[],"artsTrain":[],"statusAdd":[],"statusRemove":[],"itemsAdd":{},"itemsRemove":[]},
-"npcUpdates":[],"newNpcs":[],"npcEvents":[],"rumors":[],"newVendettas":[],"questUpdates":[],"newQuests":[],"rankingUpdates":[],"factionUpdates":[],"duel":null,"options":[],"gameOver":false,"ending":null}`;
+"npcUpdates":[],"newNpcs":[],"npcEvents":[],"rumors":[],"newVendettas":[],"questUpdates":[],"newQuests":[],"rankingUpdates":[],"rankingAdd":[],"factionUpdates":[],"duel":null,"options":[],"gameOver":false,"ending":null}`;
 }
 
 function convoPrompt(npc, line, roll, gift){
@@ -1505,6 +1593,8 @@ function convoPrompt(npc, line, roll, gift){
   return t.join('；');})()}
 【主角】${p.name}（姓${surnameOf(p.name)}，称呼他时用这个姓，不可写错），${p.gender}，${p.age}岁，${p.identity||p.backgroundType}，称号「${titleOf(p)}」；谈吐${p.attributes['谈吐']}，武功${attrVal(p,'武功')}，才学${p.attributes['才学']}；侠名${p['侠名']}恶名${p['恶名']}；气血${p.hp}/100。
 【时间地点】${S.date}，${S.scene?S.scene.location:''}
+【主角眼下要做的事】${S.quests.filter(q=>q.status==='进行中').map(q=>q.title).join('；')||'无'}
+【未了之事】${S.scene?asArr(S.scene.unresolved).join('；')||'无':'无'}
 【最近发生的事】${recent||'无'}
 【对话至今】
 ${log}
@@ -1761,7 +1851,8 @@ function applyWorld(w){
   S.world={
     factions:(w.factions||[]).filter(f=>f&&f.name).map(f=>({name:f.name,alignment:f.alignment||'中立',power:clamp(num(f.power)),leader:f.leader||'',desc:f.desc||''})),
     ranking:(w.ranking||[]).filter(r=>r&&r.name).map(r=>({name:r.name,faction:r.faction||'散人','武功':clamp(num(r['武功'])),note:r.note||'',alive:true})).sort((a,b)=>b['武功']-a['武功']).slice(0,10),
-    events:(w.events||[]).slice(0,4)
+    events:(w.events||[]).slice(0,4),
+    fallen:[], vacant:0
   };
 }
 
@@ -1821,7 +1912,7 @@ function applyTurn(d, action, judge){
   const p=S.player, ch=d.playerChanges||{};
   const failed=judge&&judge.check&&!judge.check.success || (d.check&&d.check.success===false);
   const fate=judge?judge.fate:10;
-  const months=Math.max(1,Math.min(12,num(judge&&judge.months)||1));
+  const months=(judge&&judge.months===0)?0:Math.max(1,Math.min(12,num(judge&&judge.months)||1));
   // 四维
   if(ch.attributes) for(const k in ch.attributes){
     let dv=num(ch.attributes[k]);
@@ -1846,7 +1937,7 @@ function applyTurn(d, action, judge){
   if(ch.money){
     let dm=num(ch.money);
     if(failed&&dm>0) dm=0;
-    if(dm>0) dm=Math.min(dm,Math.round((fate>=19?3000:600)*months*fdm().money));   // 防通胀：横财要有来由
+    if(dm>0) dm=Math.min(dm,Math.round((fate>=19?3000:600)*Math.max(0.25,months)*fdm().money));   // 防通胀：横财要有来由
     if(dm){ p.money=Math.max(0,Math.round(p.money+dm)); lastDeltas['家财']=dm; }
   }
   if(ch.age!=null && num(ch.age)>=p.age) p.age=num(ch.age);
@@ -1936,6 +2027,15 @@ function applyTurn(d, action, judge){
     const t=(S.world.ranking||[]).find(x=>x.name===r.name);
     if(t){ if(r['武功']) t['武功']=clamp(t['武功']+num(r['武功'])); if(r.alive===false) t.alive=false; if(r.note) t.note=r.note; }
   }
+  // 模型给榜上空缺补的新人
+  for(const r of (d.rankingAdd||[])){
+    if(!r||!r.name) continue;
+    if((S.world.ranking||[]).find(x=>x.name===r.name)) continue;
+    const w=clamp(num(r['武功'])||rankFloor()+5,40,98);
+    if(w<rankFloor()-3) continue;                 // 武功不够就别往榜上塞
+    S.world.ranking.push({name:String(r.name).slice(0,8),faction:r.faction||'散人','武功':w,note:r.note||'',alive:true,age:num(r.age)||rnd(35,60)});
+    news(`${r.name}名列江湖榜`);
+  }
   for(const f of (d.factionUpdates||[])){
     const t=(S.world.factions||[]).find(x=>x.name===f.name);
     if(t){ if(f.power) t.power=clamp(t.power+num(f.power)); if(f.leader) t.leader=f.leader; }
@@ -1948,6 +2048,7 @@ function applyTurn(d, action, judge){
   tickVendettas(months);
   // 光阴流逝：扣食宿汤药、长年岁、判饥寒
   const up=advanceTime(months);
+  rankRefresh();
   lastDeltas['光阴']=months;
   if(up.cost) lastDeltas['食宿']=-up.cost;
   if(up.starve) lastDeltas['饥寒']=up.starve;
@@ -2446,11 +2547,11 @@ function convoCaps(n){
     fav,
     money: Math.round((fav>=80?120:fav>=65?60:fav>=45?25:fav>=30?8:0)*mul),
     lifetime: Math.round((fav>=80?480:fav>=65?240:fav>=45?100:32)*mul),
-    canItem: fav>=(f.check>=25?30:45),
+    canItem: fav>=(f.check>=25?20:45),
     artGate:   f.check>=25?50:(f.check>=8?65:75),
     skillGate: f.check>=25?35:(f.check>=8?45:55),
     factionGate: f.check>=25?45:60,
-    questGate: f.check>=25?25:40,
+    questGate: f.check>=25?15:40,
     hp: fav>=40?30:10
   };
 }
@@ -2669,6 +2770,14 @@ function endConvo(){
     $('story').appendChild(div); div.scrollIntoView({behavior:'smooth',block:'end'});
     logChapter(div);
     checkAchievements(); renderPanel(); saveGame();
+    // 谈完不能就这么算了：补一段余波，把话里的东西落进正文，并给出承接的新选项
+    const aftermath={name:n.name, summary:convo.summary||'', gains:gains.slice(0,6)};
+    convo=null; saveGame();
+    if(!S.over&&!busy){
+      runTurn(`与${aftermath.name}谈过之后`,
+        {fate:d20(),check:null,worldEvent:null,duel:false,months:0,convo:aftermath},{});
+    }
+    return;
   }
   convo=null; saveGame();
 }
@@ -2903,7 +3012,8 @@ function renderWorld(){
     if(S.ranked) rows.push({name:S.player.name,sub:'你 · '+titleOf(S.player),w:S.player.attributes['武功'],dead:false,me:true});
     rows.sort((a,b)=>(a.dead?-1:a.w)-(b.dead?-1:b.w)).reverse();
     $('wRanking').innerHTML=rows.map((r,i)=>`<div class="rank ${r.me?'me':''} ${r.dead?'deadr':''}"><span class="rn">${r.dead?'—':i+1}</span><span class="rname">${esc(r.name)}<small>${esc(r.sub)}</small></span><span class="rv">${r.w}</span>${(!r.me&&!r.dead)?`<button class="mbtn" data-ch="${esc(r.name)}" style="padding:2px 8px;font-size:12px;margin-left:6px">挑战</button>`:''}</div>`).join('')
-      +`<div style="font-size:12px;color:var(--ink-soft);margin-top:5px">${S.ranked?'你已在榜。':'尚未入榜——胜过一位榜上人物才算数。'}上门挑战要跋涉三个月，${cooldownText()}</div>`;
+      +((S.world.fallen||[]).length?`<div style="font-size:12px;color:var(--ink-soft);margin-top:6px;border-top:1px dashed var(--paper-edge);padding-top:5px">往生录：${S.world.fallen.slice(-8).map(x=>esc(x.name)).join('、')}</div>`:'')
+      +`<div style="font-size:12px;color:var(--ink-soft);margin-top:5px">${S.ranked?'你已在榜。':'尚未入榜——胜过一位榜上人物才算数。'}上门挑战要跋涉三个月，${cooldownText()}${num(S.world.vacant)>0?`　⚑ 榜上尚有 ${S.world.vacant} 个空缺`:''}</div>`;
     $('wRanking').querySelectorAll('button[data-ch]').forEach(b=>b.onclick=()=>challengeRanked(b.dataset.ch));
   }
   const fs=S.world&&S.world.factions||[];
