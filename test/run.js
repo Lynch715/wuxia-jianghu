@@ -63,6 +63,10 @@ ok('本来就对的不动', nameCase.right==='我田某说话算数。');
 ok('复姓识别正确（'+nameCase.compound+'）', nameCase.compound==='欧阳/田');
 ok('提示词把主角姓名单拎出来强调：'+(nameCase.block.match(/【主角姓名】[^\n]{0,40}/)||[''])[0],
    /【主角姓名】田伯光/.test(nameCase.block)&&/绝不可换成别的姓/.test(nameCase.block));
+const life=await page.evaluate(()=>({span:S.player.lifespan, meta:$('pMeta').textContent, ratio:Math.round(lifeRatio()*100), note:ageNote()}));
+ok('开局带上寿元（'+life.span+'）', life.span>=70&&life.span<=86);
+ok('面板写出年岁与寿元：'+life.meta.split(' · ')[1], /岁／寿元\d+/.test(life.meta));
+ok(`年纪按已耗寿元算（耗了 ${life.ratio}% → ${life.note}）`, life.ratio<38&&life.note==='年富力强');
 const money=await page.textContent('#pMoney');
 ok('家财显示月耗与可撑月数：'+money.replace(/\s+/g,' ').trim().slice(0,40), /月耗约 \d+ 两/.test(money));
 ok('师门卡片：'+(await page.textContent('#pSect')).replace(/\s+/g,' ').trim().slice(0,30), (await page.textContent('#pSect')).includes('华山派'));
@@ -102,6 +106,21 @@ const story=await page.textContent('#story');
 ok('起居注记了光阴与食宿', story.includes('光阴 过去 3 个月')&&story.includes('食宿汤药'));
 ok('门派贡献入账', story.includes('门派贡献 +12'));
 ok('武学熟练度增长', story.includes('伏虎拳 熟练 +'));
+const evt=await page.evaluate(()=>{
+  const chaps=document.querySelectorAll('#story .chapter');
+  const bs=Array.from(chaps[chaps.length-1].querySelectorAll('.subblock'));
+  const b=bs.find(x=>x.querySelector('h4')&&x.querySelector('h4').textContent.includes('人间琐记'));
+  const r=bs.find(x=>x.querySelector('h4')&&x.querySelector('h4').textContent.includes('江湖风闻'));
+  return {evt:b?b.textContent:'', rumor:r?r.textContent:'',
+          unit:[plain({name:'沈师姐',event:'下山办事'}), plain({text:'只有正文'}), plain('本来就是字符串'),
+                plain([{name:'甲',desc:'一'},'二']), plain({foo:'散字段'}), plain(null), plain({})]};
+});
+ok('模型把琐记写成对象也能落成人话：'+evt.evt.replace('人间琐记',''), evt.evt.includes('沈师姐')&&evt.evt.includes('下山办事')&&!/\[object/.test(evt.evt));
+ok('风闻同样不会漏出 [object Object]：'+evt.rumor.replace('江湖风闻',''), evt.rumor.includes('江湖榜')&&!/\[object/.test(evt.rumor));
+ok('plain() 各种形状都压得平：'+JSON.stringify(evt.unit),
+   evt.unit[0]==='沈师姐：下山办事'&&evt.unit[1]==='只有正文'&&evt.unit[2]==='本来就是字符串'
+   &&evt.unit[3]==='甲：一；二'&&evt.unit[4]==='散字段'&&evt.unit[5]===''&&evt.unit[6]==='');
+ok('整页找不到 [object Object]', !(await page.textContent('#story')).includes('[object'));
 
 console.log('\n【参悟秘籍】');
 await page.click('#tabs button[data-tab="bag"]');
@@ -298,6 +317,131 @@ ok('世界页列出往生录：'+((wtxt.match(/往生录：[^ ]{0,24}/)||[''])[0
 ok('榜上活人都带挑战按钮，死人不带', (await page.$$('#wRanking .rank:not(.deadr):not(.me) button[data-ch]')).length===(await page.$$('#wRanking .rank:not(.deadr):not(.me)')).length);
 await page.evaluate(()=>{ S.world.fallen=[]; S.rankVacantTurns=0; });
 
+console.log('\n【武功水位：随心所欲的一千点】');
+const wc=await page.evaluate(()=>{
+  const keepF=S.freedom, keepW=S.player.attributes['武功'], keepRk=JSON.parse(JSON.stringify(S.world.ranking));
+  const r={};
+  S.freedom='strict'; r.strictCap=WCAP(); r.strictClamp=clampW(500);
+  S.freedom='free';   r.freeCap=WCAP();   r.freeClamp=clampW(500);
+  S.player.attributes['武功']=keepW;
+  r.lvBase=powerLevel();
+  S.player.attributes['武功']=640;
+  r.lvAfter=powerLevel();
+  r.realm=[realmOf(40),realmOf(70),realmOf(120),realmOf(300),realmOf(640),realmOf(950)];
+  // 成长上限：水涨船高
+  S.player.attributes['武功']=60;  const g1=growthCap();
+  S.player.attributes['武功']=340; const g2=growthCap();
+  S.freedom='strict'; S.player.attributes['武功']=340; const g3=growthCap();
+  S.freedom='free';   S.player.attributes['武功']=640;
+  r.g=[g1,g2,g3];
+  renderPanel();
+  const bar=document.querySelectorAll('#pAttrs .attr');
+  r.widths=Array.from(bar).map(e=>e.querySelector('.bar i').style.width);
+  r.labels=Array.from(bar).map(e=>e.querySelector('.lab b').textContent.replace(/\s+/g,''));
+  r.foot=($('pAttrs').textContent.match(/当世水位 \d+/)||[''])[0];
+  r.title=titleOf(S.player);
+  // 天下英雄跟着涨
+  S.world.ranking=keepRk.map(x=>Object.assign({},x,{'武功':80,alive:true,age:45}));
+  const before=S.world.ranking.map(x=>x['武功']);
+  for(let i=0;i<12;i++) rankCatchUp();
+  r.catchUp={before:before[0], after:Math.max.apply(null,S.world.ranking.map(x=>num(x['武功'])))};
+  S.freedom='strict';
+  const s0=S.world.ranking[0]['武功']; for(let i=0;i<12;i++) rankCatchUp();
+  r.strictStill=(S.world.ranking[0]['武功']===s0);
+  S.freedom=keepF; S.player.attributes['武功']=keepW; S.world.ranking=keepRk; renderPanel();
+  return r;
+});
+ok('写实江湖仍是 100 封顶（clampW(500)='+wc.strictClamp+'）', wc.strictCap===100&&wc.strictClamp===100);
+ok('随心所欲放到 1000（clampW(500)='+wc.freeClamp+'）', wc.freeCap===1000&&wc.freeClamp===500);
+ok(`水位跟着主角走（${wc.lvBase} → ${wc.lvAfter}）`, wc.lvAfter===640);
+ok('境界名按数值分档：'+wc.realm.join('/'), wc.realm[0]==='三流'&&wc.realm[1]==='一流'&&wc.realm[2]==='绝顶'&&wc.realm[5]==='神话');
+ok(`功力越深涨得越快（武功60 每回合+${wc.g[0]}，武功340 +${wc.g[1]}；写实江湖同样340只+${wc.g[2]}）`,
+   wc.g[1]>wc.g[0]*2&&wc.g[2]<wc.g[0]);
+ok('武功条改以当世第一为满格，宽度仍是合法百分比：'+wc.widths.join(','), wc.widths.every(w=>/^\d+%$/.test(w)));
+ok('武功旁边挂了境界：'+wc.labels[3], /天人|大宗师|宗师|绝顶/.test(wc.labels[3]));
+ok('面板标出当世水位：'+wc.foot, /当世水位 \d+/.test(wc.foot));
+ok('称号吃境界：'+wc.title, /·(绝顶|宗师|大宗师|天人|神话)/.test(wc.title));
+ok(`天下英雄跟着水位长进（榜首 ${wc.catchUp.before} → ${wc.catchUp.after}）`, wc.catchUp.after>wc.catchUp.before*2);
+ok('写实江湖不搞这一套，榜单纹丝不动', wc.strictStill);
+
+console.log('\n【寿元：奇遇才长得了】');
+const lf=await page.evaluate(()=>{
+  const keepF=S.freedom, keepL=S.player.lifespan, keepA=S.player.age, keepN=(S.engineNews||[]).slice(), keepLed=(S.ledger||[]).slice();
+  const r={};
+  S.freedom='strict'; S.player.lifespan=78; r.strictGot=grantLifespan(40,'灵药');
+  S.freedom='mid';    S.player.lifespan=78; r.midGot=grantLifespan(40,'灵药'); r.midAfter=S.player.lifespan;
+  S.freedom='free';   S.player.lifespan=78;
+  r.freeOnce=grantLifespan(999,'千年灵芝'); r.freeAfter1=S.player.lifespan;
+  for(let i=0;i<20;i++) grantLifespan(999,'奇遇');
+  r.freeCeiling=S.player.lifespan;
+  S.player.age=120; r.oldNote=ageNote(); r.oldRatio=Math.round(lifeRatio()*100);
+  S.player.lifespan=78; r.youngNote=ageNote();
+  S.freedom=keepF; S.player.lifespan=keepL; S.player.age=keepA; S.engineNews=keepN;
+  S.ledger=keepLed;                       // 这段灌了二十几条寿元流水，测完还回去
+  return r;
+});
+ok('写实江湖不给寿元（+'+lf.strictGot+'）', lf.strictGot===0);
+ok(`江湖传奇一次最多 +8，且不超过 110（78 → ${lf.midAfter}）`, lf.midGot===8&&lf.midAfter===86);
+ok(`随心所欲一次最多 +40（78 → ${lf.freeAfter1}）`, lf.freeOnce===40&&lf.freeAfter1===118);
+ok('堆到头是 220 就不再涨了（'+lf.freeCeiling+'）', lf.freeCeiling===220);
+ok(`寿元 220 时活到 120 仍算盛年（耗了 ${lf.oldRatio}% → ${lf.oldNote}）`, lf.oldRatio<60&&/盛年|中年/.test(lf.oldNote));
+ok('同样 120 岁、寿元只有 78 就是风烛残年：'+lf.youngNote, lf.youngNote==='风烛残年');
+
+console.log('\n【记忆：台账与上下文】');
+const mem=await page.evaluate(()=>{
+  const keep={v:S.volumes,h:S.history,r:S.recent,m:S.memLong};
+  const long=n=>'某'.repeat(n);
+  S.volumes=Array.from({length:12},(_,i)=>({from:i*14+1,to:i*14+14,text:long(600)}));
+  S.history=Array.from({length:34},(_,i)=>({turn:i+1,action:long(8),summary:long(30)}));
+  S.recent=Array.from({length:7},(_,i)=>({action:long(8),narrative:long(650)}));
+  const M=MEM();
+  const sb=stateBlocks();
+  const npcHasMemo=/与主角的往来/.test(sb);
+  S.memLong=false; const short=MEM(); const sbShort=stateBlocks();
+  S.volumes=keep.v; S.history=keep.h; S.recent=keep.r; S.memLong=keep.m;
+  return {M, short, sbLen:sb.length, sbShortLen:sbShort.length, npcHasMemo,
+    ledger:(S.ledger||[]),
+    hasLedgerBlock:/已成定局的旧事/.test(sb)};
+});
+ok(`加长档：卷录 ${mem.M.vol}×${mem.M.volLen} 字、提要 ${mem.M.sum} 条、正文 ${mem.M.recent} 回、往来 ${mem.M.npcMem} 条、台账 ${mem.M.ledger} 条`,
+   mem.M.vol===10&&mem.M.sum===30&&mem.M.recent===6&&mem.M.npcMem===8);
+ok(`标准档明显更短（${mem.sbLen} 字 → ${mem.sbShortLen} 字）`, mem.short.sum===16&&mem.sbShortLen<mem.sbLen);
+ok('主线提示词终于带上了 NPC 的往来记录', mem.npcHasMemo);
+ok('提示词里有事实台账一栏', mem.hasLedgerBlock);
+ok('谈成的事都记进了台账（共 '+mem.ledger.length+' 条）：'+(mem.ledger.find(x=>/两银子/.test(x))||'—'),
+   mem.ledger.some(x=>/两银子/.test(x))&&mem.ledger.some(x=>/打听到|【/.test(x)));
+ok('引擎自己判的事也记台账：'+(mem.ledger.find(x=>/结仇|秘密|宿命|习得|落下/.test(x))||'—'),
+   mem.ledger.some(x=>/结仇|秘密|宿命|习得|落下|参悟/.test(x)));
+ok('台账每条都带回合与日子', mem.ledger.every(x=>/^第\d+回·/.test(x)));
+const led2=await page.evaluate(()=>{
+  const before=(S.ledger||[]).length;
+  ledger('测试：同一件事重复记');
+  ledger('测试：同一件事重复记');
+  const after=(S.ledger||[]).length;
+  S.ledger=S.ledger.filter(x=>!/测试：/.test(x));
+  return {before,after};
+});
+ok('同一件事不会记两遍（'+led2.before+' → '+led2.after+'）', led2.after===led2.before+1);
+const cvMem=await page.evaluate(()=>{
+  const n=S.npcs[0];
+  const keep=convo;
+  convo={npc:n,msgs:[{role:'me',text:'你怎么看'}],favorTotal:0,giftMode:false,secretRevealed:false,gains:[]};
+  const pr=convoPrompt(n,'你怎么看',12,null);
+  convo=keep;
+  return {hasSum:/【前情提要】/.test(pr), hasLed:/已成定局的旧事/.test(pr),
+          realm:(pr.match(/武功\d+（[^）]*）/)||[''])[0], len:pr.length};
+});
+ok('对话提示词补上了主线提要（'+cvMem.len+' 字）', cvMem.hasSum);
+ok('对话提示词也带事实台账', cvMem.hasLed);
+ok('对话里 NPC 看得见主角的境界：'+cvMem.realm, /武功\d+（(不入流|三流|二流|一流|超一流|绝顶|宗师|大宗师|天人|神话)/.test(cvMem.realm));
+await page.click('#btnSettings');
+const memUi=await page.evaluate(()=>({has:!!$('cfgMem'), val:$('cfgMem').value, note:$('cfgMemNote').textContent}));
+ok('设置里能调记忆长度，默认加长：'+memUi.note.slice(0,40), memUi.has&&memUi.val==='long'&&/前尘卷录 10/.test(memUi.note));
+await page.selectOption('#cfgMem','short');
+ok('调成标准档后立刻生效', await page.evaluate(()=>S.memLong===false&&MEM().sum===16));
+await page.selectOption('#cfgMem','long');
+await page.click('#cfgCancel');
+
 console.log('\n【桌面图标】');
 const ic=await page.evaluate(()=>{
   const a=document.querySelector('link[rel="apple-touch-icon"]');
@@ -361,6 +505,11 @@ await page.waitForTimeout(1200);
 ok('重载后剧情还在', (await page.textContent('#story')).includes('雨下了整宿'));
 ok('重载后面板还在', (await page.textContent('#pName')).includes('李昭'));
 
+const oldSave=await page.evaluate(()=>{
+  const sv=JSON.parse(localStorage.getItem('wuxia_save_v1'));
+  sv.v=5; delete sv.ledger; delete sv.memLong; delete sv.player.lifespan;
+  return JSON.stringify(sv);
+});
 console.log('\n【无密钥样张】');
 const p2=await ctx.newPage();
 await p2.addInitScript(()=>{ localStorage.clear(); });
@@ -368,6 +517,22 @@ await p2.goto('http://localhost:8931/');
 await p2.waitForTimeout(400);
 ok('样张已显示', (await p2.textContent('#story')).includes('样张'));
 ok('样张有引导按钮', (await p2.textContent('#choices')).includes('填入 API 密钥'));
+
+console.log('\n【旧存档升上 v6】');
+const ctx3=await br.newContext();
+const p3=await ctx3.newPage();
+p3.on('pageerror',e=>errs.push('v6迁移:'+String(e)));
+await p3.route('**/chat/completions',async route=>{
+  const b=JSON.parse(route.request().postData());
+  await route.fulfill({status:200,headers:{'Content-Type':'text/event-stream'},body:sse(pickBody(b.messages[b.messages.length-1].content))});});
+await p3.addInitScript(sv=>{ localStorage.setItem('wuxia_cfg',JSON.stringify({base:'https://api.deepseek.com',key:'sk-test',model:'deepseek-v4-flash',think:false})); localStorage.setItem('wuxia_save_v1',sv); }, oldSave);
+await p3.goto('http://localhost:8931/');
+await p3.waitForTimeout(1200);
+const mg=await p3.evaluate(()=>({v:S.v, life:S.player.lifespan, led:Array.isArray(S.ledger), mem:S.memLong,
+  meta:$('pMeta').textContent, story:$('story').textContent.length, prompt:stateBlocks().length}));
+ok('老存档补上寿元（'+mg.life+'）、台账与记忆档，版本升到 v'+mg.v, mg.v===6&&mg.life===78&&mg.led===true&&mg.mem===true);
+ok('升级后面板照常：'+mg.meta.replace(/\s+/g,' ').slice(0,32), /岁／寿元78/.test(mg.meta)&&mg.story>50);
+ok('升级后提示词照样拼得出来（'+mg.prompt+' 字）', mg.prompt>500);
 
 console.log('\n页面错误：', errs.length?errs.slice(0,5):'无');
 console.log(`\n结果：${oks.length} 通过，${fails.length} 失败`);
