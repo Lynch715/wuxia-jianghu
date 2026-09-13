@@ -582,6 +582,83 @@ ok('榜上有挑战按钮', (await page.$$('#wRanking button[data-ch]')).length>
 const vd=await page.textContent('#wVendetta');
 ok('仇家面板：'+vd.replace(/\s+/g,' ').trim().slice(0,50), true);
 
+console.log('\n【伤病会好，旧伤不会】');
+const ail=await page.evaluate(()=>{
+  const keepS=JSON.parse(JSON.stringify(S.player.status||[])), keepA=JSON.parse(JSON.stringify(S.ailments||[])),
+        keepSc=JSON.parse(JSON.stringify(S.scars||[])), keepHp=S.player.hp;
+  const r={};
+  // 模型塞整句话进来，拆成伤名＋说明＋月数
+  S.ailments=[]; S.scars=[]; S.player.hp=60;
+  addAilment('箭伤：肩头中箭，已拔箭敷药，休养数日可愈。');
+  r.parsed=S.ailments.map(a=>({n:a.name,d:(a.desc||'').slice(0,8),m:a.months}));
+  // 换个措辞的同一个伤不再重复挂
+  addAilment('箭伤：肩头中箭，已敷药，休养数日可愈。');
+  addAilment('箭伤');
+  r.noDup=S.ailments.length;
+  // 慢性的给的月份更长
+  addAilment('杂气入络：经脉杂气未净，须借辰州虫药化开，方得根治。');
+  r.chronic=S.ailments.find(a=>a.name==='杂气入络').months;
+  // 最多挂 4 条
+  addAilment('内伤：气息不稳'); addAilment('中毒：蚀骨散'); addAilment('风寒：咳嗽不止'); addAilment('腿伤：被踹了一脚');
+  r.cap=S.ailments.length;
+  // 光阴一过自己好
+  S.ailments=[{name:'刀伤',desc:'',months:2,born:1},{name:'暗疾',desc:'',months:9,born:1}];
+  const h1=tickAilments(2);
+  r.timeout={healed:h1, left:S.ailments.map(a=>a.name)};
+  // 气血养满，快好的那些一起销，拖着的还熬着
+  S.player.hp=100;
+  S.ailments=[{name:'擦伤',desc:'',months:2,born:1},{name:'陈年暗疾',desc:'',months:7,born:1}];
+  const h2=tickAilments(0);
+  r.full={healed:h2, left:S.ailments.map(a=>a.name)};
+  // 模型说治好了：措辞对不上也能销
+  S.ailments=[{name:'箭伤',desc:'肩头中箭',months:3,born:1}];
+  r.drop1=dropAilment('箭伤：肩头那一处已经好了');
+  r.drop2=dropAilment('根本没有的伤');
+  r.afterDrop=S.ailments.length;
+  // 终身旧伤走另一本账，不会被当成伤病销掉
+  S.ailments=[]; S.scars=[{name:'跛足',text:'一条腿被打折',when:'',cause:''},{name:'破相',text:'脸上一道疤',when:'',cause:''}];
+  addAilment('跛足：腿好了');                 // 不许从这条路进来
+  r.scarNotAil=S.ailments.length;
+  r.dropScar=dropAilment('跛足');            // 也销不掉
+  r.scarsLeft=S.scars.map(x=>x.name);
+  // status 一律重算：引擎态 + 旧伤 + 伤病
+  S.player.hp=20; S.destitute=true;
+  S.ailments=[{name:'刀伤',desc:'',months:2,born:1}];
+  rebuildStatus();
+  r.rebuilt=S.player.status.slice();
+  // 塞脏东西进去也会被下一次重算抹平
+  S.player.status.push('凭空冒出来的一条'); rebuildStatus();
+  r.cleaned=!S.player.status.includes('凭空冒出来的一条');
+  r.hasScarWorks=[hasScar('跛足'),hasScar('手伤')];
+  S.player.status=keepS; S.ailments=keepA; S.scars=keepSc; S.player.hp=keepHp; S.destitute=false; rebuildStatus();
+  return r;
+});
+ok('整句话拆成伤名＋说明＋月数：'+JSON.stringify(ail.parsed[0]), ail.parsed[0].n==='箭伤'&&ail.parsed[0].d.length>0&&ail.parsed[0].m===1);
+ok('同一个伤换措辞不再重复挂（三次只留 '+ail.noDup+' 条）', ail.noDup===1);
+ok('「须…方得根治」这种给的将养期更长（'+ail.chronic+' 月）', ail.chronic>=5);
+ok('最多挂 4 条，超了挤掉最早的（'+ail.cap+'）', ail.cap===4);
+ok('光阴一过自己好：'+ail.timeout.healed.join('、')+' 好了，还剩 '+ail.timeout.left.join('、'), ail.timeout.healed.includes('刀伤')&&ail.timeout.left.includes('暗疾'));
+ok('气血养满，快好的一起销，慢性的还熬着：好了 '+ail.full.healed.join('、')+'，剩 '+ail.full.left.join('、'),
+   ail.full.healed.includes('擦伤')&&ail.full.left.includes('陈年暗疾'));
+ok('模型报痊愈时措辞对不上也能销账', ail.drop1===true&&ail.drop2===false&&ail.afterDrop===0);
+ok('终身旧伤不走伤病这条路，也销不掉：'+ail.scarsLeft.join('、'), ail.scarNotAil===0&&ail.dropScar===false&&ail.scarsLeft.length===2);
+ok('status 由引擎重算：'+ail.rebuilt.join('、'),
+   ail.rebuilt[0]==='饥寒交迫'&&ail.rebuilt.includes('重伤')&&ail.rebuilt.includes('跛足')&&ail.rebuilt.includes('刀伤'));
+ok('外面塞进 status 的脏东西会被下一次重算抹平', ail.cleaned);
+ok('hasScar 改看旧伤账本仍然准（跛足 '+ail.hasScarWorks[0]+'／手伤 '+ail.hasScarWorks[1]+'）', ail.hasScarWorks[0]===true&&ail.hasScarWorks[1]===false);
+const ailUi=await page.evaluate(()=>{
+  const keepA=JSON.parse(JSON.stringify(S.ailments||[])), keepSc=JSON.parse(JSON.stringify(S.scars||[]));
+  S.ailments=[{name:'箭伤',desc:'肩头中箭',months:2,born:1}];
+  S.scars=[{name:'跛足',text:'一条腿被打折',when:'',cause:''}];
+  rebuildStatus(); renderPanel();
+  const t=$('pStatus').textContent.replace(/\s+/g,' ');
+  const prompt=stateBlocks();
+  S.ailments=keepA; S.scars=keepSc; rebuildStatus(); renderPanel();
+  return {t, two:/【终身旧伤/.test(prompt)&&/【眼下的伤病/.test(prompt), fmt:/statusAdd/.test(prompt)};
+});
+ok('面板分开写：会好的标将养月数，治不好的标终身 —— '+ailUi.t, /箭伤 还需将养约 2 月/.test(ailUi.t)&&/跛足 终身/.test(ailUi.t));
+ok('提示词里两本账分开列', ailUi.two);
+
 console.log('\n【仇家：敢不敢来、来不来得及、来过怎么算】');
 const vd2=await page.evaluate(()=>{
   const keepV=JSON.parse(JSON.stringify(S.vendettas||[])), keepN=JSON.parse(JSON.stringify(S.npcs)),
@@ -719,7 +796,7 @@ await p2.waitForTimeout(400);
 ok('样张已显示', (await p2.textContent('#story')).includes('样张'));
 ok('样张有引导按钮', (await p2.textContent('#choices')).includes('填入 API 密钥'));
 
-console.log('\n【旧存档升上 v6】');
+console.log('\n【旧存档升上 v7】');
 const ctx3=await br.newContext();
 const p3=await ctx3.newPage();
 p3.on('pageerror',e=>errs.push('v6迁移:'+String(e)));
@@ -731,7 +808,7 @@ await p3.goto('http://localhost:8931/');
 await p3.waitForTimeout(1200);
 const mg=await p3.evaluate(()=>({v:S.v, life:S.player.lifespan, led:Array.isArray(S.ledger), mem:S.memLong,
   meta:$('pMeta').textContent, story:$('story').textContent.length, prompt:stateBlocks().length}));
-ok('老存档补上寿元（'+mg.life+'）、台账与记忆档，版本升到 v'+mg.v, mg.v===6&&mg.life===78&&mg.led===true&&mg.mem===true);
+ok('老存档补上寿元（'+mg.life+'）、台账与记忆档，版本升到 v'+mg.v, mg.v===7&&mg.life===78&&mg.led===true&&mg.mem===true);
 ok('升级后面板照常：'+mg.meta.replace(/\s+/g,' ').slice(0,32), /岁／寿元78/.test(mg.meta)&&mg.story>50);
 ok('升级后提示词照样拼得出来（'+mg.prompt+' 字）', mg.prompt>500);
 

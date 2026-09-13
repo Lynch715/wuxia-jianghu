@@ -150,6 +150,9 @@ body{
 .quest.done .qt{color:var(--green)}
 .quest.fail .qt{color:var(--ink-soft);text-decoration:line-through}
 .quest.hot .qt{color:#9c2f24}
+.statusfx small{font-weight:400;opacity:.75;font-size:11px}
+.statusfx.ail{background:rgba(90,110,140,.14);border-color:rgba(70,90,120,.35);color:#3f5570}
+.statusfx.scar{background:rgba(156,47,36,.12);border-color:rgba(156,47,36,.35);color:#8a2f24}
 .rank{display:flex;align-items:center;gap:8px;padding:5px 4px;border-bottom:1px dashed var(--paper-edge);font-size:14px}
 .rank:last-child{border-bottom:none}
 .rank .rn{width:26px;text-align:center;font-weight:700;color:var(--gold);font-variant-numeric:tabular-nums}
@@ -652,14 +655,14 @@ function plain(x){
 }
 const esc=s=>String(s==null?'':(typeof s==='object'?plain(s):s)).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 
-const SAVE_VERSION=6;
+const SAVE_VERSION=7;
 function newStateShell(){
   return {
     v:SAVE_VERSION, turn:0, date:'', player:null, npcs:[],
     history:[], recent:[], over:false, ending:null, scene:null,
     difficulty:'normal', freedom:'mid',
     months:0, ganzhi:0, upkeepLast:0, destitute:false, starveMonths:0, oldAgeDeath:false,
-    vendettas:[], scars:[], engineNews:[], ranked:false, lastChallengeMonth:-99, volumes:[], ledger:[],
+    vendettas:[], scars:[], ailments:[], engineNews:[], ranked:false, lastChallengeMonth:-99, volumes:[], ledger:[],
     memLong:true,
     sect:null,
     world:{factions:[],ranking:[],events:[],fallen:[],vacant:0},
@@ -715,6 +718,24 @@ function migrate(s){
     if(s.memLong===undefined) s.memLong=true;
     if(s.player&&s.player.lifespan==null) s.player.lifespan=78;
     s.v=6;
+  }
+  if(s.v<7){
+    // 老存档的 status 是个被塞满整句话的袋子（「箭伤：肩头中箭，已敷药，休养数日可愈。」），
+    // 拆成「终身旧伤」和「会好的伤病」两本账，顺手把换了措辞的重复项并掉
+    s.ailments=[];
+    const keep=S; S=s;                       // 复用 addAilment 的收敛逻辑
+    try{
+      const scarNames=(s.scars||[]).map(x=>x&&x.name).filter(Boolean);
+      for(const t of ((s.player&&s.player.status)||[])){
+        const txt=plain(t); if(!txt) continue;
+        if(ENGINE_STATUS.includes(txt)) continue;
+        if(scarNames.some(n=>txt===n||txt.indexOf(n)===0)) continue;   // 旧伤以 scars 为准
+        addAilment(txt);
+      }
+      rebuildStatus();
+    }catch(e){ console.warn('伤病迁移失败',e); }
+    S=keep;
+    s.v=7;
   }
   if(!s.chapters) s.chapters=[];
   if(s.scene) s.scene=normScene(s.scene);
@@ -1067,9 +1088,10 @@ function advanceTime(n){
   tickNpcs(n);
   sectTick(n);
   S.upkeepLast=cost; S.starveMonths=starve; S.destitute=starve>0;
-  p.status=p.status.filter(t=>t!=='饥寒交迫'&&t!=='重伤');
-  if(S.destitute){ p.status.unshift('饥寒交迫'); p.hp=Math.max(1,p.hp-Math.round(4*starve*fdm().starve)); }
-  if(p.hp<30&&p.hp>0) p.status.unshift('重伤');
+  if(S.destitute){ p.hp=Math.max(1,p.hp-Math.round(4*starve*fdm().starve)); }
+  const healedNow=tickAilments(n);
+  if(healedNow.length){ S.healedLast=(S.healedLast||[]).concat(healedNow); for(const h of healedNow) ledger(`${h}已愈`); }
+  rebuildStatus();
   S.date=dateStr();
   return {cost,starve,months:n};
 }
@@ -1281,13 +1303,81 @@ function sufferInjury(severity, cause, allowCripple){
   if(severity<=0||Math.random()>severity) return null;
   const inj=pickInjury(!!allowCripple);
   const text=inj.apply(p);
-  if(!p.status.includes(inj.name)) p.status.unshift(inj.name);
+  rebuildStatus();
   S.scars=S.scars||[];
   S.scars.push({name:inj.name, text, when:S.date, cause:cause||''});
   ledger(`落下${inj.name}：${text}${cause?`（${cause}）`:''}`);
   return {name:inj.name, text};
 }
-function hasScar(name){ return (S.player.status||[]).includes(name); }
+function hasScar(name){ return (S.scars||[]).some(x=>x.name===name); }
+
+/* ================= 伤病 =================
+   模型往 statusAdd 里塞的是整句话（「箭伤：肩头中箭，已拔箭敷药，休养数日可愈。」），
+   引擎原样 push 又只认全字符串相等才删得掉；模型下一回合记不住上回的原句，
+   于是同一个伤换个措辞就再挂一条，气血养到 100 了九条伤还在。
+   现在：进来先拆成「伤名 + 说明 + 还需将养几个月」，到期自己好，养满气血也一起好。 */
+const SCAR_NAMES=['手伤','跛足','破相','暗伤','武功尽废'];
+const ENGINE_STATUS=['重伤','饥寒交迫'];
+const AIL_CAP=4;
+function ailParse(raw){
+  let t=plain(raw).trim().replace(/[。；;]+$/,'');
+  if(!t) return null;
+  const m=t.match(/^([^：:，。,.；;]{1,8})[：:]\s*(.+)$/);
+  if(m) return {name:m[1].trim(), desc:m[2].trim()};
+  if(t.length<=8) return {name:t, desc:''};
+  // 整句没有冒号：取前一个短句当名字
+  const head=t.split(/[，,。.；;]/)[0];
+  return {name:head.slice(0,6), desc:t};
+}
+function ailMonths(name,desc){
+  const t=String(name)+String(desc||'');
+  if(/走火入魔/.test(name)) return rnd(6,12);
+  if(/未断根|难愈|久治|经年|半年|根治/.test(t)) return rnd(5,8);
+  if(/月余|一两个月|数月/.test(t)) return 3;
+  if(/数日|旬日|不日|无甚大碍|并无大碍|自可恢复|自愈|可愈/.test(t)) return 1;
+  return 2;
+}
+function addAilment(raw, months){
+  const a=ailParse(raw); if(!a||!a.name) return null;
+  if(SCAR_NAMES.includes(a.name)||ENGINE_STATUS.includes(a.name)) return null;   // 这两类各有各的账
+  S.ailments=S.ailments||[];
+  // 换个措辞就再挂一条，是以前最烦人的地方；名字像就当同一个伤
+  const hit=S.ailments.find(x=>x.name===a.name||simRatio(x.name,a.name)>=0.6||x.name.includes(a.name)||a.name.includes(x.name));
+  const mo=num(months)>0?num(months):ailMonths(a.name,a.desc);
+  if(hit){ hit.months=Math.max(num(hit.months),mo); if(a.desc) hit.desc=a.desc; return hit; }
+  const it={name:a.name, desc:a.desc, months:mo, born:num(S.turn)};
+  S.ailments.push(it);
+  while(S.ailments.length>AIL_CAP) S.ailments.shift();
+  return it;
+}
+function dropAilment(raw){
+  const a=ailParse(raw); if(!a||!a.name) return false;
+  const before=(S.ailments||[]).length;
+  S.ailments=(S.ailments||[]).filter(x=>!(x.name===a.name||simRatio(x.name,a.name)>=0.55||x.name.includes(a.name)||a.name.includes(x.name)));
+  return (S.ailments||[]).length<before;
+}
+// 光阴一过，伤自己就好了；气血养满了，「休养可愈」的那些也该了了
+function tickAilments(months){
+  if(!S.ailments||!S.ailments.length) return [];
+  const healed=[];
+  for(const a of S.ailments) a.months=num(a.months)-Math.max(0,num(months));
+  S.ailments=S.ailments.filter(a=>{ if(num(a.months)>0) return true; healed.push(a.name); return false; });
+  // 气血养满，说明皮肉伤已经将养好了——但只销快好的那些，拖着的慢性伤还得熬
+  if(num(S.player&&S.player.hp)>=100){
+    S.ailments=S.ailments.filter(a=>{ if(num(a.months)>2) return true; healed.push(a.name); return false; });
+  }
+  return healed;
+}
+// 面板与判定看的 status 一律由这里重算，不再是个谁都能往里塞的袋子
+function rebuildStatus(){
+  const p=S&&S.player; if(!p) return;
+  const out=[];
+  if(S.destitute) out.push('饥寒交迫');
+  if(num(p.hp)<30&&num(p.hp)>0) out.push('重伤');
+  for(const x of (S.scars||[])) if(x&&x.name&&!out.includes(x.name)) out.push(x.name);
+  for(const x of (S.ailments||[])) if(x&&x.name&&!out.includes(x.name)) out.push(x.name);
+  p.status=out;
+}
 
 /* ================= 仇家 ================= */
 function addVendetta(name, reason, lethal, heat){
@@ -1573,7 +1663,8 @@ const WORLD_RULES = `你是一个武侠文字游戏引擎。世界观为最通�
 - 江湖榜只认打出来的名次。主角武功再高，没当众胜过一位榜上人物就不算入榜，你不可在剧情里说主角已经上榜。
 - 主角可以主动上门挑战榜上人物（引擎提供），赢了才换位次。
 伤残与结仇规则（引擎记账）：
-- 主角败在人手里可能落下终身伤残：手伤、跛足、破相、暗伤、乃至武功被废。引擎判定后会写进主角的status与旧伤，你必须在此后的剧情里体现这些残缺——握不稳兵器、走路一瘸、脸上有疤被人指点、内伤久治不愈，别当没发生过。
+- 主角败在人手里可能落下终身伤残：手伤、跛足、破相、暗伤、乃至武功被废。这几样是引擎判定的、治不好的，你必须在此后的剧情里体现——握不稳兵器、走路一瘸、脸上有疤被人指点、内伤久治不愈，别当没发生过，也别写成痊愈。
+- 寻常的刀伤、内伤、中毒、岔气是会好的：写进statusAdd并给months，引擎按月倒计时，到期自愈，气血养满也算好。别把它们当成终身伤残写。
 - 江湖上的仇是记账的：主角废人武功、杀人，被害者的同门亲友会来寻仇；引擎会让仇恨慢慢发酵，满了就打上门来。
 - 剧情里如果有人被主角得罪到要动真格（结死仇、发毒誓、扬言取其性命），写进newVendettas，对象必须是已有NPC或本回合新出场的NPC。寻常口角不算。
 - 主角与仇家修好（好感≥45）或备重礼赔罪，仇恨会消。
@@ -1720,7 +1811,8 @@ function stateBlocks(){
 【主角面板】${JSON.stringify(pb)}（称号：${titleOf(p)}；江湖榜位次：${rankText()}）
 【生计】家财${p.money}两，每月开销约${upkeepPerMonth()}两${S.destitute?'；主角已身无分文，正在挨饿受冻':''}；年岁${p.age}，寿元${lifespanOf(p)}（${ageNote()}）
 【武学境界】武功${attrVal(p,'武功')}——${realmOf(attrVal(p,'武功'))}${WCAP()>100?`。本局武功上限${WCAP()}，当世水位${powerLevel()}（榜首与主角取高者）。need一律还按0-100的老尺子给：主角武功远高于100时，该碾压就写成碾压`:''}
-【身上的旧伤】${(S.scars||[]).length?S.scars.map(x=>x.name+'（'+x.text+'）').join('；'):'无'}
+【终身旧伤（治不好，此后剧情须一直体现，不可写成痊愈）】${(S.scars||[]).length?S.scars.map(x=>x.name+'（'+x.text+'）').join('；'):'无'}
+【眼下的伤病（会自己好，引擎在倒计时，不必反复提，好了引擎会销）】${(S.ailments||[]).length?S.ailments.map(a=>`${a.name}${a.desc?'（'+a.desc+'）':''}——还需将养约${Math.max(1,Math.ceil(num(a.months)))}个月`).join('；'):'无'}
 【盯着主角的仇家】${(S.vendettas||[]).filter(v=>v.heat>0).length?S.vendettas.filter(v=>v.heat>0).map(v=>`${v.name}（${v.reason}，${vStateText(v)}）`).join('；'):'无'}——仇家要打上门来由引擎裁定，你不可自作主张写他突然出现动手；上面写「尚在远处」「不敢露面」的人，这一回合就不会到。
 【主角身世】${p.backstory}
 【宿命】
@@ -1801,6 +1893,10 @@ ${judgeBlock(judge)}
   本回合了结或放下了哪几桩，写进 resolvedInfo（原样照抄未了之事里的那句话），引擎会把它从账上划掉。
 - 数值变化必须符合规则并如实写入playerChanges与npcUpdates（全部用增减量；年龄用绝对值）。受伤写hp负值，休养写hp正值。
 - 主角练功、拆招、受指点时，用playerChanges.artsTrain长熟练度；新学的武学写artsAdd并注明style与level。
+- 受伤写 statusAdd，格式是 {"name":"伤名（4字以内，如「箭伤」「内伤」「中毒」）","desc":"一句话经过","months":将养几个月}；
+  不要把整句话塞进伤名里，也不要为同一处伤换个措辞再写一条。伤会自己好，引擎在倒计时，你不必每回合都提。
+  剧情里把伤治好了就写 statusRemove（只写伤名），引擎据此销账。
+  【终身旧伤】那一栏里的东西治不好，不许写成痊愈，也不要写进 statusRemove。
 - 寿元只有奇遇能长（千年灵药、内功一路大成、高人易筋洗髓、异人相授驻颜之法之类），写进playerChanges.lifespan（增量）与lifespanReason（一句话缘由），并在剧情里把这场奇遇写足。寻常疗伤进补一律不许加寿元；给多少由引擎裁定，你只管提。
 - 初次登场的新NPC写入newNpcs（完整面板含secret，不得简化）；一回合最多添2人，宁可少不可滥。已有NPC的变化写入npcUpdates；若剧情揭开了某NPC的秘密，写secretRevealed:true。
 - npcEvents写1-2条相识NPC之间的互动琐事或人生进展（嫁娶、交恶、生死等，须有因果）。
@@ -1814,7 +1910,7 @@ ${JSON_RULE}
 输出格式：
 {"narrative":"本回合剧情","summary":"一句话概括本回合（30字内）","scene":{"location":"","unresolved":[]},"resolvedInfo":[],
 "check":null或{"type":"说服","attr":"谈吐","need":70,"success":true},
-"playerChanges":{"age":null或新年龄,"lifespan":0,"lifespanReason":null,"attributes":{"武功":0},"hp":0,"fame":{"侠名":0,"恶名":0},"money":0,"faction":null,"contrib":0,"skills":{"技艺名":{"level":增量数字,"desc":"可选，改写说明"}},"artsAdd":[{"name":"","desc":"","style":"","level":0}],"artsTrain":[{"name":"已有武学名","level":熟练度增量}],"personalityAdd":[],"statusAdd":[],"statusRemove":[],"itemsAdd":{"武器":[],"秘籍":[],"医药":[],"毒药":[],"杂书":[],"其他":[]},"itemsRemove":[]},
+"playerChanges":{"age":null或新年龄,"lifespan":0,"lifespanReason":null,"attributes":{"武功":0},"hp":0,"fame":{"侠名":0,"恶名":0},"money":0,"faction":null,"contrib":0,"skills":{"技艺名":{"level":增量数字,"desc":"可选，改写说明"}},"artsAdd":[{"name":"","desc":"","style":"","level":0}],"artsTrain":[{"name":"已有武学名","level":熟练度增量}],"personalityAdd":[],"statusAdd":[{"name":"","desc":"","months":0}],"statusRemove":["伤名"],"itemsAdd":{"武器":[],"秘籍":[],"医药":[],"毒药":[],"杂书":[],"其他":[]},"itemsRemove":[]},
 "npcUpdates":[{"name":"","好感度":0,"爱恋值":null,"relation":null,"alive":true,"identity":null,"faction":null,"mood":null,"notes":null,"武功":0,"age":null,"secretRevealed":false}],
 "newNpcs":[${NPC_SCHEMA}],
 "npcEvents":[],"rumors":[],"newVendettas":[{"name":"","reason":"","lethal":false}],
@@ -2278,7 +2374,7 @@ function applyTurn(d, action, judge){
   if(hpd) { p.hp=clamp(p.hp+hpd,0,100); lastDeltas['气血']=hpd; }
   if(hpd>=0&&!(judge&&judge.duel)&&p.hp<100){
     // 自然将养：饥寒交迫时几乎养不好伤
-    const regen=Math.round(Math.min(40,(p.hp<30?4:8)*months*(S.destitute?(1-0.75*fdm().starve):1)*(p.status.includes('暗伤')?0.4:1)));
+    const regen=Math.round(Math.min(40,(p.hp<30?4:8)*months*(S.destitute?(1-0.75*fdm().starve):1)*(hasScar('暗伤')?0.4:1)));
     if(regen){ p.hp=clamp(p.hp+regen,0,100); lastDeltas['气血']=(lastDeltas['气血']||0)+regen; }
   }
   if(p.hp<=0&&!d.gameOver){ p.hp=1; }
@@ -2331,8 +2427,13 @@ function applyTurn(d, action, judge){
     lastDeltas['武学·'+a.name]=dv;
   }
   if(ch.personalityAdd) for(const t of ch.personalityAdd){ if(t&&!p.personality.includes(t)) p.personality.push(t); }
-  if(ch.statusAdd) for(const t of ch.statusAdd){ if(t&&!p.status.includes(t)) p.status.push(t); }
-  if(ch.statusRemove) p.status=p.status.filter(t=>!ch.statusRemove.includes(t));
+  // 模型爱把整句话塞进 statusAdd，这里拆成「伤名＋说明＋将养几个月」，同一个伤不重复挂
+  for(const t of (Array.isArray(ch.statusAdd)?ch.statusAdd:asArr(ch.statusAdd))){
+    if(!t) continue;
+    if(typeof t==='object'&&!Array.isArray(t)) addAilment(t.name?(t.desc?`${t.name}：${t.desc}`:String(t.name)):plain(t), num(t.months));
+    else addAilment(t);
+  }
+  for(const t of asArr(ch.statusRemove)) dropAilment(t);
   if(ch.itemsAdd) for(const cat in ch.itemsAdd){
     if(!p.items[cat]) p.items[cat]=[];
     for(const item of (ch.itemsAdd[cat]||[])) if(item&&item.name) p.items[cat].push(item);
@@ -2345,9 +2446,9 @@ function applyTurn(d, action, judge){
     else if(dm.type==='hp'){ p.hp=Math.max(1,p.hp-dm.amount); lastDeltas['气血']=(lastDeltas['气血']||0)-dm.amount; }
     else if(dm.type==='item'){ p.items[dm.cat]=(p.items[dm.cat]||[]).filter(x=>x.name!==dm.name); lastDeltas['失物']=dm.name; }
   }
-  // 重伤状态由引擎维护
-  p.status=p.status.filter(t=>t!=='重伤');
-  if(p.hp<30) p.status.unshift('重伤');
+  // 状态一律由引擎重算：引擎态 + 终身旧伤 + 还没好的伤病
+  if(S.healedLast&&S.healedLast.length){ lastDeltas['伤愈']=S.healedLast.slice(); S.healedLast=[]; }
+  rebuildStatus();
   // NPC
   for(const u of (d.npcUpdates||[])){
     const n=findNpc(u.name);
@@ -2434,7 +2535,7 @@ function applyTurn(d, action, judge){
     else{
       d.gameOver=false; d.ending=null;
       p.hp=Math.max(1,Math.min(p.hp,22));
-      if(!p.status.includes('重伤')) p.status.unshift('重伤');
+      rebuildStatus();
       lastDeathSaved=`本局自由度为「${fdm().label}」，主角不会就此殒命——他被人救下/侥幸未死，只落得重伤（气血 ${p.hp}）。此事记在账上，下一回合须接着这个局面写。`;
       news(`主角在鬼门关前被拉了回来，重伤未死`);
     }
@@ -3218,7 +3319,12 @@ function renderPanel(){
     +`${rk!=null&&rk<=10?`<span class="titlebadge">江湖榜 第${rk}</span>`:''}`
     +`<span class="titlebadge mode" title="江湖凶险 / 自由度">${esc(diff().label)} · ${esc(fdm().label)}</span>`;
   $('pTraits').innerHTML=(p.personality||[]).map(t=>`<span class="trait">${esc(t)}</span>`).join('');
-  $('pStatus').innerHTML=(p.status||[]).map(t=>`<span class="statusfx">${esc(t)}</span>`).join('');
+  // 三类分开摆：引擎态 / 会好的伤病（写明还要多久）/ 治不好的终身旧伤
+  const engS=(p.status||[]).filter(t=>ENGINE_STATUS.includes(t));
+  $('pStatus').innerHTML=
+     engS.map(t=>`<span class="statusfx">${esc(t)}</span>`).join('')
+    +(S.ailments||[]).map(a=>`<span class="statusfx ail" title="${esc(a.desc||'')}">${esc(a.name)}<small>　还需将养约 ${Math.max(1,Math.ceil(num(a.months)))} 月</small></span>`).join('')
+    +(S.scars||[]).map(x=>`<span class="statusfx scar" title="${esc(x.text||'')}">${esc(x.name)}<small>　终身</small></span>`).join('');
   const vit=[['气血',p.hp,p.hp<30?'#9c2f24':'#4a6b45'],['侠名',p['侠名'],'#8a6d2f'],['恶名',p['恶名'],'#5a3a6a']];
   $('pVitals').innerHTML=vit.map(([k,v,c])=>`<div class="attr"><div class="lab"><b>${k}</b><span>${v}${deltaTag(lastDeltas[k])}</span></div><div class="bar"><i style="width:${v}%;background:${c}"></i></div></div>`).join('');
   let ah='';
@@ -3454,6 +3560,8 @@ function changeLines(d){
   const ch=d.playerChanges||{};
   for(const k of ['谈吐','才学','武功']){ const v=lastDeltas[k]; if(v) out.push(`${k} ${v>0?'+':''}${v}`); }
   if(lastDeltas['气血']) out.push(`气血 ${lastDeltas['气血']>0?'+':''}${lastDeltas['气血']}`);
+  if(lastDeltas['伤愈']&&lastDeltas['伤愈'].length) out.push(`伤愈：${lastDeltas['伤愈'].join('、')}`);
+  if((S.ailments||[]).length) out.push(`身上还带着：${S.ailments.map(a=>`${a.name}（还需将养约${Math.max(1,Math.ceil(num(a.months)))}月）`).join('、')}`);
   if(lastDeltas['寿元']) out.push(`寿元 +${lastDeltas['寿元']}（今为 ${lifespanOf(S.player)}）`);
   for(const k of ['侠名','恶名']){ const v=lastDeltas[k]; if(v) out.push(`${k} ${v>0?'+':''}${v}`); }
   if(lastDeltas['家财']) out.push(`家财 ${lastDeltas['家财']>0?'+':''}${lastDeltas['家财']} 两`);
@@ -3835,13 +3943,12 @@ async function studyManual(i){
     p.attributes['武功']=clampW(p.attributes['武功']-lose);
     p.hp=Math.max(1,p.hp-hurt);
     carryDeltas['武功']=-lose; carryDeltas['气血']=-hurt;
-    if((bad||Math.random()<0.4)&&hf>=0.5){ if(!p.status.includes('走火入魔')) p.status.unshift('走火入魔'); outcome=`参悟不成，真气逆行【走火入魔】：武功-${lose}，气血-${hurt}（武功判定额外-10，须设法调理）`; }
+    if((bad||Math.random()<0.4)&&hf>=0.5){ addAilment('走火入魔：真气逆行，须设法调理'); rebuildStatus(); outcome=`参悟不成，真气逆行【走火入魔】：武功-${lose}，气血-${hurt}（武功判定额外-10，须设法调理）`; }
     else outcome=`参悟不成，白耗光阴、内息紊乱：武功-${lose}，气血-${hurt}`;
     ledger(`参悟《${it.name}》未成：${r.crit==='走火入魔'?'走火入魔':'内息紊乱'}，武功-${lose}`);
   }
   judge.study={manual:it.name, style:m.style, months:m.months, roll:r, outcome, success:r.success, crit:r.crit};
-  p.status=p.status.filter(t=>t!=='重伤');
-  if(p.hp<30&&p.hp>0) p.status.unshift('重伤');
+  rebuildStatus();
   renderPanel(); checkAchievements(); saveGame();
   await runTurn(`闭关${m.months}个月，参悟《${it.name}》`, judge, {});
 }
