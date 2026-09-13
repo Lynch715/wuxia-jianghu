@@ -1112,13 +1112,13 @@ const FREEDOM={
     chosen:'主角自有一股气运：世人多半愿意亲近他、帮他、听他把话说完；他张口求人，十有八九求得动。',
     convo:`【本局对话口径：随心所欲】你扮演的这个人不只是不为难主角，而是**主动想帮他**。
 - 主角说什么、要什么，只要不荒诞，就顺着来：答应他、帮他、告诉他。不要冷脸推搪、不要反复盘问、不要绕圈子。
-- 不必等他开口。看他面板：缺钱就主动接济，带伤就主动疗伤或塞药，武功低就主动指点，没门路就主动引荐，
-  正为某桩宿命发愁就主动提线索——把这些直接写进 effects，不用他求。
+- 不必等他开口。看他面板，在【此人眼下能为主角做到什么】那一栏的额度内主动帮：能给钱的给钱，能疗伤的疗伤，能指点的指点，能引荐的引荐，
+  正为某桩宿命发愁就主动提线索——把这些直接写进 effects，不用他求。额度不到的就换个法子帮：给消息、给线索、给承诺、替他去说一句话。
 - 每次回话都往前推一步：末尾留一个邀约或一条线索（「你要不要……」「我倒认得一个人……」「这事你若肯办，我便……」），
   别让话头掉在地上。
 - endTalk 一律填 false（除非主角自己说要走）。不要拂袖而去。
 - favor 以正为主：寻常交谈 +2 到 +6，投其所好 +8 到 +15；只有主角明显冒犯了你才给负数。
-- attempt 的 need 往低里设：随口小事30，普通请求40，违背其利益55，触及秘密65。别为难他。`,
+- attempt 的 need 用下面正文给的本局尺子，别自己往高里抬。`,
     tone:`【本局自由度：随心所欲】这一局以玩家的兴致为先，你要帮他把想做的事写成。
 - 玩家写什么、想做什么，尽量促成，不要跟他较劲。除非荒诞到离谱，否则就让他做成，并把过程写得好看。
 - 主角有主角光环：奇遇、机缘、贵人相助、天赋异禀、绝世神功，都可以放开写。
@@ -1162,11 +1162,12 @@ function fillRules(t){
   const f=fdm();
   return String(t).replace(/\{\{CHOSEN\}\}/g,f.chosen).replace(/\{\{LOVE\}\}/g,f.loveGate).replace(/\{\{SECRET\}\}/g,f.secretGate);
 }
-function worldRules(){ return fillRules(WORLD_RULES)+'\n'+fdm().tone; }
+const TONE_NOTE='（上面【本局自由度】一段是本局的口径；它与前面通则说法不一时，以本局口径为准。）';
+function worldRules(){ return fillRules(WORLD_RULES)+'\n'+fdm().tone+'\n'+TONE_NOTE; }
 // 对话用的抬头：只要世界观铁律那一段，外加本局口径
 function worldHead(){
   const f=fdm();
-  return fillRules(WORLD_RULES.split('属性规则')[0])+'\n'+f.tone+(f.convo?'\n'+f.convo:'');
+  return fillRules(WORLD_RULES.split('属性规则')[0])+'\n'+f.tone+(f.convo?'\n'+f.convo:'')+'\n'+TONE_NOTE;
 }
 
 /* ================= 骰子 ================= */
@@ -1176,7 +1177,7 @@ const rollMod=r=>Math.round((r-10.5)*4);
 const rnd=(a,b)=>a+Math.floor(Math.random()*(b-a+1));
 const pick=arr=>arr[Math.floor(Math.random()*arr.length)];
 function fateInfo(r){
-  if(r<=3) return {label:'大凶',cls:'bad',desc:'行动横生变故，必须付出实质代价（受伤、破财、结仇、失物、失信之一或多项），不许化险为夷、不许因祸得福'};
+  if(r<=3) return {label:'大凶',cls:'bad',desc:'行动横生变故，这一回合走背字'};
   if(r<=8) return {label:'不顺',cls:'bad',desc:'事情不太顺当，有小挫折或小代价，收获打折'};
   if(r<=14) return {label:'平常',cls:'',desc:'按常理发展，不好不坏'};
   if(r<=18) return {label:'顺遂',cls:'good',desc:'事情顺利，略有收获'};
@@ -1659,16 +1660,16 @@ function pickWorldEvent(){
 }
 
 /* ================= 系统提示词 ================= */
-const WORLD_RULES = `你是一个武侠文字游戏引擎。世界观为最通俗的武侠江湖，没有朝廷官家；有门派、家族、隐世高人、武功秘籍、比武、恩怨情仇、拜师收徒、绝世神兵、蛊毒。
+const WORLD_RULES = `你是一个武侠文字游戏引擎。世界观为最通俗的武侠江湖，朝堂官府、捕快衙役都可以有，但戏的重心在江湖；有门派、家族、隐世高人、武功秘籍、比武、恩怨情仇、拜师收徒、绝世神兵、蛊毒。
 铁律：
 - 严禁出现科幻、魔幻、玄幻、量子、机甲、时空穿梭内容；不得出现不符合古代背景的称谓、事物和剧情；不要有太多阴谋暗线。
-- 文风：参考金庸小说的笔法——通俗流畅的白话，叙事干净利落，一看就懂；不要文言腔，不要辞藻堆砌，不要长句套长句。对话生动自然、符合人物身份脾气。称呼用江湖叫法（少侠、姑娘、掌门、师兄、前辈、阁下等），武功、招式、门派、兵器用武侠风格的名字。人物言行须符合其年龄、身份和性格。除JSON键名外一律使用中文。
+- 文风：参考金庸小说的笔法——通俗流畅的白话，叙事干净利落，一看就懂；不要文言腔，不要辞藻堆砌，不要长句套长句。对话生动自然、符合人物身份脾气。称呼用江湖叫法（少侠、姑娘、掌门、师兄、前辈、阁下等），武功、招式、门派、兵器用武侠风格的名字。人物言行须符合其年龄、身份和性格。除JSON键名和引擎规定的固定取值（如 type 的 normal/check/duel/talk/rest）外一律使用中文。
 - 对话：所有人物对话一律用「」包裹，严禁用其他引号；对话自然融入叙述即可，写清楚是谁说的。
 - 缩骨功属于武功功法，不属于技能。
 - 姓名铁律：主角与所有已登场人物的姓名以面板为准，任何时候都不可改写、换姓、换名或另起称呼。写自称（「某」「在下」）时，姓氏必须与面板一致。
 - {{CHOSEN}}
 属性规则（数值一律0-100）：
-- 谈吐：社交能力，越高越能取信于人、说服别人。才学：文化水平，读书写作可提升。颖悟：先天悟性，终生不变。武功：越高越强，练功可提升，中毒受伤会降低，伤愈恢复；可传功给别人（自己失去这部分武功值）；武功大于90可废掉武功小于75者的武功。
+- 谈吐：社交能力，越高越能取信于人、说服别人。才学：文化水平，读书写作可提升。颖悟：先天悟性，终生不变。武功：越高越强，练功可提升，中毒受伤会降低，伤愈恢复；可以把武学教给别人，自己不损；把内力输给别人才会失去相应的武功值（写成attributes.武功负数）；武功高出对方一大截（至少高出三成）且对方无力反抗时，可废掉对方武功。
 - 武功增长要慢：一回合普通练功最多+1到+3（颖悟高者多一点），名师指点或秘籍顿悟才可能+5以上；不可一回合暴涨。
 - 气血：0-100，受伤下降，休养、医药恢复；低于30为重伤，行动受限，剧烈行动会加重。
 - 侠名/恶名：各0-100。行侠仗义、救人、守信涨侠名；为恶、滥杀、背信涨恶名。名气高会被人认出：侠名高受正派敬重、被邪道忌恨；恶名高被正派追杀、被邪道招揽。
@@ -1698,7 +1699,7 @@ const WORLD_RULES = `你是一个武侠文字游戏引擎。世界观为最通�
 - 江湖上的仇是记账的：主角废人武功、杀人，被害者的同门亲友会来寻仇；引擎会让仇恨慢慢发酵，满了就打上门来。
 - 剧情里如果有人被主角得罪到要动真格（结死仇、发毒誓、扬言取其性命），写进newVendettas，对象必须是已有NPC或本回合新出场的NPC。寻常口角不算。
 - 主角与仇家修好（好感≥45）或备重礼赔罪，仇恨会消。
-好感度规则（引擎必须严格执行，好感度0-100，陌生人默认30）：
+好感度规则（你在npcUpdates里按这个写增减，好感度0-100，陌生人默认30）：
 - 对邪魔外道以外的人用暗器或下毒且被发现：名门正派人物好感度-10。
 - 为非作歹（未杀人）：正派-20，邪魔外道+10。杀害无辜、伤害无过错同门亲人：正派-40，邪道+20。被逐出/叛逃师门家族、伤害师傅双亲、杀死无过错同门亲人：正派-50，邪道+40。滥杀无辜成性或杀死师傅双亲：正派好感归0，邪道+20。
 - 行侠仗义：正派+20，邪道-20。救人一命：对方+50（对方薄情则不加）。
@@ -1708,20 +1709,20 @@ const WORLD_RULES = `你是一个武侠文字游戏引擎。世界观为最通�
 - 爱恋值降到0感情破裂可能分开；冷淡、聚少离多、争吵都会降低爱恋值；出轨令伴侣爱恋值-50，若伴侣性情刚烈则直接反目成仇、好感归0；事先约定开放关系则不受影响。
 - 主角不一定是异性恋，会拒绝不符合自己性向的求爱。
 NPC规则：
-- 初次登场的NPC必须给出完整属性面板，不得简化，不得凭空产生，须与主角有联系或合乎逻辑。
+- 初次登场的NPC必须给出完整属性面板，不得简化。此人要有来由（是谁、为什么找上主角），但不必事先铺垫过——江湖上本来就会有人主动找上门。
 - 每个已登场的NPC都配了一幅画像（资料里的portrait）。描写此人的相貌、年纪、衣着打扮时必须与画像相符，不可另编一套；appearance只用来补充画像之外的东西（伤疤、神态、衣裳新旧）。每个NPC都有一个secret（不为人知的秘密：私情、旧案、真实身份、欲望、软肋等，与剧情相关），主角不知道，除非剧情中被揭开。
 - 所有相识的NPC有自己的人生线并互相交往：生死、嫁娶、偷情、交好、交恶等奇闻琐事须有因果逻辑，并在每回合的npcEvents中体现。
 - NPC对主角好感度的变化参考现实人际交往。
 宿命规则：主角有若干"宿命"（长线目标，如报仇、寻亲、夺回家业、登顶江湖榜、寻得秘籍、成婚生子等）。剧情有推进时用questUpdates更新progress（0-100，累计增减），完成置status为"完成"，永远无法达成时置"失败"；剧情产生了新的长线目标时用newQuests添加（不要滥加，一局最多同时5条）。
 生计与光阴（引擎记账，你不可篡改）：
-- 时间由引擎按月推进。严禁自行叙述「三年后」「转眼十载」之类的跳跃，也不要写出具体年月日期——时间由引擎显示，你只管写这段日子里发生的事。
+- 时间由引擎按月推进，这一回合过去几个月引擎会告诉你。不要自行决定跳过多少时间，也不要写出具体年月日期；引擎说这回合三个月，你就写这三个月里的事，可以说「这几个月」「入冬以后」，不可以写「三年后」「转眼十载」。
 - 主角每月都要花销：食宿、汤药、行路、打点。引擎会自动扣钱，你不必计算，但剧情要有钱的分量：住店要付账，请医要抓药，赶路要盘缠。
 - 若主角身无分文，须写出窘迫：被店家赶出、露宿破庙、典当衣物、给人做工换饭，绝不可凭空有人白送钱粮。
 - 横财要克制：寻常一回合进项多在数十两之内；大额进项必须有来由（重赏、劫掠、变卖宝物、门派月例、赌坊），不可动辄千两。
 - 衰老按寿元算，不按绝对岁数：耗掉六成寿元才算渐入中年，七成之后气力日衰。寿元二百的人活到一百二十仍是盛年，不要按凡人的岁数写他老。
 进程规则：
 - 回合制，时间自然流动，主角年龄随之增长。绝不替玩家做选择，绝不擅自推进到结局；只有主角死亡或玩家明确要求收尾时才可结束。
-- 要取主角性命，正确做法是按比武制度发起duel，把生死交给引擎推演，而不是在剧情里一笔写死。天命骰大凶只代表这一回合倒霉，绝不是让你赐死主角的许可。
+- 要取主角性命，首选按比武制度发起duel，把生死交给引擎推演。只有本局自由度那一段明说允许的情形，才可以在剧情里写死，而且必须是铺垫过的杀机、明知不可为而为之，不可无端猝死。天命骰大凶只代表这一回合倒霉，绝不是让你赐死主角的许可。
 - 每回合末尾须有江湖风闻。`;
 
 const STYLE_SYSTEM = `你是一个武侠文字游戏的叙事引擎，笔法学金庸：通俗流畅的白话，叙事干净利落，一看就懂；不堆辞藻，不写文言腔，不用长句套长句；对话用「」包裹，写清是谁说的，人物说话符合其身份脾气。
@@ -1739,7 +1740,7 @@ const STYLE_SYSTEM = `你是一个武侠文字游戏的叙事引擎，笔法学�
 对面的人收了掌，负手站着，连衣角都没乱。
 「我说过，别管这桩闲事。」
 
-叙述一律用中文；除JSON键名外不得出现英文。`;
+叙述一律用中文；除JSON键名和引擎规定的固定取值（如 type 的 normal/check/duel/talk/rest）外不得出现英文。`;
 
 const JSON_RULE = `你必须只输出一个合法的JSON对象，不要输出任何其他文字，不要用markdown代码块包裹。所有字符串内的换行用\\n表示。`;
 
@@ -1837,7 +1838,7 @@ function stateBlocks(){
   const pb=Object.assign({},p); delete pb.backstory;
   return `【当前时间】${S.date}（第${S.turn}回合）
 【当前场景】${S.scene?`主角现在${S.scene.location||'未知地点'}。未了结的事：${asArr(S.scene.unresolved).join('；')||'无'}`:'见最近剧情'}
-【主角姓名】${p.name}${p.biaozi?`（字${p.biaozi}）`:''}——姓「${surnameOf(p.name)}」。叙述、自称、旁人称呼一律用这个名字：自称写作「${surnameOf(p.name)}某」，旁人叫「${surnameOf(p.name)}少侠／${surnameOf(p.name)}兄」之类。绝不可换成别的姓或别的名字。
+【主角姓名】${p.name}${p.biaozi?`（字${p.biaozi}）`:''}——姓「${surnameOf(p.name)}」。叙述、自称、旁人称呼一律用这个名字：${p.gender==='女'?`自称用名字或「小女子」，旁人叫「${surnameOf(p.name)}姑娘／${surnameOf(p.name)}女侠」之类`:`自称写作「${surnameOf(p.name)}某」，旁人叫「${surnameOf(p.name)}少侠／${surnameOf(p.name)}兄」之类`}。绝不可换成别的姓或别的名字。
 【主角面板】${JSON.stringify(pb)}（称号：${titleOf(p)}；江湖榜位次：${rankText()}）
 【生计】家财${p.money}两，每月开销约${upkeepPerMonth()}两${S.destitute?'；主角已身无分文，正在挨饿受冻':''}；年岁${p.age}，寿元${lifespanOf(p)}（${ageNote()}）
 【武学境界】武功${attrVal(p,'武功')}——${realmOf(attrVal(p,'武功'))}${WCAP()>100?`。本局武功上限${WCAP()}，当世水位${powerLevel()}（榜首与主角取高者）。need一律还按0-100的老尺子给：主角武功远高于100时，该碾压就写成碾压`:''}
@@ -1865,17 +1866,22 @@ ${(S.ledger||[]).slice(-M.ledger).join('\n')||'（尚无）'}`;
 
 function judgeBlock(judge){
   const f=fateInfo(judge.fate);
-  let s=`- 天命骰：${judge.fate}（${f.label}）——${f.desc}\n`;
+  let s=judge.convo?`- 天命骰：无（谈话余波不掷骰）\n`:`- 天命骰：${judge.fate}（${f.label}）——${f.desc}\n`;
   // 引擎自己看出来在原地打转，就下一条硬指令
   if(judge.nudge){
     s+=`- ⚑ 引擎检测到最近几回剧情雷同（相似度${judge.stuck}%），本回合必须打破：${judge.nudge}\n`;
     s+=`  这不是建议，是本回合的硬要求；写完检查一遍：这一段跟上一段比，到底有什么真的不一样了。\n`;
   }
   if(judge.doom) s+=`- 引擎已定死的实损：${doomText(judge.doom)}。剧情必须交代这是怎么发生的，不许化解、不许找补。\n`;
-  else if(judge.fate<=3) s+=`- 本回合虽是大凶，但本局自由度宽松，不必让主角伤筋动骨，写成有惊无险或小挫折即可。\n`;
+  else if(judge.fate<=3&&!judge.convo) s+=fdm().freeAct
+    ?`- 本回合是大凶，但引擎没有定死实损：写成有惊无险、虚惊一场、白跑一趟即可，可以留转机。\n`
+    :`- 本回合是大凶，但引擎没有定死实损：写成小挫折、丢脸、误会、白跑一趟，不必伤筋动骨，但也别写成因祸得福。\n`;
   if(judge.check){
     const c=judge.check;
     s+=`- 属性判定：${c.attr}${c.val}，掷骰${c.roll}（修正${c.mod>=0?'+':''}${c.mod}）＝${c.total}，难度${c.need}，判定【${c.success?'成功':'失败'}】${c.crit?'（'+c.crit+'）':''}。剧情必须如实体现这个结果。\n`;
+    if(!c.success&&fdm().freeAct) s+=`  本局口径宽松：失败只写成绕了弯路、小小丢脸、暂时没成，不必伤筋动骨。\n`;
+  }else if(judge.duel||judge.convo){
+    s+=judge.duel?`- 属性判定：比武已由引擎结算，本回合不另作判定，check 为 null。\n`:`- 属性判定：谈话里的成败已在对话中判过，余波不另作判定，check 为 null。\n`;
   }else{
     if(fdm().freeAct){
       s+=`- 属性判定：本局为「随心所欲」。玩家自己写的行动，只要不荒诞，一律当作做成了（check填null或success为true），把过程写得精彩即可，不必掷骰刁难。\n`;
@@ -1883,7 +1889,7 @@ function judgeBlock(judge){
       s+=`- 属性判定：本行动未预设判定。若你认为该行动有成败风险，请按判定制度自行判定：本回合骰面修正为【${rollMod(judge.fate)>=0?'+':''}${rollMod(judge.fate)}】，总值＝相关属性${rollMod(judge.fate)>=0?'+':''}${rollMod(judge.fate)}（本局主角另有 +${fdm().check} 的气运加成，已算进这个数）与你设定的need比较，结果写入check；无风险则check为null。\n`;
     }
   }
-  s+=`- 世界事件：${judge.worldEvent?judge.worldEvent+'（必须在剧情或江湖风闻中体现）':'无'}\n`;
+  if(!judge.convo) s+=`- 世界事件：${judge.worldEvent?judge.worldEvent+'（必须在剧情或江湖风闻中体现）':'无'}\n`;
   if((S.engineNews||[]).length) s+=`- 引擎已判定的人事变动（既成事实，必须在剧情或江湖风闻中体现，不可否认、不可改写）：${S.engineNews.join('；')}\n`;
   s+=`- 主角气血：${S.player.hp}/100${S.player.hp<30?'（重伤，行动受限）':''}\n`;
   if(judge.study){
@@ -1903,6 +1909,16 @@ function judgeBlock(judge){
   return s;
 }
 
+// 谈话余波那一回合的要求：只写余波，不套常规回合的篇幅与推进要求
+function convoAfterReq(){
+  return `请写这场谈话的余波。要求：
+- 剧情150-250字，只写谈完之后的那一小段：这场话带来的实际变化、在场旁人的反应、接下来该往哪去。不要重述对话，不要另起炉灶讲别的事，不要写时间流逝。
+- 本回合结束时，把主角所在的具体地点写进scene.location；scene.unresolved 与 resolvedInfo 照常维护（只列眼下真正还悬着的事，至多4条；了结的写进 resolvedInfo）。
+- 数值变化只写这场谈话真正引起的（好感、关系、态度），写进npcUpdates；谈话里已落账的东西不要再写一遍。
+- npcEvents、rumors 可以留空。
+- options给3至5个，格式同常规：{"text":"","hint":"","type":"normal|check|duel|talk|rest","months":1,"check":null,"duel":null,"target":null}。选项要接着这场谈话往下走：他答应的事怎么办、他提的线索追不追、他托付的事接不接。可以有一个把主角带离当前地点的，但不强求。
+- duel 为 null；gameOver 为 false。`;
+}
 function turnPrompt(action, judge){
   return `${worldRules()}
 
@@ -1912,14 +1928,14 @@ ${stateBlocks()}
 【本回合引擎判定（不可更改，必须如实体现）】
 ${judgeBlock(judge)}
 
-请推演本回合。要求：
+${judge.convo?convoAfterReq():`请推演本回合。要求：
 - 剧情250-500字。剧情必须紧接上一回合结尾：地点、在场人物、正在发生的事都要衔接上，除非玩家的行动明确是转场离开；时间流动要合理，不要无故跳过大段时间。
 - **本回合必须比上一回合往前一步**：地点、在场的人、主角掌握的信息、与人的关系，这四样里至少有一样真的变了。
   上一回合做过的事不许换个说法再做一遍（上回在练功，这回就别又是练功；上回在打听同一桩事，这回就得问出点什么或者碰上钉子）。
   一件事要么推进、要么了结、要么撞上新的阻碍——不许原地描写心情、反复回想、重申决心来凑字数。
 - 新人新事要有来由，但江湖上本来就会有人主动找上门：仇家寻仇、旧识递信、陌生人求助、门派招揽都不必事先铺垫过。别因为怕突兀就什么都不敢写。
 - 本回合结束时，把主角所在的具体地点写进scene.location。
-- scene.unresolved 只列**眼下真正还悬着、而且主角接下来打算去管**的事，至多3条；已经办完、已经落空、或者主角已经不在乎的，就别再写进去。
+- scene.unresolved 只列**眼下真正还悬着、而且主角接下来打算去管**的事，至多4条；已经办完、已经落空、或者主角已经不在乎的，就别再写进去。
   本回合了结或放下了哪几桩，写进 resolvedInfo（原样照抄未了之事里的那句话），引擎会把它从账上划掉。
 - 数值变化必须符合规则并如实写入playerChanges与npcUpdates（全部用增减量；年龄用绝对值）。受伤写hp负值，休养写hp正值。
 - 主角练功、拆招、受指点时，用playerChanges.artsTrain长熟练度；新学的武学写artsAdd并注明style与level。
@@ -1937,7 +1953,7 @@ ${judgeBlock(judge)}
 - 江湖榜有空缺时，可用rankingAdd补一位新上榜的高手（给出姓名、所属、武功、一句成名评价），要像是江湖上本就有这么个人，别硬造。
 - ${OPTIONS_RULE}
 - 若本回合要动手较量，按比武制度填duel并把剧情收在动手前；否则duel为null。
-- 除非主角死亡或玩家明确要求收尾，gameOver必须为false。
+- 除非主角死亡或玩家明确要求收尾，gameOver必须为false。`}
 
 ${JSON_RULE}
 输出格式：
@@ -1977,6 +1993,7 @@ ${judgeBlock(judge)}
 - 若对手是江湖榜人物且落败，写rankingUpdates调整。
 - duel字段必须为null；若主角已死则gameOver为true并写ending。
 - ${OPTIONS_RULE}
+- 刚交过手的这个对手，本回合不要再给「再打一场」的 duel 选项，除非他明摆着不肯罢休。
 
 ${JSON_RULE}
 输出格式同常规回合：
@@ -1997,20 +2014,20 @@ function convoPrompt(npc, line, roll, gift){
   return `${worldHead()}
 你现在扮演武侠世界中的人物「${npc.name}」，正与主角面对面交谈。你不是旁白，只输出${npc.name}的言行。
 【${npc.name}的资料】${JSON.stringify({name:npc.name,gender:npc.gender,age:npc.age,identity:npc.identity,faction:npc.faction,alignment:npc.alignment,personality:npc.personality,appearance:npc.appearance,portrait:npcPortrait(npc),武功:npc['武功'],谈吐:npc['谈吐'],signature:npc.signature,relation:npc.relation,notes:npc.notes,alive:npc.alive})}
-【${npc.name}的秘密】${npc.secret||'无'}${npc.secretKnown?'（主角已经知道这个秘密）':`（主角不知道。除非主角说服/欺骗/威胁成功，或好感≥${fdm().secretGate}且被直接问及，绝不透露；被追问可以撒谎、打岔、翻脸）`}
+【${npc.name}的秘密】${npc.secret||'无'}${npc.secretKnown?'（主角已经知道这个秘密）':(fdm().freeAct?`（主角不知道。好感≥${fdm().secretGate}、或主角说服/套话成功、或被直接问及，都可以说；一时不便说也别翻脸，含糊带过、留个口子就行）`:`（主角不知道。除非主角说服/欺骗/威胁成功，或好感≥${fdm().secretGate}且被直接问及，绝不透露；被追问可以撒谎、打岔、翻脸）`)}
 【${npc.name}当下心情】${npc.mood||'平静'}
 【${npc.name}对主角】${npc['爱恋值']!=null?`爱恋值${npc['爱恋值']}`:`好感度${npc['好感度']}`}（关系：${npc.relation}）
 【${npc.name}记得的往事】${(npc.memory||[]).join('；')||'无'}
-【此人眼下能为主角做到什么】${(()=>{const c=convoCaps(npc);const t=[];
+【此人眼下能为主角做到什么${fdm().freeAct?'（这是引擎按交情卡死的上限，写着「不会」的就是真不会，硬写也会被削掉）':''}】${(()=>{const c=convoCaps(npc);const t=[];
   t.push(c.money>0?`拿得出的银钱大约${c.money}两以内`:'不会给钱');
   t.push(c.canItem?'可以送一件随身之物':'不会送东西');
-  t.push(c.fav>=c.artGate&&num(npc['武功'])>num(S.player.attributes['武功'])+5?'交情已到，可以传授武学（但主角已会的那几门除外）':'还不到传功授艺的份上');
+  t.push(c.fav>=c.artGate&&num(npc['武功'])>num(S.player.attributes['武功'])+5?'交情已到，可以传授武学（但主角已会的那几门除外）':'还不到传授武学的份上');
   if((npc.fromPlayer||[]).length) t.push(`${npc.fromPlayer.join('、')}是主角教你的，不可回传`);
   t.push(c.fav>=c.factionGate?'可以引荐入门':'不会引荐入门');
-  if(npc.taught) t.push('已经传过一次功，不会再传');
+  if(npc.taught) t.push('已经传授过一次武学，不会再传');
   if(num(npc.gave)>0) t.push(`此前已接济过主角${num(npc.gave)}两`);
   return t.join('；');})()}
-【主角】${p.name}（姓${surnameOf(p.name)}，称呼他时用这个姓，不可写错），${p.gender}，${p.age}岁，${p.identity||p.backgroundType}，称号「${titleOf(p)}」；谈吐${p.attributes['谈吐']}，武功${attrVal(p,'武功')}（${realmOf(attrVal(p,'武功'))}${WCAP()>100?`，当世水位${powerLevel()}`:''}），才学${p.attributes['才学']}；侠名${p['侠名']}恶名${p['恶名']}；气血${p.hp}/100。
+【主角】${p.name}（姓${surnameOf(p.name)}，称呼时用这个姓，不可写错），${p.gender}，${p.age}岁，${p.identity||p.backgroundType}，称号「${titleOf(p)}」；谈吐${p.attributes['谈吐']}，武功${attrVal(p,'武功')}（${realmOf(attrVal(p,'武功'))}${WCAP()>100?`，当世水位${powerLevel()}`:''}），才学${p.attributes['才学']}；侠名${p['侠名']}恶名${p['恶名']}；气血${p.hp}/100。
 【主角已会的武学（他早就会了，不要再教、不要再送对应的秘籍）】${(p.arts||[]).length?p.arts.map(a=>`${a.name}（${a.style}，熟练${a.level}）`).join('；'):'不会武功'}
 【主角行囊里的秘籍】${((p.items&&p.items['秘籍'])||[]).length?p.items['秘籍'].map(x=>x.name).join('、'):'无'}
 ${(npc.fromPlayer||[]).length?`【你这几门功夫是主角教的】${npc.fromPlayer.join('、')}——你绝不可能反过来把它们「传」给他，也拿不出对应的秘籍
@@ -2021,7 +2038,7 @@ ${convoVols?`【前尘卷录】\n${convoVols}\n`:''}${convoSum?`【前情提要�
 【对话至今】
 ${log}
 【主角这一句/这一举动】${gift?`（赠送【${gift.name}】：${gift.desc||''}）`:''}${line}
-【引擎掷骰】骰${roll}，本次骰面修正【${rollMod(roll)>=0?'+':''}${rollMod(roll)}】。若主角这句话是说服、欺骗、威胁、求情、讨价、套话、打探秘密之类有成败之分的尝试，请设定need（随口小事40，普通请求55，违背其利益70，触及秘密或底线85），判定总值＝主角相关属性（已含本局气运加成${fdm().check>0?'+'+fdm().check:'0'}：说服/欺骗/套话用谈吐${p.attributes['谈吐']+fdm().check}，威胁用武功${attrVal(p,'武功')+fdm().check}，引经据典用才学${p.attributes['才学']+fdm().check}）${rollMod(roll)>=0?'+':''}${rollMod(roll)}，总值≥need为成功，写入attempt并按成败作答。平常闲聊attempt为null。
+【引擎掷骰】骰${roll}，本次骰面修正【${rollMod(roll)>=0?'+':''}${rollMod(roll)}】。若主角这句话是说服、欺骗、威胁、求情、讨价、套话、打探秘密之类有成败之分的尝试，请设定need（${fdm().freeAct?'随口小事30，普通请求40，违背其利益55，触及秘密65':'随口小事40，普通请求55，违背其利益70，触及秘密或底线85'}），判定总值＝主角相关属性（已含本局气运加成${fdm().check>0?'+'+fdm().check:'0'}：说服/欺骗/套话用谈吐${p.attributes['谈吐']+fdm().check}，威胁用武功${attrVal(p,'武功')+fdm().check}，引经据典用才学${p.attributes['才学']+fdm().check}）${rollMod(roll)>=0?'+':''}${rollMod(roll)}，总值≥need为成功，写入attempt并按成败作答。平常闲聊attempt为null。
 规则：
 - 说话完全符合${npc.name}的身份、性格、心情与好感。${fdm().freeAct?'即便如此，本局要以促成为主：语气可以有脾气，事情要给他办。':'好感低时冷淡敌意，好感高时亲近；可以拒绝、撒谎、反问、发脾气，甚至拂袖而去（endTalk为true）。'}对方是长辈、仇人、爱人，语气都要不同。
 - 描写${npc.name}的相貌衣着时须与portrait画像相符，不要另编。
@@ -2042,10 +2059,10 @@ ${log}
    "questProgress":{"title":"已有宿命名","progress":-20到20},
    "vendetta":{"reason":"把他得罪狠了","lethal":false}, "appease":true表示旧怨化解,
    "info":"打听到的一句要紧消息"}
-  分寸：给东西、给钱、传功、引荐都要合乎此人的身份、家底与对主角的好感——好感不到就别给，
+  分寸：给东西、给钱、传授武学、引荐都要合乎此人的身份、家底与对主角的好感——好感不到就别给，
   一个穷酸书生掏不出百两银子。引擎会按好感与身份卡上限，超出的部分会被削掉，硬编也没用。
-  同一个人不会反复给你钱，也只会传你一次功。
-  传功铁律：主角【已会的武学】那一栏里的东西，你不可以再教他一遍，也不可以拿对应的秘籍当礼物送他
+  同一个人接济你有个总数（引擎记着，到顶就不给了），传授武学只传一次。
+  传授武学的铁律：主角【已会的武学】那一栏里的东西，你不可以再教他一遍，也不可以拿对应的秘籍当礼物送他
   ——那是他早就练熟的功夫，更别提有几门本来就是他教给你的。要送就送他没有的。
   反过来，若这场谈话里是主角把功夫教给了你，写 teach（填武学名），引擎会记下来。
 - summary：对话至今的一句话摘要（30字内），供日后回忆。
@@ -3359,7 +3376,7 @@ function endConvo(){
     convo=null; saveGame();
     if(!S.over&&!busy){
       runTurn(`与${aftermath.name}谈过之后`,
-        {fate:d20(),check:null,worldEvent:null,duel:false,months:0,convo:aftermath},{});
+        {fate:10,check:null,worldEvent:null,duel:false,months:0,convo:aftermath},{});
     }
     return;
   }

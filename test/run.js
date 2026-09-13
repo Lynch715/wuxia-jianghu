@@ -187,7 +187,7 @@ const pFree=await talkPrompt('free');
 ok('随心所欲：对话提示词带上促成口径', /本局对话口径：随心所欲/.test(pFree)&&/顺着来/.test(pFree));
 ok(`随心所欲：说服判定吃到 +25 气运（谈吐 ${talkBase} → ${(pFree.match(/说服\/欺骗\/套话用谈吐(\d+)/)||[])[1]}）`,
    pFree.includes('说服/欺骗/套话用谈吐'+(talkBase+25)));
-ok('随心所欲：秘密门槛降到 50', /好感≥50且被直接问及/.test(pFree));
+ok('随心所欲：秘密门槛降到 50，且不翻脸', /好感≥50、或主角说服\/套话成功/.test(pFree)&&/也别翻脸/.test(pFree));
 ok('随心所欲：不再说「不会无缘无故帮他」', !/不会无缘无故帮他/.test(pFree)&&/十有八九求得动/.test(pFree));
 ok('随心所欲：NPC 主动想帮他，不必等他开口', /主动想帮他/.test(pFree)&&/不必等他开口/.test(pFree));
 ok('随心所欲：每句话末尾留一个邀约或线索', /末尾留一个邀约或一条线索/.test(pFree));
