@@ -582,6 +582,69 @@ ok('榜上有挑战按钮', (await page.$$('#wRanking button[data-ch]')).length>
 const vd=await page.textContent('#wVendetta');
 ok('仇家面板：'+vd.replace(/\s+/g,' ').trim().slice(0,50), true);
 
+console.log('\n【传功不穿帮：你教出去的，他不会再传回来】');
+const tc=await page.evaluate(()=>{
+  const keepA=JSON.parse(JSON.stringify(S.player.arts||[])), keepN=JSON.parse(JSON.stringify(S.npcs)),
+        keepI=JSON.parse(JSON.stringify(S.player.items)), keepW=S.player.attributes['武功'],
+        keepF=S.freedom, keepC=(typeof convo!=='undefined')?convo:null;
+  const r={};
+  S.freedom='mid';
+  S.player.arts=[{name:'伏虎拳',desc:'刚猛外家拳',style:'刚猛',level:60}];
+  S.player.attributes['武功']=70;
+  const n=findNpc('岳师伯'); n['武功']=95; n['好感度']=80; n.taught=false; n.fromPlayer=[];
+  const eff=(o)=>{ convo={npc:n,msgs:[],favorTotal:0,giftMode:false,secretRevealed:false,gains:[]};
+                   const out=applyConvoEffects(n,o,true); convo=keepC; return out; };
+  // 1 主角自己会的，别人教不了
+  r.known=eff({art:{name:'伏虎拳',style:'刚猛',level:20}});
+  r.artsAfterKnown=S.player.arts.length;
+  // 2 主角把功夫教给他，引擎记账
+  const w0=S.player.attributes['武功'], nw0=num(n['武功']);
+  n['武功']=40;                       // 得比主角弱才教得动
+  r.teach=eff({teach:{name:'伏虎拳'}});
+  r.marked=(n.fromPlayer||[]).slice();
+  r.npcUp=num(n['武功'])-40;
+  r.myCost=w0-num(S.player.attributes['武功']);
+  // 3 他反过来要「传」这套功夫 —— 驳回
+  n['武功']=200;
+  r.back=eff({art:{name:'伏虎拳',style:'刚猛',level:25}});
+  // 4 连对应的秘籍也送不了
+  r.manual=eff({give:[{cat:'秘籍',name:'伏虎拳谱',desc:'一本册子'}]});
+  r.bagAfter=((S.player.items['秘籍']||[]).map(x=>x.name));
+  // 5 行囊里已经有的秘籍不会再送一本
+  S.player.items['秘籍']=[{name:'伏虎心法残卷',desc:'字迹斑驳'}];
+  r.dupManual=eff({give:[{cat:'秘籍',name:'伏虎心法残卷',desc:'又一本'}]});
+  // 6 他有别的功夫，照样教得了
+  r.fresh=eff({art:{name:'落英剑法',style:'诡变',level:22}});
+  r.gotFresh=(S.player.arts||[]).some(x=>x.name==='落英剑法');
+  // 7 主线回合里 taughtNpc 也记账
+  const n2=findNpc('沈师姐'); n2['武功']=30; n2.fromPlayer=[];
+  applyTurn({narrative:'',summary:'',taughtNpc:[{name:'沈师姐',art:'伏虎拳'}],
+             options:[{text:'继续',type:'normal',months:1}]},
+            '教师姐拳法',{fate:11,check:null,worldEvent:null,duel:false,months:0});
+  r.turnMark=(n2.fromPlayer||[]).slice();
+  r.ledgerHit=(S.ledger||[]).some(x=>/你把【伏虎拳】传给了沈师姐/.test(x));
+  // 8 提示词里说清楚
+  convo={npc:n,msgs:[],favorTotal:0,giftMode:false,secretRevealed:false,gains:[]};
+  const pr=convoPrompt(n,'你那套拳能教我吗',12,null);
+  convo=keepC;
+  r.prompt={arts:/【主角已会的武学/.test(pr)&&/伏虎拳（刚猛，熟练60）/.test(pr),
+            bag:/【主角行囊里的秘籍/.test(pr),
+            from:/【你这几门功夫是主角教的】/.test(pr)&&/绝不可能反过来/.test(pr)};
+  r.mainPrompt=/学自主角的武学/.test(stateBlocks());
+  S.player.arts=keepA; S.npcs=keepN; S.player.items=keepI; S.player.attributes['武功']=keepW; S.freedom=keepF;
+  return r;
+});
+ok('自己早会的武学，别人教不出新东西：'+tc.known.join('｜'), /早就会了/.test(tc.known.join())&&tc.artsAfterKnown===1);
+ok('把功夫教给他，引擎记下来：'+tc.teach.join('｜'), tc.marked.includes('伏虎拳')&&tc.npcUp>0&&tc.myCost>0);
+ok('他再想把这套「传」回来，直接驳回：'+tc.back.join('｜'), /本来就是你教给/.test(tc.back.join()));
+ok('对应的秘籍也送不出来：'+tc.manual.join('｜'), /并没有什么秘籍可给|早已练成/.test(tc.manual.join())&&!tc.bagAfter.includes('伏虎拳谱'));
+ok('行囊里已有的秘籍不会再送一本：'+tc.dupManual.join('｜'), /已经有了一本/.test(tc.dupManual.join()));
+ok('他会的别的功夫照样教得了：'+tc.fresh.join('｜'), tc.gotFresh);
+ok('主线回合里教人也记账：'+tc.turnMark.join('、'), tc.turnMark.includes('伏虎拳')&&tc.ledgerHit);
+ok('对话提示词把主角会的武学和秘籍摆出来了', tc.prompt.arts&&tc.prompt.bag);
+ok('并且写明哪几门是主角教的、不可回传', tc.prompt.from);
+ok('主线提示词里 NPC 资料也带「学自主角的武学」', tc.mainPrompt);
+
 console.log('\n【伤病会好，旧伤不会】');
 const ail=await page.evaluate(()=>{
   const keepS=JSON.parse(JSON.stringify(S.player.status||[])), keepA=JSON.parse(JSON.stringify(S.ailments||[])),

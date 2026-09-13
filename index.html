@@ -720,6 +720,7 @@ function migrate(s){
     s.v=6;
   }
   if(s.v<7){
+    for(const nn of (s.npcs||[])) if(!Array.isArray(nn.fromPlayer)) nn.fromPlayer=[];
     // 老存档的 status 是个被塞满整句话的袋子（「箭伤：肩头中箭，已敷药，休养数日可愈。」），
     // 拆成「终身旧伤」和「会好的伤病」两本账，顺手把换了措辞的重复项并掉
     s.ailments=[];
@@ -1197,6 +1198,35 @@ function normArt(a){
   if(!a||!a.name) return null;
   const style=ART_STYLES.includes(a.style)?a.style:guessStyle(a.name+' '+(a.desc||''));
   return {name:a.name, desc:a.desc||'', style, level:clamp(num(a.level)||rnd(10,25))};
+}
+/* 主角已经会的武学 / 已经有的秘籍。
+   以前没人查这个：你把伏虎拳教给了岳师伯，回头他张口就要「传」你伏虎拳，
+   引擎那句 if(!p.arts.find(...)) 不成立就什么都不做、连句话都不回，剧情就穿帮了。 */
+function artKnown(name){
+  const t=String(name||'').replace(/[《》「」【】]/g,'').trim();
+  if(!t) return null;
+  const arts=(S.player&&S.player.arts)||[];
+  return arts.find(a=>a.name===t) || arts.find(a=>a.name.includes(t)||t.includes(a.name)) ||
+         arts.find(a=>simRatio(a.name,t)>=0.7) || null;
+}
+function manualHeld(name){
+  const t=String(name||'').replace(/[《》「」【】]/g,'').trim();
+  if(!t) return null;
+  const bag=((S.player&&S.player.items&&S.player.items['秘籍'])||[]);
+  return bag.find(x=>String(x.name).replace(/[《》「」]/g,'')===t) ||
+         bag.find(x=>{const n=String(x.name).replace(/[《》「」]/g,''); return n.includes(t)||t.includes(n);}) || null;
+}
+// 这门功夫是不是主角自己教给他的
+function taughtByPlayer(n,name){
+  const list=(n&&n.fromPlayer)||[];
+  const t=String(name||'').replace(/[《》「」【】]/g,'').trim();
+  return list.some(x=>x===t||x.includes(t)||t.includes(x)||simRatio(x,t)>=0.7);
+}
+function markTaught(n,artName){
+  if(!n||!artName) return;
+  n.fromPlayer=n.fromPlayer||[];
+  const t=String(artName).replace(/[《》「」【】]/g,'').trim();
+  if(t&&!n.fromPlayer.includes(t)){ n.fromPlayer.push(t); while(n.fromPlayer.length>6) n.fromPlayer.shift(); }
 }
 // 某一路数下最精熟的一门
 function artFor(stance){
@@ -1791,7 +1821,7 @@ function stateBlocks(){
   const near=S.npcs.filter(isRelevantNpc);
   const far=S.npcs.filter(n=>n.alive&&!isRelevantNpc(n));
   const gone=S.npcs.filter(n=>!n.alive);
-  const npcBrief=near.map(n=>({name:n.name,gender:n.gender,age:n.age,identity:n.identity,faction:n.faction,alignment:n.alignment,personality:n.personality,portrait:npcPortrait(n),武功:n['武功'],relation:n.relation,好感度:n['好感度'],爱恋值:n['爱恋值'],mood:n.mood,secret:n.secret,secretKnown:n.secretKnown,notes:n.notes,与主角的往来:(n.memory||[]).slice(-M.npcMem)}));
+  const npcBrief=near.map(n=>({name:n.name,gender:n.gender,age:n.age,identity:n.identity,faction:n.faction,alignment:n.alignment,personality:n.personality,portrait:npcPortrait(n),武功:n['武功'],relation:n.relation,好感度:n['好感度'],爱恋值:n['爱恋值'],mood:n.mood,secret:n.secret,secretKnown:n.secretKnown,notes:n.notes,学自主角的武学:(n.fromPlayer||[]),与主角的往来:(n.memory||[]).slice(-M.npcMem)}));
   const farText=far.length?far.map(n=>`${n.name}（${n.identity||''}${n.relation?'，'+n.relation:''}）`).join('；'):'（无）';
   const goneText=gone.length?gone.map(n=>n.name).join('、'):'（无）';
   const vols=(S.volumes||[]).slice(-M.vol).map(v=>`〔第${v.from}至${v.to}回〕${String(v.text||'').slice(0,M.volLen)}`).join('\n')||'（尚无）';
@@ -1897,6 +1927,9 @@ ${judgeBlock(judge)}
   不要把整句话塞进伤名里，也不要为同一处伤换个措辞再写一条。伤会自己好，引擎在倒计时，你不必每回合都提。
   剧情里把伤治好了就写 statusRemove（只写伤名），引擎据此销账。
   【终身旧伤】那一栏里的东西治不好，不许写成痊愈，也不要写进 statusRemove。
+- 主角把功夫教给别人时，写 taughtNpc:[{"name":"NPC姓名","art":"武学名"}]，引擎会记下来。
+  已经写在【主角面板】arts 里的武学，任何人都不可以再「传授」给主角一遍，也不可以把对应的秘籍当礼物送他——
+  那是他早就会的；其中有几门还是他自己教出去的，更不可能由对方回传。要给就给他没有的。
 - 寿元只有奇遇能长（千年灵药、内功一路大成、高人易筋洗髓、异人相授驻颜之法之类），写进playerChanges.lifespan（增量）与lifespanReason（一句话缘由），并在剧情里把这场奇遇写足。寻常疗伤进补一律不许加寿元；给多少由引擎裁定，你只管提。
 - 初次登场的新NPC写入newNpcs（完整面板含secret，不得简化）；一回合最多添2人，宁可少不可滥。已有NPC的变化写入npcUpdates；若剧情揭开了某NPC的秘密，写secretRevealed:true。
 - npcEvents写1-2条相识NPC之间的互动琐事或人生进展（嫁娶、交恶、生死等，须有因果）。
@@ -1912,6 +1945,7 @@ ${JSON_RULE}
 "check":null或{"type":"说服","attr":"谈吐","need":70,"success":true},
 "playerChanges":{"age":null或新年龄,"lifespan":0,"lifespanReason":null,"attributes":{"武功":0},"hp":0,"fame":{"侠名":0,"恶名":0},"money":0,"faction":null,"contrib":0,"skills":{"技艺名":{"level":增量数字,"desc":"可选，改写说明"}},"artsAdd":[{"name":"","desc":"","style":"","level":0}],"artsTrain":[{"name":"已有武学名","level":熟练度增量}],"personalityAdd":[],"statusAdd":[{"name":"","desc":"","months":0}],"statusRemove":["伤名"],"itemsAdd":{"武器":[],"秘籍":[],"医药":[],"毒药":[],"杂书":[],"其他":[]},"itemsRemove":[]},
 "npcUpdates":[{"name":"","好感度":0,"爱恋值":null,"relation":null,"alive":true,"identity":null,"faction":null,"mood":null,"notes":null,"武功":0,"age":null,"secretRevealed":false}],
+"taughtNpc":[{"name":"NPC姓名","art":"主角教给他的武学名"}],
 "newNpcs":[${NPC_SCHEMA}],
 "npcEvents":[],"rumors":[],"newVendettas":[{"name":"","reason":"","lethal":false}],
 "questUpdates":[{"title":"","progress":0,"status":"进行中"}],"newQuests":[{"title":"","desc":""}],
@@ -1970,13 +2004,17 @@ function convoPrompt(npc, line, roll, gift){
 【此人眼下能为主角做到什么】${(()=>{const c=convoCaps(npc);const t=[];
   t.push(c.money>0?`拿得出的银钱大约${c.money}两以内`:'不会给钱');
   t.push(c.canItem?'可以送一件随身之物':'不会送东西');
-  t.push(c.fav>=c.artGate&&num(npc['武功'])>num(S.player.attributes['武功'])+5?'交情已到，可以传授武学':'还不到传功授艺的份上');
+  t.push(c.fav>=c.artGate&&num(npc['武功'])>num(S.player.attributes['武功'])+5?'交情已到，可以传授武学（但主角已会的那几门除外）':'还不到传功授艺的份上');
+  if((npc.fromPlayer||[]).length) t.push(`${npc.fromPlayer.join('、')}是主角教你的，不可回传`);
   t.push(c.fav>=c.factionGate?'可以引荐入门':'不会引荐入门');
   if(npc.taught) t.push('已经传过一次功，不会再传');
   if(num(npc.gave)>0) t.push(`此前已接济过主角${num(npc.gave)}两`);
   return t.join('；');})()}
 【主角】${p.name}（姓${surnameOf(p.name)}，称呼他时用这个姓，不可写错），${p.gender}，${p.age}岁，${p.identity||p.backgroundType}，称号「${titleOf(p)}」；谈吐${p.attributes['谈吐']}，武功${attrVal(p,'武功')}（${realmOf(attrVal(p,'武功'))}${WCAP()>100?`，当世水位${powerLevel()}`:''}），才学${p.attributes['才学']}；侠名${p['侠名']}恶名${p['恶名']}；气血${p.hp}/100。
-【时间地点】${S.date}，${S.scene?S.scene.location:''}
+【主角已会的武学（他早就会了，不要再教、不要再送对应的秘籍）】${(p.arts||[]).length?p.arts.map(a=>`${a.name}（${a.style}，熟练${a.level}）`).join('；'):'不会武功'}
+【主角行囊里的秘籍】${((p.items&&p.items['秘籍'])||[]).length?p.items['秘籍'].map(x=>x.name).join('、'):'无'}
+${(npc.fromPlayer||[]).length?`【你这几门功夫是主角教的】${npc.fromPlayer.join('、')}——你绝不可能反过来把它们「传」给他，也拿不出对应的秘籍
+`:''}【时间地点】${S.date}，${S.scene?S.scene.location:''}
 【主角眼下要做的事】${S.quests.filter(q=>q.status==='进行中').map(q=>q.title).join('；')||'无'}
 【未了之事】${S.scene?asArr(S.scene.unresolved).join('；')||'无':'无'}
 ${convoVols?`【前尘卷录】\n${convoVols}\n`:''}${convoSum?`【前情提要】\n${convoSum}\n`:''}${convoLed?`【已成定局的旧事（引擎记的账，都是真的，不可否认）】\n${convoLed}\n`:''}【最近发生的事】${recent||'无'}
@@ -1997,6 +2035,7 @@ ${log}
   可用字段（不用的填 null 或省略）：
   {"money":正数=对方给你银两/负数=你付给对方, "give":[{"cat":"武器|秘籍|医药|毒药|杂书|其他","name":"","desc":"","bonus":0}],
    "take":["你交出去的东西名"], "art":{"name":"","desc":"","style":"刚猛/守御/诡变/绝学/身法","level":10到30},
+   "teach":{"name":"主角教给你的武学名"},
    "skill":{"name":"技艺名","level":1到12,"desc":""}, "hp":对方替你疗伤回复的气血,
    "relation":"关系变成什么，如 师父/义兄/未婚妻", "faction":"经他引荐归入的门派", "contrib":门派贡献增减,
    "fame":{"侠名":-5到5,"恶名":-5到5}, "quest":{"title":"他托付你的事","desc":""},
@@ -2006,6 +2045,9 @@ ${log}
   分寸：给东西、给钱、传功、引荐都要合乎此人的身份、家底与对主角的好感——好感不到就别给，
   一个穷酸书生掏不出百两银子。引擎会按好感与身份卡上限，超出的部分会被削掉，硬编也没用。
   同一个人不会反复给你钱，也只会传你一次功。
+  传功铁律：主角【已会的武学】那一栏里的东西，你不可以再教他一遍，也不可以拿对应的秘籍当礼物送他
+  ——那是他早就练熟的功夫，更别提有几门本来就是他教给你的。要送就送他没有的。
+  反过来，若这场谈话里是主角把功夫教给了你，写 teach（填武学名），引擎会记下来。
 - summary：对话至今的一句话摘要（30字内），供日后回忆。
 ${JSON_RULE}
 输出：{"reply":"","innerThought":"","mood":"两字心情","favor":0,"attempt":null或{"type":"说服","attr":"谈吐","need":70,"total":0,"success":true},"revealSecret":false,"endTalk":false,"effects":null或上面那个对象,"summary":""}`;
@@ -2349,7 +2391,7 @@ function normNpcRaw(n){
     relation:n.relation||'', '好感度':clamp(num(n['好感度']!==undefined?n['好感度']:30)), lastSeen:(S?S.turn:0),
     '爱恋值':(n['爱恋值']==null?null:clamp(num(n['爱恋值']))),
     alive:n.alive!==false, secret:n.secret||'', secretKnown:false, memory:[], notes:n.notes||'',
-    gave:0, taught:false, skillGiven:{}, healedTurn:-1, avatar:null
+    gave:0, taught:false, skillGiven:{}, healedTurn:-1, fromPlayer:[], avatar:null
   };
 }
 
@@ -2408,7 +2450,12 @@ function applyTurn(d, action, judge){
     if(ds) cur.desc=ds;
     p.skills[k]=cur;
   }
-  if(ch.artsAdd) for(const a of ch.artsAdd){ const na=normArt(a); if(na&&!p.arts.find(x=>x.name===na.name)){ p.arts.push(na); ledger(`习得武学【${na.name}】（${na.style}）`); } }
+  if(ch.artsAdd) for(const a of ch.artsAdd){
+    const na=normArt(a);
+    if(!na) continue;
+    if(artKnown(na.name)) continue;                 // 已经会的不重复入册
+    p.arts.push(na); ledger(`习得武学【${na.name}】（${na.style}）`);
+  }
   // 奇遇延寿：模型只能提，给多少由引擎按自由度削
   if(num(ch.lifespan)>0){
     const got=grantLifespan(num(ch.lifespan), plain(ch.lifespanReason)||'一场奇遇');
@@ -2477,6 +2524,16 @@ function applyTurn(d, action, judge){
     if(q.progress) t.progress=clamp(t.progress+num(q.progress));
     if(q.status==='完成'||t.progress>=100){ t.status='完成'; t.progress=100; S.stats.questsDone++; p['侠名']=clamp(p['侠名']+3); ledger(`了结宿命「${t.title}」`); }
     else if(q.status==='失败') t.status='失败';
+  }
+  // 主角教出去的功夫记一笔，往后对方不会反过来「传」给他
+  for(const t of (d.taughtNpc||[])){
+    if(!t||!t.name||!t.art) continue;
+    const tn=findNpc(t.name); if(!tn) continue;
+    const art=artKnown(t.art); if(!art) continue;
+    if(taughtByPlayer(tn,art.name)) continue;
+    markTaught(tn,art.name);
+    tn['武功']=clampW(num(tn['武功'])+Math.max(1,Math.round(num(art.level)/8)));
+    ledger(`你把【${art.name}】传给了${tn.name}`);
   }
   for(const q of (d.newQuests||[])){ if(q&&q.title&&!S.quests.find(x=>x.title===q.title)&&S.quests.filter(x=>x.status==='进行中').length<5){ S.quests.push({title:q.title,desc:plain(q.desc),progress:0,status:'进行中'}); ledger(`背上一桩宿命「${q.title}」`); } }
   // 江湖榜、势力
@@ -3081,6 +3138,12 @@ function applyConvoEffects(n, eff, attemptOk){
   // 给东西 / 收东西
   for(const it of (eff.give||[]).slice(0,1)){
     if(!it||!it.name) continue;
+    const gn=String(it.name).replace(/[《》「」【】]/g,'').trim();
+    if(it.cat==='秘籍'||/秘籍|心法|真经|拳谱|剑谱|刀谱|图谱|残卷/.test(gn)){
+      if(taughtByPlayer(n,gn)){ out.push(`这套【${gn}】本来就是你教给${n.name}的，他手上并没有什么秘籍可给`); continue; }
+      const held=manualHeld(gn); if(held){ out.push(`【${held.name}】你行囊里已经有了一本`); continue; }
+      const know=artKnown(gn); if(know){ out.push(`【${know.name}】你早已练成，这本册子于你没用`); continue; }
+    }
     if(!risky||!c.canItem){ out.push(`${n.name}到底没舍得把【${it.name}】给你`); continue; }
     const cat=(p.items[it.cat]!==undefined)?it.cat:'其他';
     p.items[cat]=p.items[cat]||[];
@@ -3093,14 +3156,35 @@ function applyConvoEffects(n, eff, attemptOk){
     for(const cat in p.items){ const before=p.items[cat].length; p.items[cat]=p.items[cat].filter(x=>x.name!==nm); if(p.items[cat].length<before) hit=true; }
     if(hit) gain(out,`你把【${nm}】交给了${n.name}`);
   }
-  // 传授武学：一人只传一次，且对方确实比你强
+  // 传授武学：一人只传一次，对方得真比你强，而且不能把你自己会的再教你一遍
   if(eff.art&&eff.art.name&&risky){
-    if(n.taught) out.push(`${n.name}该教的都教过了`);
+    const nm=String(eff.art.name).replace(/[《》「」【】]/g,'').trim();
+    const own=artKnown(nm);
+    if(taughtByPlayer(n,nm)) out.push(`【${nm}】本来就是你教给${n.name}的，他没什么可回传的`);
+    else if(own) out.push(`【${own.name}】你早就会了（熟练${own.level}），${n.name}教不出新东西`);
+    else if(n.taught) out.push(`${n.name}该教的都教过了`);
     else if(c.fav<c.artGate) out.push(`${n.name}与你交情还不到传功授艺的份上`);
     else if(num(n['武功'])<=num(p.attributes['武功'])+5) out.push(`${n.name}的功夫并不比你高明，教不了你什么`);
     else{
-      const a=normArt({name:eff.art.name, desc:eff.art.desc||`得自${n.name}`, style:eff.art.style, level:Math.min(30,num(eff.art.level)||18)});
-      if(a&&!p.arts.find(x=>x.name===a.name)){ p.arts.push(a); n.taught=true; gain(out,`${n.name}传你一套【${a.name}】（${a.style}，熟练${a.level}）`); }
+      const a=normArt({name:nm, desc:eff.art.desc||`得自${n.name}`, style:eff.art.style, level:Math.min(30,num(eff.art.level)||18)});
+      if(a){ p.arts.push(a); n.taught=true; gain(out,`${n.name}传你一套【${a.name}】（${a.style}，熟练${a.level}）`); }
+    }
+  }
+  // 主角把功夫教给对方：记一笔谁教谁，他往后就不会反过来「传」你这套
+  if(eff.teach&&eff.teach.name&&risky){
+    const tn=String(eff.teach.name).replace(/[《》「」【】]/g,'').trim();
+    const mine=artKnown(tn);
+    if(!mine) out.push(`你自己并不会【${tn}】，教不了${n.name}`);
+    else if(taughtByPlayer(n,tn)) out.push(`${n.name}这套【${tn}】已经跟你学过了`);
+    else if(num(n['武功'])>=num(p.attributes['武功'])) out.push(`${n.name}的功夫不在你之下，用不着你教`);
+    else{
+      markTaught(n,tn);
+      const up=Math.max(1,Math.round(num(mine.level)/8));
+      n['武功']=clampW(num(n['武功'])+up);
+      const cost=Math.max(0,Math.round(up/2));
+      if(cost){ p.attributes['武功']=clampW(num(p.attributes['武功'])-cost); }
+      n['好感度']=clamp(num(n['好感度'])+6);
+      gain(out,`你把【${tn}】传给了${n.name}（他武功 +${up}${cost?`，你耗了内力，武功 -${cost}`:''}）`);
     }
   }
   // 传授技艺
