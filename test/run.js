@@ -582,6 +582,104 @@ ok('榜上有挑战按钮', (await page.$$('#wRanking button[data-ch]')).length>
 const vd=await page.textContent('#wVendetta');
 ok('仇家面板：'+vd.replace(/\s+/g,' ').trim().slice(0,50), true);
 
+console.log('\n【仇家：敢不敢来、来不来得及、来过怎么算】');
+const vd2=await page.evaluate(()=>{
+  const keepV=JSON.parse(JSON.stringify(S.vendettas||[])), keepN=JSON.parse(JSON.stringify(S.npcs)),
+        keepF=S.freedom, keepW=S.player.attributes['武功'], keepSc=JSON.parse(JSON.stringify(S.scene||{}));
+  const r={};
+  const setup=(myW,oppW,extra)=>{
+    S.freedom='free';
+    S.player.attributes['武功']=myW;
+    const n=findNpc('秃鹰'); n['武功']=oppW; n.alive=true; n['好感度']=10;
+    S.vendettas=[Object.assign({name:'秃鹰',reason:'你砸了他的场子',lethal:true,heat:35,born:1},extra||{})];
+    S.npcs=S.npcs.filter(x=>!/受人之托/.test(x.identity||''));
+    S.scene={location:'青石镇',unresolved:[],uAge:{}};
+    S.engineNews=[];
+    return S.vendettas[0];
+  };
+  const V=()=>(S.vendettas||[]).find(x=>x.name==='秃鹰');
+  r.nerve=[vNerve(1.0),vNerve(0.7),vNerve(0.45),vNerve(0.2)];
+  r.ceil=[vCeil(1.0),vCeil(0.7),vCeil(0.2)];
+  // 旗鼓相当：会一路涨到上门
+  setup(66,66);
+  let arrived=0;
+  for(let m=1;m<=40;m++){ tickVendettas(1); const v=V(); if(!v) break;
+    if(v.heat>=100&&num(v.eta)<=0){ arrived=m; break; } }
+  r.even={arrived, state:V()?vStateText(V()):'—'};
+  // 差一大截：恨意封顶 70，永远不会亲自上门
+  setup(900,66);
+  for(let m=1;m<=60;m++) tickVendettas(1);
+  const vw=V();
+  r.weak={heat:vw?Math.round(vw.heat):0, gaveUp:!!(vw&&vw.gaveUp), eta:vw?vw.eta:'—', state:vw?vStateText(vw):'—'};
+  r.hired=(S.npcs||[]).filter(x=>/受人之托/.test(x.identity||'')).map(x=>({n:x.name,w:num(x['武功'])}));
+  r.hiredRatio=r.hired.length?+(r.hired[0].w/900).toFixed(2):0;
+  r.vendCount=(S.vendettas||[]).length;
+  r.noSubcontract=(S.vendettas||[]).filter(x=>x.hiredBy).every(x=>!x.hired);
+  // 恨意满了也得走过来：eta 没走完就不算数
+  const v2=setup(66,66,{heat:120,eta:4,from:'青石镇'});
+  r.notYet={heat:Math.round(v2.heat), eta:v2.eta, ready:(v2.heat>=100&&num(v2.eta)<=0)};
+  tickVendettas(2); r.afterTwo=num(V().eta);
+  // 挪了窝他就扑空，得重新找
+  S.scene.location='黑风口'; tickVendettas(1);
+  r.moved={eta:num(V().eta), news:(S.engineNews||[]).some(x=>/扑了个空/.test(x))};
+  // 修好了就消恨
+  setup(66,66,{heat:90}); findNpc('秃鹰')['好感度']=60;
+  tickVendettas(3); r.befriend3=V()?Math.round(V().heat):0;
+  tickVendettas(4); r.befriend=V()?Math.round(V().heat):0;
+  // 打完有了断
+  const settle=(kind,myW,oppW)=>{
+    setup(myW,oppW,{heat:110,eta:0});
+    duel={opp:findNpc('秃鹰'),vendetta:'秃鹰'};   // 顶层 let，直接赋值才落到同一个绑定上
+    settleVendetta(kind); duel=null;
+    const v=V();
+    return v?{heat:Math.round(v.heat),cool:Math.round(num(v.cool))}:'除名';
+  };
+  r.winWeak=settle('win',900,66);
+  r.winEven=settle('win',66,66);
+  r.oppEscape=settle('oppEscape',66,66);
+  r.lose=settle('lose',66,66);
+  r.escape=settle('escape',66,66);
+  // 冷却期内不再涨
+  setup(66,66,{heat:40,cool:9});
+  const h0=V().heat; tickVendettas(3);
+  r.cool={before:Math.round(h0), after:Math.round(V().heat), left:Math.round(num(V().cool))};
+  setup(66,66,{heat:50,eta:3});
+  r.prompt=stateBlocks();
+  S.vendettas=keepV; S.npcs=keepN; S.freedom=keepF; S.player.attributes['武功']=keepW; S.scene=keepSc;
+  return r;
+});
+ok('胆气按实力差分档：'+vd2.nerve.join('/'), vd2.nerve[0]===1&&vd2.nerve[1]===0.5&&vd2.nerve[2]===0.15&&vd2.nerve[3]===0);
+ok('差一大截的连恨意都涨不上去（封顶 '+vd2.ceil[2]+'）', vd2.ceil[0]===120&&vd2.ceil[2]===70);
+ok(`旗鼓相当的会一路找上门（第 ${vd2.even.arrived} 个月）`, vd2.even.arrived>0&&vd2.even.arrived<=40);
+ok(`差一大截的五年也上不了门（heat ${vd2.weak.heat}，${vd2.weak.state}）`, vd2.weak.gaveUp&&vd2.weak.heat<100&&vd2.weak.eta==null);
+ok('但他会花钱请人：'+(vd2.hired.map(x=>x.n+'（武功'+x.w+'）').join('、')||'没请到'),
+   vd2.hired.length===1&&vd2.hiredRatio>=0.5);
+ok('请来的人不会再转包，仇家名单不失控（'+vd2.vendCount+' 个）', vd2.noSubcontract&&vd2.vendCount<=6);
+ok(`恨意满了也得走过来（heat ${vd2.notYet.heat} 但还有 ${vd2.notYet.eta} 个月脚程）`, vd2.notYet.heat>=100&&!vd2.notYet.ready);
+ok('走两个月就近两个月（'+vd2.notYet.eta+' → '+vd2.afterTwo+'）', vd2.afterTwo===vd2.notYet.eta-2);
+// 又走了一个月本该 -1，结果反而没少，说明扑空之后重新加了脚程
+ok('你挪了窝他就扑空，脚程重算（'+vd2.afterTwo+' → '+vd2.moved.eta+'，本该 '+(vd2.afterTwo-1)+'）',
+   vd2.moved.eta>=vd2.afterTwo&&vd2.moved.news);
+ok(`好感回升，仇恨一个月消 15（90 → ${vd2.befriend3} → ${vd2.befriend||'除名'}）`, vd2.befriend3===45&&vd2.befriend===0);
+ok('把差得远的打服了，从此除名：'+JSON.stringify(vd2.winWeak), vd2.winWeak==='除名');
+ok('旗鼓相当的败走后记着账、但要消停一阵：'+JSON.stringify(vd2.winEven), vd2.winEven.heat===30&&vd2.winEven.cool>=10);
+ok('他逃了：恨意留着，冷却较短 '+JSON.stringify(vd2.oppEscape), vd2.oppEscape.heat===40&&vd2.oppEscape.cool>=6);
+ok('你输了：他出了气，这桩仇了了 '+JSON.stringify(vd2.lose), vd2.lose==='除名');
+ok('你跑了：他还惦记着 '+JSON.stringify(vd2.escape), vd2.escape.heat===85&&vd2.escape.cool>=4);
+ok(`刚交过手的冷却期内恨意不涨（${vd2.cool.before} → ${vd2.cool.after}，还剩 ${vd2.cool.left} 个月）`, vd2.cool.after===vd2.cool.before);
+ok('提示词写明仇家上门由引擎裁定：'+((vd2.prompt.match(/【盯着主角的仇家】[^\n]{0,60}/)||[''])[0]).slice(0,46),
+   /仇家要打上门来由引擎裁定/.test(vd2.prompt)&&/个月脚程|尚在远处|不敢露面|暗中记恨/.test(vd2.prompt));
+await page.click('#tabs button[data-tab="world"]');
+await page.evaluate(()=>{
+  S.freedom='free'; S.player.attributes['武功']=900;
+  const n=findNpc('秃鹰'); n['武功']=66; n.alive=true; n['好感度']=10;
+  S.vendettas=[{name:'秃鹰',reason:'你砸了他的场子',lethal:true,heat:60,born:1,gaveUp:true,hired:'某高手'}];
+  renderWorld();
+});
+const vtxt=(await page.textContent('#wVendetta')).replace(/\s+/g,' ');
+ok('世界页写明他在哪一步：'+vtxt.slice(0,60), /不敢露面|已花钱请了/.test(vtxt)&&/远不如你/.test(vtxt));
+await page.evaluate(()=>{ S.vendettas=[]; S.freedom='mid'; renderWorld(); });
+
 console.log('\n【存档阁与导出全本】');
 await page.click('#btnExport');
 await page.waitForSelector('#saveMask.on');

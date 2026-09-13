@@ -149,6 +149,7 @@ body{
 .quest .qd{font-size:13px;color:var(--ink-soft);line-height:1.6;margin:2px 0 5px}
 .quest.done .qt{color:var(--green)}
 .quest.fail .qt{color:var(--ink-soft);text-decoration:line-through}
+.quest.hot .qt{color:#9c2f24}
 .rank{display:flex;align-items:center;gap:8px;padding:5px 4px;border-bottom:1px dashed var(--paper-edge);font-size:14px}
 .rank:last-child{border-bottom:none}
 .rank .rn{width:26px;text-align:center;font-weight:700;color:var(--gold);font-variant-numeric:tabular-nums}
@@ -1299,17 +1300,118 @@ function addVendetta(name, reason, lethal, heat){
   S.vendettas.push(v);
   return v;
 }
-// 仇恨随光阴发酵；好感回升则渐消
+/* ================= 仇家 =================
+   以前仇恨只按月数涨，跟双方武功没关系：武功60的山贼追武功900的人，照样满格打上门；
+   而且 heat 一满就当场 startDuel——你在华山后山闭关，他在两千里外，照样瞬移到脸上。
+   现在分三件事管：敢不敢来（实力差）、来得及来不及（路程）、来过之后怎么算（了断）。 */
+// 仇家与主角的实力比：1 就是旗鼓相当，0.5 就是差一半
+function vStateText(v){
+  const n=findNpc(v.name);
+  if(!n||!n.alive) return '已死';
+  if(num(v.cool)>0) return `刚交过手，消停着（约${Math.ceil(num(v.cool))}个月内不会再来）`;
+  if(v.gaveUp) return v.hired?`不敢亲自露面，已花钱请了${v.hired}`:'自知不是对手，不敢露面';
+  if(v.eta!=null&&num(v.eta)<=0) return '已经摸到跟前，随时可能动手';
+  if(v.eta!=null) return `已经上路，约还有${Math.ceil(num(v.eta))}个月脚程`;
+  if(v.heat>=70) return '正在四处打探其下落，尚在远处';
+  return '正在暗中记恨，还没动身';
+}
+function vRatio(n){
+  const me=Math.max(1,num(S.player&&S.player.attributes&&S.player.attributes['武功']));
+  return num(n&&n['武功'])/me;
+}
+function vNerve(r){                       // 这份实力差下，他有几分胆气
+  if(r>=0.85) return 1;                   // 旗鼓相当，照常记恨
+  if(r>=0.60) return 0.5;                 // 差一些，还敢惦记，但慢
+  if(r>=0.35) return 0.15;                // 差得多，只敢暗中使坏
+  return 0;                               // 差一大截，亲自上门是送死
+}
+function vCeil(r){                        // 亲自动手的念头最多涨到哪
+  if(r>=0.85) return 120;
+  if(r>=0.60) return 110;
+  return 70;                              // 再恨也只敢放话，不敢来
+}
+// 路远。偏远处、或者期间换过地方，他就得多走一阵
+function vSetOut(v,n){
+  if(v.eta!=null) return;
+  let m=rnd(2,5);
+  if(S.sect&&S.sect.name&&n&&n.faction&&n.faction!==S.sect.name) m+=1;
+  if(num(S.player.attributes['武功'])>num(n&&n['武功'])) m+=1;   // 打不过的人要先攒胆子、找门路
+  v.eta=m; v.from=(S.scene&&S.scene.location)||'';
+  news(`${v.name}放出话来，正循着你的行踪一路寻来`);
+}
 function tickVendettas(months){
   if(!S.vendettas||!S.vendettas.length) return;
+  const warnBefore=(S.vendettas||[]).map(v=>({n:v.name,e:v.eta}));
   const mul=(S.difficulty==='hard'?1.4:(S.difficulty==='easy'?0.6:1))*fdm().vendetta;
+  const here=(S.scene&&S.scene.location)||'';
   for(const v of S.vendettas){
     const n=findNpc(v.name);
     if(!n||!n.alive){ v.heat=0; continue; }
-    if(n['好感度']>=45){ v.heat=Math.max(0,v.heat-15*months); continue; }
-    v.heat=Math.min(120, v.heat+Math.round((rnd(2,5)+(v.lethal?3:0))*months*mul));
+    if(num(v.cool)>0){ v.cool=Math.max(0,num(v.cool)-months); continue; }   // 刚交过手，消停一阵
+    if(n['好感度']>=45){ v.heat=Math.max(0,v.heat-15*months); v.eta=null; continue; }
+    const r=vRatio(n), nerve=vNerve(r);
+    if(nerve<=0){
+      // 亲自来是送死，他自己也明白
+      if(!v.gaveUp){ v.gaveUp=true; news(`${v.name}打听清楚了你如今的身手，没敢再露面`); }
+      v.heat=Math.max(18, Math.min(vCeil(r), v.heat-1*months));   // 恨意慢慢凉下去，但凉不干净
+      v.eta=null;
+      hireThug(v,n);                      // 但未必就此罢休：他会去找靠山
+      continue;
+    }
+    v.gaveUp=false;
+    v.heat=Math.min(vCeil(r), v.heat+Math.round((rnd(2,5)+(v.lethal?3:0))*months*nerve*mul));
+    if(v.heat>=70&&v.eta==null) vSetOut(v,n);
+    if(v.eta!=null){
+      // 你挪了窝，他就得重新找
+      if(here&&v.from&&here!==v.from){ v.eta=num(v.eta)+rnd(1,3); v.from=here; news(`${v.name}扑了个空——你已经不在${v.from||'原处'}了`); }
+      v.eta=num(v.eta)-months;
+    }
+  }
+  // 快到跟前了，给玩家一条看得见的预警，好让他躲、设伏、或者先下手
+  for(const v of S.vendettas){
+    const was=warnBefore.find(x=>x.n===v.name);
+    if(v.eta!=null&&num(v.eta)<=1&&(!was||was.e==null||num(was.e)>1)){
+      news(`${v.name}已经追到左近，随时可能找上门来`);
+    }
   }
   S.vendettas=S.vendettas.filter(v=>v.heat>0);
+}
+// 打不过就花钱雇人、或者请动门里真正压得住你的人
+function hireThug(v,n){
+  if(num(v.cool)>0||v.hired) return;
+  if(v.hiredBy) return;                       // 拿钱办事的人不会再去转包，套娃到此为止
+  if((S.vendettas||[]).length>=6) return;     // 仇家名单别无限长
+  if(Math.random()>=0.22) return;
+  const me=num(S.player.attributes['武功']);
+  // 钱买得到的身手有上限：真正的顶尖高手不接这种买卖
+  const ceiling=Math.max(60,Math.min(me*1.05, powerLevel()*0.85));
+  if(ceiling<me*0.5){
+    v.cool=rnd(12,24);
+    news(`${v.name}想买你的命，却出不起这个价——如今放眼江湖，肯接也接得下的没几个`);
+    return;
+  }
+  // 先看他同门里有没有现成的硬手
+  const pool=(S.npcs||[]).filter(x=>x.alive&&x.name!==n.name&&num(x['武功'])>=me*0.85&&(x.faction===n.faction||x.alignment==='邪道'));
+  let hand=pool.length?pool[Math.floor(Math.random()*pool.length)]:null;
+  if(!hand){
+    // 没有就花钱请一个：武功按你的水平来，但不超过钱买得到的上限
+    const w=clampW(Math.round(Math.min(ceiling, me*(0.85+Math.random()*0.2))));
+    if(w<me*0.5){ v.cool=rnd(12,24); news(`${v.name}四处托人买你的命，却没一个敢接的`); return; }
+    hand=normNpc({name:makeRankName(), gender:Math.random()<0.8?'男':'女', age:rnd(32,55),
+      identity:'受人之托的凶手', faction:'散人', alignment:'邪道',
+      personality:['狠辣','惜命'], appearance:'一身风尘，眼神很冷',
+      '武功':w, '谈吐':rnd(35,60), signature:pick(RK_NOTE),
+      relation:'受人钱财来取你性命', '好感度':5, mood:'冷', alive:true,
+      secret:`受${n.name}所托，拿了${rnd(200,900)}两银子的定金`, notes:`${n.name}花钱请来对付主角的`});
+    S.npcs.push(hand);
+  }
+  v.hired=hand.name;
+  v.cool=0;
+  addVendetta(hand.name, `受${n.name}之托来取你性命`, true, 82);
+  const hv=(S.vendettas||[]).find(x=>x.name===hand.name);
+  if(hv){ hv.hiredBy=n.name; hv.eta=rnd(2,4); hv.from=(S.scene&&S.scene.location)||''; }
+  news(`${n.name}自知不敌，却没就此罢休——他花钱请动了${hand.name}`);
+  ledger(`${n.name}请了${hand.name}来对付你`);
 }
 // 杀了人，他的同门亲友会记着
 function kinOf(npc){
@@ -1619,7 +1721,7 @@ function stateBlocks(){
 【生计】家财${p.money}两，每月开销约${upkeepPerMonth()}两${S.destitute?'；主角已身无分文，正在挨饿受冻':''}；年岁${p.age}，寿元${lifespanOf(p)}（${ageNote()}）
 【武学境界】武功${attrVal(p,'武功')}——${realmOf(attrVal(p,'武功'))}${WCAP()>100?`。本局武功上限${WCAP()}，当世水位${powerLevel()}（榜首与主角取高者）。need一律还按0-100的老尺子给：主角武功远高于100时，该碾压就写成碾压`:''}
 【身上的旧伤】${(S.scars||[]).length?S.scars.map(x=>x.name+'（'+x.text+'）').join('；'):'无'}
-【盯着主角的仇家】${(S.vendettas||[]).filter(v=>v.heat>0).length?S.vendettas.filter(v=>v.heat>0).map(v=>`${v.name}（${v.reason}，${v.heat>=70?'已在四处打探其下落':'正在暗中记恨'}）`).join('；'):'无'}
+【盯着主角的仇家】${(S.vendettas||[]).filter(v=>v.heat>0).length?S.vendettas.filter(v=>v.heat>0).map(v=>`${v.name}（${v.reason}，${vStateText(v)}）`).join('；'):'无'}——仇家要打上门来由引擎裁定，你不可自作主张写他突然出现动手；上面写「尚在远处」「不敢露面」的人，这一回合就不会到。
 【主角身世】${p.backstory}
 【宿命】
 ${quests}
@@ -2467,7 +2569,7 @@ function startDuel(opp, o){
   const p=S.player;
   const oppW=clampW(opp['武功']+diff().opp);
   duel={
-    opp, lethal:!!o.lethal, reason:o.reason||'', action:o.action||`与${opp.name}比武`, judge:o.judge||null,
+    opp, lethal:!!o.lethal, reason:o.reason||'', action:o.action||`与${opp.name}比武`, judge:o.judge||null, vendetta:o.vendetta||null,
     pHp:p.hp, oHp:o.oppHp||100, pQi:clamp(50+wuNorm(p.attributes['武功'])/2), oQi:clamp(50+wuNorm(oppW)/2),
     oppW, pW:attrVal(p,'武功'), round:0, log:[], over:false, result:null, resultText:'', profile:oppProfile(opp), friendly:!!o.friendly
   };
@@ -2724,8 +2826,37 @@ function trainFromDuel(win){
     if(dv){ a.level=clamp(num(a.level)+dv); carryDeltas=carryDeltas||{}; carryDeltas['武学·'+a.name]=(carryDeltas['武学·'+a.name]||0)+dv; }
   }
 }
+/* 一场架打完，仇该有个了断——以前是开打前就把 heat 写死成 25，
+   打赢打输都一样，放他一条生路他还照样再来。 */
+function settleVendetta(kind){
+  if(!duel) return;
+  const name=duel.vendetta||duel.opp.name;
+  const v=(S.vendettas||[]).find(x=>x.name===name);
+  if(!v) return;
+  const n=findNpc(v.name);
+  const r=n?vRatio(n):1;
+  v.eta=null; v.from='';
+  if(kind==='win'||kind==='oppYield'){
+    // 放他走：差得远的从此不敢再来，旗鼓相当的记着这笔账
+    if(r<0.7){ v.heat=0; news(`${v.name}败在你手下，自知不是对手，这梁子算是撂下了`); ledger(`${v.name}服软，恩怨了结`); }
+    else { v.heat=30; v.cool=rnd(10,18); news(`${v.name}败走，临去撂下一句狠话`); }
+  }else if(kind==='oppEscape'){
+    v.heat=40; v.cool=rnd(6,10);
+  }else if(kind==='lose'||kind==='yield'){
+    v.heat=0; news(`${v.name}出了这口恶气，暂时不会再来找你`); ledger(`败在${v.name}手下，这桩仇他算是了了`);
+  }else if(kind==='escape'){
+    v.heat=85; v.cool=rnd(4,8);            // 你跑了，他还惦记着，但得重新找
+  }
+  if(v.heat<=0) S.vendettas=(S.vendettas||[]).filter(x=>x.name!==v.name);
+  // 雇主那边也松一口气或者更恨
+  if(v.hiredBy){
+    const boss=(S.vendettas||[]).find(x=>x.name===v.hiredBy);
+    if(boss&&(kind==='win'||kind==='oppYield')){ boss.hired=null; boss.cool=rnd(8,14); news(`${v.hiredBy}听说请来的人也没能奈何你，一时没了主意`); }
+  }
+}
 function endDuel(kind){
   duel.over=true; duel.result=kind;
+  settleVendetta(kind);
   trainFromDuel(kind==='win'||kind==='oppYield');
   // 胜过榜上人物，才算真正踏进江湖榜
   if((kind==='win'||kind==='oppYield')&&!duel.friendly){
@@ -3294,10 +3425,11 @@ function renderWorld(){
   const vd=(S.vendettas||[]).filter(v=>v.heat>0);
   $('wVendetta').innerHTML=vd.length?vd.slice().sort((a,b)=>b.heat-a.heat).map(v=>{
     const n=findNpc(v.name), h=Math.min(100,Math.round(v.heat));
-    return `<div class="quest ${h>=70?'fail':''}"><div class="qt"><span>${esc(v.name)}${n&&!n.alive?'〔亡故〕':''}${v.lethal?' <small style="color:#9c2f24">死仇</small>':''}</span><small>${h}%</small></div>
+    return `<div class="quest ${h>=70?'hot':''}"><div class="qt"><span>${esc(v.name)}${n&&!n.alive?'〔亡故〕':''}${v.lethal?' <small style="color:#9c2f24">死仇</small>':''}</span><small>${h}%</small></div>
       <div class="qd">${esc(v.reason)}</div>
+      <div class="qd" style="color:${v.eta!=null&&num(v.eta)<=1?'#9c2f24':'var(--ink-soft)'}">${esc(vStateText(v))}${n?`　武功${n['武功']}${num(n['武功'])<num(S.player.attributes['武功'])*0.6?'（远不如你）':''}`:''}</div>
       <div class="bar"><i style="width:${h}%;background:${h>=70?'#9c2f24':'#8a6d2f'}"></i></div></div>`;
-  }).join('')+'<div style="font-size:12px;color:var(--ink-soft);margin-top:4px">进度满则寻上门来动手。与其修好（好感≥45）或破财消灾可平息。</div>':'<div class="empty">暂时没人惦记着要你的命</div>';
+  }).join('')+'<div style="font-size:12px;color:var(--ink-soft);margin-top:4px">恨意满了他才动身，还得走上几个月才到得了你跟前。武功差你太多的不敢亲自来，但可能花钱请人。与其修好（好感≥45）或破财消灾可平息。</div>':'<div class="empty">暂时没人惦记着要你的命</div>';
   $('wAch').innerHTML=ACHIEVEMENTS.map(([id,name,_,desc])=>`<span class="ach ${S.achievements.includes(id)?'on':''}" title="${esc(desc)}">${S.achievements.includes(id)?'✦ ':''}${name}</span>`).join('');
   renderHall();
 }
@@ -3759,17 +3891,21 @@ async function runTurn(action, judge, extra){
       if(n&&n.alive){ renderOptions([]); saveGame(); setBusy(false); startDuel(n,{lethal:!!d.duel.lethal,reason:d.duel.reason||'',action:`（承上）与${n.name}动手`,judge:{fate:d20(),check:null,worldEvent:null}}); return; }
     }
     // 仇家寻上门来
-    const hunter=(S.vendettas||[]).find(v=>v.heat>=100&&findNpc(v.name)&&findNpc(v.name).alive);
+    // 寻仇：光有杀心不够，还得走得到你跟前
+    const hunter=(S.vendettas||[]).find(v=>{
+      const n=findNpc(v.name);
+      return v.heat>=100 && num(v.cool)<=0 && v.eta!=null && num(v.eta)<=0 && n && n.alive && vNerve(vRatio(n))>0;
+    });
     if(hunter&&!extra.duelData){
       const hn=findNpc(hunter.name);
-      hunter.heat=25;
+      hunter.eta=null; hunter.arrived=S.turn;
       renderOptions([]); saveGame(); setBusy(false);
       toast('⚑ '+hn.name+' 寻上门来了！','ach');
-      startDuel(hn,{lethal:hunter.lethal,reason:hunter.reason||`${hn.name}寻仇`,action:`（承上）${hn.name}寻仇上门，动起手来`,judge:{fate:d20(),check:null,worldEvent:null,months:1}});
+      startDuel(hn,{lethal:hunter.lethal,reason:hunter.reason||`${hn.name}寻仇`,action:`（承上）${hn.name}寻仇上门，动起手来`,judge:{fate:d20(),check:null,worldEvent:null,months:1},vendetta:hunter.name});
       return;
     }
-    const near=(S.vendettas||[]).find(v=>v.heat>=70&&v.heat<100);
-    if(near) toast('⚑ 风声：'+near.name+'正在四处打听你的下落');
+    const near=(S.vendettas||[]).find(v=>v.eta!=null&&num(v.eta)<=2&&num(v.cool)<=0);
+    if(near) toast('⚑ 风声：'+near.name+(num(near.eta)<=0?' 已经摸到你跟前了':' 正在四处打听你的下落'));
     renderOptions(S.lastOptions);            // 上面已经去过重了，这里渲染同一份
     saveGame();
     foldHistory();   // 后台压缩前尘，不挡玩家
