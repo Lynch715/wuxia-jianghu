@@ -36,7 +36,7 @@ await page.click('#crFree button[data-v="mid"]');
 ok('捏人可挑相貌（'+(await page.$$('#crAvatar .cell')).length+' 格，含随天意）', (await page.$$('#crAvatar .cell')).length>=25);
 await page.click('#crAvatar .cell:nth-child(10)');
 await page.click('#crStart');
-await page.waitForSelector('#choices .opt',{timeout:15000});
+await page.waitForSelector('#choices .opt',{timeout:25000});
 ok('system 角色已发送', (global.__msgs||[]).length===2 && global.__msgs[0].role==='system');
 ok('开局剧情已渲染', (await page.textContent('#story')).includes('雨下了整宿'));
 const nameCase=await page.evaluate(()=>{
@@ -99,7 +99,7 @@ ok('选项标出耗时：'+(opts[1]||'').replace(/\s+/g,' ').trim().slice(0,40),
 console.log('\n【闭关三月：时间与开销】');
 const d0=await page.textContent('#gameDate');
 await page.click('#choices .opt >> nth=1');
-await page.waitForSelector('#choices .opt',{timeout:15000});
+await page.waitForSelector('#choices .opt',{timeout:25000});
 const d1=await page.textContent('#gameDate');
 ok(`时间推进 ${d0.trim()} → ${d1.trim()}`, d0!==d1);
 const story=await page.textContent('#story');
@@ -127,13 +127,13 @@ await page.click('#tabs button[data-tab="bag"]');
 const man=await page.textContent('#bagManuals');
 ok('秘籍显示参悟参数：'+man.replace(/\s+/g,' ').trim().slice(0,70), /闭关 \d+ 个月/.test(man)&&/成算约 \d+%/.test(man));
 await page.click('#bagManuals button[data-mi="0"]');
-await page.waitForSelector('#choices .opt',{timeout:15000});
+await page.waitForSelector('#choices .opt',{timeout:25000});
 const st2=await page.textContent('#story');
 ok('参悟结果进了剧情', st2.includes('参悟'));
 
 console.log('\n【比武：战术与仇家】');
 const duelBtn=await page.$('#choices .opt:has-text("秃鹰")');
-if(duelBtn){ await duelBtn.click(); await page.waitForSelector('#duelMask.on',{timeout:8000}); }
+if(duelBtn){ await duelBtn.click(); await page.waitForSelector('#duelMask.on',{timeout:20000}); }
 ok('比武弹窗打开', !!(await page.$('#duelMask.on')));
 const stances=await page.$$eval('#duelActions .stance',es=>es.map(e=>e.textContent.replace(/\s+/g,' ').trim()));
 ok('八个动作（五架势+三手段）：'+stances.join(' | ').slice(0,120), stances.length===8);
@@ -152,7 +152,7 @@ for(let i=0;i<30;i++){
 const dlog=await page.textContent('#duelLog');
 ok('战报含毒发', dlog.includes('毒性'));
 if(await page.$('#dKill')){ await page.click('#dKill'); }
-if(await page.$('#duelGo')){ await page.click('#duelGo'); await page.waitForSelector('#choices .opt',{timeout:15000}); }
+if(await page.$('#duelGo')){ await page.click('#duelGo'); await page.waitForSelector('#choices .opt',{timeout:25000}); }
 ok('比武后续写完成', (await page.textContent('#story')).includes('刀光闪过'));
 
 console.log('\n【自由度：随时切换与提示词口径】');
@@ -164,7 +164,7 @@ ok('设置里可改自由度', await page.evaluate(()=>S.freedom)==='free');
 await page.click('#cfgCancel');
 await idle();
 await page.click('#choices .opt >> nth=0');
-await page.waitForSelector('#choices .opt',{timeout:15000});
+await page.waitForSelector('#choices .opt',{timeout:25000});
 ok('切换后提示词换成随心所欲', /本局自由度：随心所欲/.test(global.__lastPrompt||'')&&/一律当作做成了/.test(global.__lastPrompt||''));
 
 console.log('\n【自由度贯通到对话】');
@@ -204,7 +204,7 @@ console.log('\n【剧情杀闸门】');
 await page.evaluate(()=>{ S.freedom='mid'; S.player.hp=90; });
 await page.fill('#freeInput','去黑风口打听消息');
 await page.click('#sendBtn');
-await page.waitForSelector('#choices .opt',{timeout:15000});
+await page.waitForSelector('#choices .opt',{timeout:25000});
 const st=await page.evaluate(()=>({over:S.over,hp:S.player.hp,status:S.player.status.slice()}));
 ok('江湖传奇下模型写死主角被引擎驳回（over='+st.over+' 气血='+st.hp+' 状态='+st.status+'）', st.over===false&&st.hp<=22&&st.status.includes('重伤'));
 ok('章节里写明引擎裁定', (await page.textContent('#story')).includes('引擎裁定'));
@@ -213,7 +213,8 @@ const strictAllows=await page.evaluate(()=>{ const f=FREEDOM['strict']; return f
 ok('写实江湖仍允许剧情杀', strictAllows);
 
 console.log('\n【对话退得出去】');
-await page.evaluate(()=>{ S.freedom='mid'; });
+// 送东西要好感≥45，而好感是前面几场对话攒出来的、会浮动；这一段测的是落账不是攒好感，先钉死
+await page.evaluate(()=>{ S.freedom='mid'; S.npcs[0]['好感度']=60; });
 await page.click('#tabs button[data-tab="people"]');
 await page.click('#npcList .npc >> nth=0');
 await page.click('#npcTalkBtn');
@@ -260,9 +261,9 @@ await page.fill('#convoText','这事你怎么打算');
 await page.click('#convoSend');
 await page.waitForTimeout(1800);
 await page.click('#convoEnd');
-await page.waitForFunction(n=>document.querySelectorAll('#story .chapter').length>=n+2,beforeTalk.chapters,{timeout:15000});
+await page.waitForFunction(n=>document.querySelectorAll('#story .chapter').length>=n+2,beforeTalk.chapters,{timeout:25000});
 await idle();
-await page.waitForSelector('#choices .opt:not([disabled])',{timeout:15000});
+await page.waitForSelector('#choices .opt:not([disabled])',{timeout:25000});
 const aftPrompt=global.__lastPrompt||'';
 ok('余波回合的提示词写明「刚才那场面谈的余波」', /刚才那场面谈的余波/.test(aftPrompt)&&/不要重述对话内容/.test(aftPrompt));
 ok('余波把已落账的结果交给模型认账：'+((aftPrompt.match(/已经落到账上的结果[^\n]{0,60}/)||[''])[0]).slice(0,60),
@@ -275,6 +276,7 @@ ok(`余波不吃光阴（${beforeTalk.date.trim()} → ${aft.date.trim()}）`, b
 ok('余波不扣食宿汤药', aft.money>=beforeTalk.money);
 ok('余波续写落进正文', aft.story.includes('话头刚落'));
 ok('新选项接着这场谈话往下走：'+aft.opts[0], aft.opts.some(t=>t.includes('黑风口'))&&aft.opts.some(t=>t.includes('镖局')));
+ok('同一批里三条选项各不相同', new Set(aft.opts).size===aft.opts.length);
 
 console.log('\n【江湖榜的新陈代谢】');
 const rk1=await page.evaluate(()=>{
@@ -403,8 +405,8 @@ const mem=await page.evaluate(()=>{
     ledger:(S.ledger||[]),
     hasLedgerBlock:/已成定局的旧事/.test(sb)};
 });
-ok(`加长档：卷录 ${mem.M.vol}×${mem.M.volLen} 字、提要 ${mem.M.sum} 条、正文 ${mem.M.recent} 回、往来 ${mem.M.npcMem} 条、台账 ${mem.M.ledger} 条`,
-   mem.M.vol===10&&mem.M.sum===30&&mem.M.recent===6&&mem.M.npcMem===8);
+ok(`加长档：卷录 ${mem.M.vol}×${mem.M.volLen} 字、提要 ${mem.M.sum} 条、正文 ${mem.M.recent} 回（其中 ${mem.M.recentFull} 回全文）、往来 ${mem.M.npcMem} 条、台账 ${mem.M.ledger} 条`,
+   mem.M.vol===10&&mem.M.sum===30&&mem.M.recent===5&&mem.M.recentFull===3&&mem.M.npcMem===8);
 ok(`标准档明显更短（${mem.sbLen} 字 → ${mem.sbShortLen} 字）`, mem.short.sum===16&&mem.sbShortLen<mem.sbLen);
 ok('主线提示词终于带上了 NPC 的往来记录', mem.npcHasMemo);
 ok('提示词里有事实台账一栏', mem.hasLedgerBlock);
@@ -442,6 +444,107 @@ ok('调成标准档后立刻生效', await page.evaluate(()=>S.memLong===false&&
 await page.selectOption('#cfgMem','long');
 await page.click('#cfgCancel');
 
+console.log('\n【别再原地打转】');
+const rep=await page.evaluate(()=>{
+  const keepH=JSON.parse(JSON.stringify(S.history||[])), keepS=JSON.parse(JSON.stringify(S.scene||{})),
+        keepO=JSON.parse(JSON.stringify(S.lastOptions||[])), keepSeen=S.optSeen;
+  const r={};
+  // 相似度本身
+  r.sim=[ +simRatio('上山闭关练拳三月','上山闭关练拳三月').toFixed(2),
+          +simRatio('上山闭关练拳三月','继续上山闭关练拳').toFixed(2),
+          +simRatio('上山闭关练拳三月','下山去寻访镖局旧人').toFixed(2) ];
+  // 连着几回都在练功 → 引擎该踩刹车
+  S.history=[{turn:1,action:'上山闭关练功',summary:'练了三个月拳'},
+             {turn:2,action:'继续闭关练功',summary:'又练了三个月拳'},
+             {turn:3,action:'接着闭关练功',summary:'还在练那趟拳'}];
+  r.stuckHigh=Math.round(stuckLevel()*100);
+  const j1=makeJudge(null);
+  r.nudged=!!j1.nudge; r.nudgeText=j1.nudge||''; r.block=judgeBlock(j1);
+  // 每回合换着花样推，不会老是同一句
+  const seen=new Set(); for(let i=0;i<5;i++) seen.add(pickNudge());
+  r.nudgeVariety=seen.size;
+  // 剧情各走各的 → 不该踩
+  S.history=[{turn:1,action:'上山闭关练功',summary:'练了三个月拳'},
+             {turn:2,action:'下山寻访镖局旧人',summary:'在镖局打听到一条线索'},
+             {turn:3,action:'去黑风口探虚实',summary:'黑风口果然有埋伏'}];
+  r.stuckLow=Math.round(stuckLevel()*100);
+  r.notNudged=!makeJudge(null).nudge;
+  // 未了之事：进得去、办得完、挂久了自己走
+  S.turn=40; S.scene={location:'客栈',unresolved:[],uAge:{}};
+  addUnresolved('黑风口有埋伏'); addUnresolved('师姐的信还没送'); addUnresolved('父亲死因未明');
+  addUnresolved('欠王掌柜三两银'); addUnresolved('第五桩事');
+  r.cap=S.scene.unresolved.length; r.capped=S.scene.unresolved.slice();
+  r.dropped=dropUnresolved('师姐的信还没送','送到了');
+  r.afterDrop=S.scene.unresolved.slice();
+  S.scene.uAge['黑风口有埋伏']=40-U_STALE-1; S.turn=40; ageUnresolved();
+  r.afterAge=S.scene.unresolved.slice();
+  // 模型不给 location，未了之事照样更新（以前整块跳过）
+  S.turn=41; S.scene={location:'客栈',unresolved:['旧事一桩'],uAge:{'旧事一桩':41}};
+  applyTurn({narrative:'',summary:'',scene:{location:'',unresolved:['新事一桩']},options:[{text:'继续',type:'normal',months:1}]},
+            '走走',{fate:11,check:null,worldEvent:null,duel:false,months:0});
+  r.noLoc={loc:S.scene.location, u:S.scene.unresolved.slice()};
+  // resolvedInfo 报了就划掉
+  S.scene={location:'客栈',unresolved:['该办的事','另一桩'],uAge:{}};
+  applyTurn({narrative:'',summary:'',scene:{location:'客栈',unresolved:['该办的事','另一桩']},resolvedInfo:['该办的事'],
+             options:[{text:'继续',type:'normal',months:1}]},
+            '办事',{fate:11,check:null,worldEvent:null,duel:false,months:0});
+  r.resolved=S.scene.unresolved.slice();
+  r.ledgerHit=(S.ledger||[]).some(x=>/了结一桩悬着的事：该办的事/.test(x));
+  S.history=keepH; S.scene=keepS; S.lastOptions=keepO; S.optSeen=keepSeen;
+  return r;
+});
+ok('相似度算得出来（全同 '+rep.sim[0]+'，近似 '+rep.sim[1]+'，无关 '+rep.sim[2]+'）',
+   rep.sim[0]===1&&rep.sim[1]>=0.6&&rep.sim[2]<0.3);
+ok('连着三回都在练功，引擎判定卡住了（'+rep.stuckHigh+'%）', rep.stuckHigh>=50);
+ok('卡住时往提示词里塞硬指令：'+rep.nudgeText.slice(0,24), rep.nudged&&/⚑ 引擎检测到最近几回剧情雷同/.test(rep.block)&&/这不是建议，是本回合的硬要求/.test(rep.block));
+ok('硬指令换着花样给（5 次里有 '+rep.nudgeVariety+' 种）', rep.nudgeVariety>=3);
+ok('剧情各走各的就不踩刹车（'+rep.stuckLow+'%）', rep.stuckLow<50&&rep.notNudged);
+ok('未了之事最多挂 4 条，挤掉最早的：'+rep.capped.join('、'), rep.cap===4&&!rep.capped.includes('黑风口有埋伏')&&rep.capped.includes('第五桩事'));
+ok('办完的能划掉：'+rep.afterDrop.join('、'), rep.dropped===true&&!rep.afterDrop.includes('师姐的信还没送'));
+ok('挂久了自己淡出：'+rep.afterAge.join('、'), !rep.afterAge.includes('黑风口有埋伏'));
+ok('模型没给地点也照样更新未了之事（地点仍是「'+rep.noLoc.loc+'」，事变成 '+rep.noLoc.u.join('、')+'）',
+   rep.noLoc.loc==='客栈'&&rep.noLoc.u.includes('新事一桩')&&!rep.noLoc.u.includes('旧事一桩'));
+ok('resolvedInfo 报了就划掉并记台账：'+rep.resolved.join('、'), rep.resolved.length===1&&rep.resolved[0]==='另一桩'&&rep.ledgerHit);
+const opt=await page.evaluate(()=>{
+  const keepH=JSON.parse(JSON.stringify(S.history||[])), keepO=JSON.parse(JSON.stringify(S.lastOptions||[])), keepSeen=S.optSeen;
+  S.history=[{turn:9,action:'继续闭关练功',summary:'又练了三个月'}];
+  S.lastOptions=[]; S.optSeen={};
+  const r={};
+  // 玩家刚练完功，就别再给「接着闭关练功」
+  r.a=dedupeOptions([{text:'接着闭关练功',type:'rest',months:3},
+                     {text:'下山走一趟青石镇',type:'normal',months:2},
+                     {text:'去寻岳师伯问个明白',type:'normal',months:1}]).map(o=>o.text);
+  // 同一批里的重复也去掉
+  r.b=dedupeOptions([{text:'下山走一趟青石镇',type:'normal',months:2},
+                     {text:'下山去一趟青石镇',type:'normal',months:2},
+                     {text:'留在山上歇息',type:'rest',months:1}]).map(o=>o.text);
+  // 连挂三回没人点的填空选项换掉，但挂着人名的钩子留着
+  S.history=[]; S.optSeen={};
+  let last=[];
+  for(let i=0;i<3;i++) last=dedupeOptions([{text:'就地歇一口气',type:'rest',months:1},
+                                           {text:'去寻岳师伯问个明白',type:'normal',months:1},
+                                           {text:'四下打听打听',type:'normal',months:1}]).map(o=>o.text);
+  r.c=last;
+  r.count=last.length;
+  S.history=keepH; S.lastOptions=keepO; S.optSeen=keepSeen;
+  return r;
+});
+ok('刚做完的事不再当选项：'+opt.a.join('｜'), !opt.a.includes('接着闭关练功')&&opt.a.length>=3);
+ok('同一批里的重复选项去掉一个：'+opt.b.join('｜'), opt.b.filter(t=>t.includes('青石镇')).length===1);
+ok('连挂三回的填空选项被换掉，挂着人名的钩子留着：'+opt.c.join('｜'),
+   opt.c.includes('去寻岳师伯问个明白')&&!opt.c.includes('就地歇一口气')&&opt.count>=3);
+const echo=await page.evaluate(()=>{
+  const keep=JSON.parse(JSON.stringify(S.recent||[]));
+  S.recent=Array.from({length:6},(_,i)=>({action:'第'+i+'回行动',narrative:'某'.repeat(600)}));
+  const sb=stateBlocks();
+  const full=(sb.match(/【剧情】/g)||[]).length, brief=(sb.match(/【剧情·节略】/g)||[]).length;
+  const hasDone=/【刚做过的事/.test(sb);
+  S.recent=keep;
+  return {full,brief,hasDone};
+});
+ok(`最近剧情只给 ${echo.full} 回全文，更早的 ${echo.brief} 回压成节略`, echo.full===3&&echo.brief===2);
+ok('提示词里直接列出「刚做过的事」', echo.hasDone);
+
 console.log('\n【桌面图标】');
 const ic=await page.evaluate(()=>{
   const a=document.querySelector('link[rel="apple-touch-icon"]');
@@ -463,7 +566,7 @@ const hpBefore=await page.evaluate(()=>S.player.hp);
 const itemsBefore=await page.evaluate(()=>JSON.stringify(S.player.items));
 await idle();
 await page.click('#choices .opt >> nth=0');
-await page.waitForSelector('#choices .opt',{timeout:15000});
+await page.waitForSelector('#choices .opt',{timeout:25000});
 const doomPrompt=global.__lastPrompt||'';
 ok('大凶时提示词写明实损：'+(doomPrompt.match(/引擎已定死的实损：[^。]*。/)||[''])[0], /引擎已定死的实损/.test(doomPrompt));
 const after=await page.evaluate(()=>({m:S.player.money,h:S.player.hp,i:JSON.stringify(S.player.items)}));

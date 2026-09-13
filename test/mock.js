@@ -5,6 +5,14 @@ function npc(name, rel, id, w, align, fac){
     secret:'他有一桩旧案',notes:''};
 }
 let turnNo=0;
+// 真模型每回合措辞都不一样，假接口也别老是一模一样三条——否则引擎的「连挂三回就换掉」会把它们全收走
+let aftNo=0;
+const AFT=[
+  ['照他说的去黑风口走一趟','动身往黑风口探个虚实','黑风口那边，总得亲自去看看'],
+  ['把他托付的信送到镖局','先去镖局把那封信交了','绕道镖局，了了这桩托付'],
+  ['先回房把伤养好','歇上几日，把身子将养过来','闭门静养，等伤好了再说']
+];
+function aftVary(i){ return AFT[i][(aftNo+i)%AFT[i].length]; }
 function pickBody(prompt){
   if(prompt.includes('请为这个武侠世界铸造当世格局')) return {
     factions:[{name:'华山派',alignment:'正派',power:70,leader:'岳师伯',desc:'关中大派'},
@@ -41,16 +49,16 @@ function pickBody(prompt){
     narrative:'他一脚踏空，坠下崖去。',summary:'主角身死',scene:{location:'崖下',unresolved:[]},check:null,
     playerChanges:{},npcUpdates:[],newNpcs:[],npcEvents:[],rumors:[],newVendettas:[],questUpdates:[],newQuests:[],
     rankingUpdates:[],factionUpdates:[],duel:null,options:[],gameOver:true,ending:'李昭殒命于黑风口'};
-  if(/【玩家本回合行动】与.{1,10}谈过之后/.test(prompt)) return {
+  if(/【玩家本回合行动】与.{1,10}谈过之后/.test(prompt)){ aftNo++; return {
     narrative:'话头刚落，院里的风还没停。\n他把那袋银子往你怀里一塞，转身进了屋。',summary:'谈完之后',
     scene:{location:'华山',unresolved:['父亲的死因']},check:null,
     playerChanges:{attributes:{},fame:{侠名:0,恶名:0},money:0,skills:{},artsAdd:[],artsTrain:[],statusAdd:[],statusRemove:[],itemsAdd:{},itemsRemove:[]},
     npcUpdates:[],newNpcs:[],npcEvents:[],rumors:[],newVendettas:[],questUpdates:[],newQuests:[],
     rankingUpdates:[],rankingAdd:[],factionUpdates:[],duel:null,
-    options:[{text:'照他说的去黑风口走一趟',hint:'接着这场话',type:'normal',months:1},
-             {text:'把他托付的信送到镖局',hint:'',type:'normal',months:1},
-             {text:'先回房把伤养好',hint:'',type:'rest',months:1}],
-    gameOver:false,ending:null};
+    options:[{text:aftVary(0),hint:'接着这场话',type:'normal',months:1},
+             {text:aftVary(1),hint:'',type:'normal',months:1},
+             {text:aftVary(2),hint:'',type:'rest',months:1}],
+    gameOver:false,ending:null}; }
   if(prompt.includes('闭关参悟') || prompt.includes('请推演本回合')){
     turnNo++;
     const body={

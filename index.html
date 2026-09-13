@@ -875,8 +875,10 @@ function ledger(t){
 }
 // 记忆长度：设置里可调回标准，给上下文小的模型留条路
 const MEM_PRESET={
-  long : {vol:10, volLen:600, fold:36, foldTake:14, sum:30, recent:6, npcMem:8, ledger:80, convoRecent:3, convoRecentLen:600, convoSum:10, convoVol:3, convoLedger:20},
-  short: {vol:8,  volLen:400, fold:26, foldTake:12, sum:16, recent:4, npcMem:4, ledger:30, convoRecent:2, convoRecentLen:300, convoSum:0,  convoVol:0, convoLedger:8}
+  // recentFull：最近几回给全文。给太多会让模型顺着自己上一段的调子往下抄，
+  // 六回全是练功，第七回还是练功——事实由台账兜着，正文不必留那么多。
+  long : {vol:10, volLen:600, fold:36, foldTake:14, sum:30, recent:5, recentFull:3, recentBrief:140, npcMem:8, ledger:80, convoRecent:3, convoRecentLen:600, convoSum:10, convoVol:3, convoLedger:20},
+  short: {vol:8,  volLen:400, fold:26, foldTake:12, sum:16, recent:4, recentFull:2, recentBrief:100, npcMem:4, ledger:30, convoRecent:2, convoRecentLen:300, convoSum:0,  convoVol:0, convoLedger:8}
 };
 function MEM(){ return (S&&S.memLong===false)?MEM_PRESET.short:MEM_PRESET.long; }
 // 按月：疏于往来，情分自然转淡
@@ -1386,6 +1388,45 @@ const WORLD_EVENTS=[
  ['一位隐世高人现身尘世，据说在寻找传人',1],
  ['一家赌坊开出江湖榜赌局，人人押注谁能登顶',1],
 ];
+/* ================= 原地打转检测 =================
+   模型只被要求「紧接上一回合」，从没被要求「往前走一步」，于是容易在同一件事上反复搅。
+   引擎自己量一量最近几回有多像，像得过分就塞一条硬指令进 judge，逼它换个场面。 */
+function bigrams(t){
+  t=String(t||'').replace(/[\s，。、；：！？「」（）,.;:!?"']/g,'');
+  const g=new Set();
+  for(let i=0;i<t.length-1;i++) g.add(t.slice(i,i+2));
+  return g;
+}
+function simRatio(a,b){
+  const A=bigrams(a), B=bigrams(b);
+  if(!A.size||!B.size) return 0;
+  let hit=0; for(const x of A) if(B.has(x)) hit++;
+  return hit/Math.min(A.size,B.size);
+}
+// 最近 n 回的行动＋提要，两两比一比
+function stuckLevel(){
+  const h=(S&&S.history||[]).slice(-4);
+  if(h.length<2) return 0;
+  const txt=h.map(x=>`${x.action}｜${x.summary}`);
+  let worst=0;
+  for(let i=1;i<txt.length;i++) worst=Math.max(worst,simRatio(txt[i],txt[i-1]));
+  // 连着三回都像，算更严重
+  if(txt.length>=3&&simRatio(txt[txt.length-1],txt[txt.length-3])>=0.45) worst=Math.max(worst,0.75);
+  return worst;
+}
+const NUDGES=[
+  '换个地方：本回合必须让主角离开眼下这个场面，去到另一处（另一座城、另一条道、另一座山门都行），把新地方写出来。',
+  '来个新面孔：本回合必须有一个此前没登场过的人主动闯进主角的生活（求助、寻仇、递信、招揽、认错人都行），写进newNpcs。',
+  '推一桩宿命：本回合必须让某一条「进行中」的宿命真的往前挪一截——挖出线索、遇上关键的人、或者撞上硬钉子，用questUpdates写明进度。',
+  '翻一件旧账：本回合必须让某个旧识或某桩未了之事有个了断或转折，别再悬着。',
+  '给个意外：本回合必须出一件主角没打算过的事（被人认错、卷进一场口角、捡到件东西、路遇变故），把剧情从原来的轨道上撞开。'
+];
+function pickNudge(){
+  const used=num(S.nudgeAt)===num(S.turn)?null:null;
+  const i=(num(S.turn)+num(S.nudgeSeq||0))%NUDGES.length;
+  S.nudgeSeq=num(S.nudgeSeq)+1;
+  return NUDGES[i];
+}
 function pickWorldEvent(){
   if(S.turn-S.lastWorldEventTurn<3) return null;
   if(Math.random()>0.32) return null;
@@ -1483,6 +1524,9 @@ const NPC_SCHEMA = `NPC对象格式：{"name":"姓名","gender":"男/女","age":
 
 const OPTIONS_RULE=`options给3至5个，每个：{"text":"选项文字","hint":"一句直白的利弊提示","type":"normal|check|duel|talk|rest","months":耗时月数,"check":null或{"attr":"武功/谈吐/才学/颖悟","need":难度数字},"duel":null或{"opponent":"在场NPC准确姓名","lethal":false或true},"target":null或"talk选项要深谈的NPC姓名"}。
 要求：至少1个稳妥的normal；至少1个有风险的check（need按40容易/55一般/70困难/85极难，hint写清若成若败各会怎样）；若在场有可交手之人给1个duel（lethal表示对方是否会下杀手）；若在场有值得深谈的人给1个talk；主角受伤或疲惫时给1个rest（休养/疗伤/练功）。选项之间要有真正的分歧，不要都是好事。
+**至少有1个选项要把主角带离当前地点，或者去见一个当前不在场的人**——别让五个选项都困在同一间屋子里。
+不要把上一回合已经给过的选项原样再给一遍；玩家刚做完的事，本回合不要再拿来当选项（连着练了两回功，就别再给「继续练功」）。
+rest 类选项不必每回合都有：主角气血满、又没在闭关，就别给「练功」这种填空选项。
 months表示这个行动要花掉多少个月：眼前立刻能做的事填1；养伤、寻访、赶远路填2到3；闭关练功、拜师苦学、经商坐镇填3到6。耗时越久，开销越大、世事变化越多，hint里要提一句花多久。`;
 
 function initSchemaPrompt(opts){
@@ -1559,7 +1603,12 @@ function stateBlocks(){
   const goneText=gone.length?gone.map(n=>n.name).join('、'):'（无）';
   const vols=(S.volumes||[]).slice(-M.vol).map(v=>`〔第${v.from}至${v.to}回〕${String(v.text||'').slice(0,M.volLen)}`).join('\n')||'（尚无）';
   const summaries=S.history.slice(-M.sum).map(h=>`第${h.turn}回合｜${h.action}｜${h.summary}`).join('\n')||'（无）';
-  const recents=S.recent.slice(-M.recent).map(r=>`【玩家行动】${r.action}\n【剧情】${r.narrative}`).join('\n---\n')||'（无）';
+  const rcArr=S.recent.slice(-M.recent);
+  const fullFrom=Math.max(0,rcArr.length-M.recentFull);
+  const recents=rcArr.map((r,i)=>i>=fullFrom
+      ? `【玩家行动】${r.action}\n【剧情】${r.narrative}`
+      : `【玩家行动】${r.action}\n【剧情·节略】${String(r.narrative||'').replace(/\s+/g,'').slice(0,M.recentBrief)}……`
+    ).join('\n---\n')||'（无）';
   const quests=S.quests.length?S.quests.map(q=>`- ${q.title}（${q.status}，进度${q.progress}）：${q.desc}`).join('\n'):'（无）';
   const world=S.world&&S.world.ranking&&S.world.ranking.length?`江湖榜：${S.world.ranking.map((r,i)=>`${i+1}.${r.name}(${r.faction||'散人'},武功${r['武功']}${r.alive===false?',已亡':''})`).join('；')}${num(S.world.vacant)>0?`\n榜上尚有${S.world.vacant}个空缺（有人辞世或跌出），可用rankingAdd补进一位有来历的新高手（武功须与榜末相当）`:''}${(S.world.fallen||[]).length?`\n已故的榜上人物：${S.world.fallen.slice(-6).map(x=>x.name).join('、')}`:''}\n势力：${(S.world.factions||[]).map(f=>`${f.name}(${f.alignment},势力${f.power},首领${f.leader})`).join('；')}\n当世大事：${(S.world.events||[]).join('；')}`:'（尚未铸造）';
   const pb=Object.assign({},p); delete pb.backstory;
@@ -1582,6 +1631,8 @@ ${quests}
 ${vols}
 【前情提要】
 ${summaries}
+【刚做过的事（本回合不要重复这些，也不要把它们再当成选项）】
+${(S.history||[]).slice(-3).map(h=>`第${h.turn}回：${h.action}`).join('；')||'（无）'}
 【最近剧情原文】
 ${recents}
 【已成定局的旧事（引擎逐条记的账，全部为真，后文不得与之矛盾、不得当作没发生）】
@@ -1591,6 +1642,11 @@ ${(S.ledger||[]).slice(-M.ledger).join('\n')||'（尚无）'}`;
 function judgeBlock(judge){
   const f=fateInfo(judge.fate);
   let s=`- 天命骰：${judge.fate}（${f.label}）——${f.desc}\n`;
+  // 引擎自己看出来在原地打转，就下一条硬指令
+  if(judge.nudge){
+    s+=`- ⚑ 引擎检测到最近几回剧情雷同（相似度${judge.stuck}%），本回合必须打破：${judge.nudge}\n`;
+    s+=`  这不是建议，是本回合的硬要求；写完检查一遍：这一段跟上一段比，到底有什么真的不一样了。\n`;
+  }
   if(judge.doom) s+=`- 引擎已定死的实损：${doomText(judge.doom)}。剧情必须交代这是怎么发生的，不许化解、不许找补。\n`;
   else if(judge.fate<=3) s+=`- 本回合虽是大凶，但本局自由度宽松，不必让主角伤筋动骨，写成有惊无险或小挫折即可。\n`;
   if(judge.check){
@@ -1633,8 +1689,14 @@ ${stateBlocks()}
 ${judgeBlock(judge)}
 
 请推演本回合。要求：
-- 剧情250-500字。剧情必须紧接上一回合结尾：地点、在场人物、正在发生的事都要衔接上，除非玩家的行动明确是转场离开；时间流动要合理，不要无故跳过大段时间，也不要凭空冒出前文没铺垫过的人和事。
-- 本回合结束时，把主角所在的具体地点和尚未了结的事写进scene字段。
+- 剧情250-500字。剧情必须紧接上一回合结尾：地点、在场人物、正在发生的事都要衔接上，除非玩家的行动明确是转场离开；时间流动要合理，不要无故跳过大段时间。
+- **本回合必须比上一回合往前一步**：地点、在场的人、主角掌握的信息、与人的关系，这四样里至少有一样真的变了。
+  上一回合做过的事不许换个说法再做一遍（上回在练功，这回就别又是练功；上回在打听同一桩事，这回就得问出点什么或者碰上钉子）。
+  一件事要么推进、要么了结、要么撞上新的阻碍——不许原地描写心情、反复回想、重申决心来凑字数。
+- 新人新事要有来由，但江湖上本来就会有人主动找上门：仇家寻仇、旧识递信、陌生人求助、门派招揽都不必事先铺垫过。别因为怕突兀就什么都不敢写。
+- 本回合结束时，把主角所在的具体地点写进scene.location。
+- scene.unresolved 只列**眼下真正还悬着、而且主角接下来打算去管**的事，至多3条；已经办完、已经落空、或者主角已经不在乎的，就别再写进去。
+  本回合了结或放下了哪几桩，写进 resolvedInfo（原样照抄未了之事里的那句话），引擎会把它从账上划掉。
 - 数值变化必须符合规则并如实写入playerChanges与npcUpdates（全部用增减量；年龄用绝对值）。受伤写hp负值，休养写hp正值。
 - 主角练功、拆招、受指点时，用playerChanges.artsTrain长熟练度；新学的武学写artsAdd并注明style与level。
 - 寿元只有奇遇能长（千年灵药、内功一路大成、高人易筋洗髓、异人相授驻颜之法之类），写进playerChanges.lifespan（增量）与lifespanReason（一句话缘由），并在剧情里把这场奇遇写足。寻常疗伤进补一律不许加寿元；给多少由引擎裁定，你只管提。
@@ -1648,7 +1710,7 @@ ${judgeBlock(judge)}
 
 ${JSON_RULE}
 输出格式：
-{"narrative":"本回合剧情","summary":"一句话概括本回合（30字内）","scene":{"location":"","unresolved":[]},
+{"narrative":"本回合剧情","summary":"一句话概括本回合（30字内）","scene":{"location":"","unresolved":[]},"resolvedInfo":[],
 "check":null或{"type":"说服","attr":"谈吐","need":70,"success":true},
 "playerChanges":{"age":null或新年龄,"lifespan":0,"lifespanReason":null,"attributes":{"武功":0},"hp":0,"fame":{"侠名":0,"恶名":0},"money":0,"faction":null,"contrib":0,"skills":{"技艺名":{"level":增量数字,"desc":"可选，改写说明"}},"artsAdd":[{"name":"","desc":"","style":"","level":0}],"artsTrain":[{"name":"已有武学名","level":熟练度增量}],"personalityAdd":[],"statusAdd":[],"statusRemove":[],"itemsAdd":{"武器":[],"秘籍":[],"医药":[],"毒药":[],"杂书":[],"其他":[]},"itemsRemove":[]},
 "npcUpdates":[{"name":"","好感度":0,"爱恋值":null,"relation":null,"alive":true,"identity":null,"faction":null,"mood":null,"notes":null,"武功":0,"age":null,"secretRevealed":false}],
@@ -1947,7 +2009,49 @@ const REALMS=[[0,'不入流'],[25,'三流'],[45,'二流'],[65,'一流'],[85,'超
 function realmOf(v){ v=num(v); let r=REALMS[0][1]; for(const it of REALMS) if(v>=it[0]) r=it[1]; return r; }
 function num(v){ const n=Number(v); return isNaN(n)?0:n; }
 function asArr(v){ if(Array.isArray(v)) return v.map(plain).filter(Boolean); if(v==null||v==='') return []; if(typeof v==='string') return v.split(/[；;、\n|,，]+/).map(x=>x.trim()).filter(Boolean); if(typeof v==='object'){ const one=plain(v); return one?[one]:Object.values(v).map(plain).filter(Boolean); } return [String(v)]; }
-function normScene(sc){ if(!sc||typeof sc!=='object') return null; return {location: typeof sc.location==='string'?sc.location:(sc.location?String(sc.location):''), unresolved: asArr(sc.unresolved)}; }
+function normScene(sc){ if(!sc||typeof sc!=='object') return null; return {location: typeof sc.location==='string'?sc.location:(sc.location?String(sc.location):''), unresolved: asArr(sc.unresolved), uAge:{}}; }
+/* ================= 未了之事 =================
+   以前这是个只进不出的池子：模型不给 location 就整块 scene 不更新，旧条目原样留着；
+   要求里也只说「把尚未了结的事写进scene」，没一句叫它删掉办完的。
+   于是同一桩事每回合都在模型眼前晃，它就每回合都写——这是「颠三倒四说一件事」的头号来源。 */
+const U_CAP=4, U_STALE=12;              // 最多挂 4 条；挂过 12 回没下文就自己淡出
+function sceneU(){
+  if(!S.scene) S.scene={location:'',unresolved:[],uAge:{}};
+  S.scene.unresolved=asArr(S.scene.unresolved);
+  if(!S.scene.uAge||typeof S.scene.uAge!=='object') S.scene.uAge={};
+  return S.scene;
+}
+function addUnresolved(t){
+  t=plain(t).slice(0,40); if(!t) return false;
+  const sc=sceneU();
+  if(sc.unresolved.includes(t)) return false;
+  sc.unresolved.push(t);
+  sc.uAge[t]=num(S.turn);
+  while(sc.unresolved.length>U_CAP){ const gone=sc.unresolved.shift(); delete sc.uAge[gone]; }
+  return true;
+}
+function dropUnresolved(t,why){
+  const sc=sceneU();
+  t=plain(t); if(!t) return false;
+  const hit=sc.unresolved.find(x=>x===t)||sc.unresolved.find(x=>x.includes(t)||t.includes(x));
+  if(!hit) return false;
+  sc.unresolved=sc.unresolved.filter(x=>x!==hit);
+  delete sc.uAge[hit];
+  ledger(`了结一桩悬着的事：${hit}${why?`（${why}）`:''}`);
+  return true;
+}
+// 挂太久没人管的，自己淡出，别一直占着提示词
+function ageUnresolved(){
+  const sc=sceneU();
+  for(const t of sc.unresolved.slice()){
+    if(sc.uAge[t]==null){ sc.uAge[t]=num(S.turn); continue; }
+    if(num(S.turn)-num(sc.uAge[t])>=U_STALE){
+      sc.unresolved=sc.unresolved.filter(x=>x!==t);
+      delete sc.uAge[t];
+      news(`${t}——这桩事久无下文，暂且搁下`);
+    }
+  }
+}
 function findNpc(name){
   if(!name) return null;
   name=String(name).trim();
@@ -2191,7 +2295,19 @@ function applyTurn(d, action, judge){
     const t=(S.world.factions||[]).find(x=>x.name===f.name);
     if(t){ if(f.power) t.power=clamp(t.power+num(f.power)); if(f.leader) t.leader=f.leader; }
   }
-  if(d.scene&&d.scene.location) S.scene=normScene(d.scene);
+  // 地点没给就沿用旧的，但未了之事该进该出照样走——不再整块跳过
+  if(d.scene&&typeof d.scene==='object'){
+    const sc=sceneU();
+    if(d.scene.location) sc.location=plain(d.scene.location);
+    const want=asArr(d.scene.unresolved).map(x=>plain(x).slice(0,40)).filter(Boolean);
+    if(want.length){
+      // 模型这回没再提的，视同它认为已经了了
+      for(const t of sc.unresolved.slice()) if(!want.some(w=>w===t||w.includes(t)||t.includes(w))) dropUnresolved(t,'模型已不再提起');
+      for(const w of want) addUnresolved(w);
+    }
+  }
+  for(const t of asArr(d.resolvedInfo)) dropUnresolved(t,'已了结');
+  ageUnresolved();
   // 仇家：LLM 可以在剧情里给主角树敌
   for(const v of (d.newVendettas||[])){
     if(v&&v.name&&findNpc(v.name)) addVendetta(findNpc(v.name).name, v.reason||'', !!v.lethal, num(v.heat)||35);
@@ -2826,9 +2942,7 @@ function applyConvoEffects(n, eff, attemptOk){
   // 打听到的事，记进未了之事，主线接得上
   if(eff.info&&String(eff.info).trim()&&risky){
     const t=String(eff.info).trim().slice(0,40);
-    S.scene=S.scene||{location:'',unresolved:[]};
-    S.scene.unresolved=asArr(S.scene.unresolved);
-    if(!S.scene.unresolved.includes(t)){ S.scene.unresolved.push(t); while(S.scene.unresolved.length>6) S.scene.unresolved.shift(); }
+    addUnresolved(t);
     gain(out,`打听到：${t}`);
   }
   return out;
@@ -3425,7 +3539,7 @@ async function startNewGame(opts){
     applyInit(d,opts);
     updateChapterNarrative(d.opening);
     finishChapter({date:S.date,rumors:d.rumors,npcEvents:null},null,null);
-    renderPanel(); renderOptions(d.options); S.lastOptions=d.options||[]; saveGame();
+    renderPanel(); const _o=dedupeOptions(d.options); renderOptions(_o); S.lastOptions=_o; saveGame();
     setBusy(true,'正在铸造江湖格局与高手榜……');
     const w=await worldP;
     if(w){ applyWorld(w); renderWorld(); renderPanel(); saveGame(); }
@@ -3455,6 +3569,62 @@ function optMonths(opt){
   return 1;
 }
 // 模型偶尔会返回空选项（比如它以为这局结束了），不能让玩家没得可点
+/* 模型常把上一回合的选项原样再给一遍，玩家看着就像卡住了。
+   跟上回太像、或者跟玩家刚做完的事太像的，直接换掉。 */
+const FRESH=[
+  {text:'收拾行装，往邻县走一趟',hint:'换个地方，说不定有转机',type:'normal',months:2},
+  {text:'去镇上茶楼坐坐，听听南来北往的人说什么',hint:'消息都在闲话里',type:'normal',months:1},
+  {text:'循着近来听来的消息，亲自去看个究竟',hint:'未必安全',type:'check',months:2,check:{attr:'颖悟',need:55}},
+  {text:'寻一个久未走动的旧识,叙叙旧',hint:'人情是攒出来的',type:'normal',months:1},
+  {text:'上路，走到哪算哪',hint:'江湖大得很',type:'normal',months:2}
+];
+/* 挂着人名、地名、宿命的选项是钩子，玩家没点不代表该收走；
+   「继续练功」「歇一口气」这种填空选项才是该换掉的。 */
+function shareRun(a,b,n){
+  a=String(a||''); b=String(b||'');
+  for(let i=0;i+n<=a.length;i++) if(b.indexOf(a.slice(i,i+n))>=0) return true;
+  return false;
+}
+function isPlotty(t){
+  t=String(t||''); if(!t) return false;
+  for(const n of (S.npcs||[])) if(n.name&&t.indexOf(n.name)>=0) return true;
+  for(const f of ((S.world&&S.world.factions)||[])) if(f.name&&t.indexOf(f.name)>=0) return true;
+  for(const r of ((S.world&&S.world.ranking)||[])) if(r.name&&t.indexOf(r.name)>=0) return true;
+  for(const q of (S.quests||[])) if(q.status==='进行中'&&(shareRun(q.title,t,3)||shareRun(q.desc,t,3))) return true;
+  for(const u of asArr(S.scene&&S.scene.unresolved)) if(shareRun(u,t,3)) return true;
+  return false;
+}
+function dedupeOptions(opts){
+  if(!S) return opts||[];
+  const done=(S.history||[]).slice(-2).map(h=>h.action).filter(Boolean);
+  S.optSeen=S.optSeen||{};
+  const seenNow={};
+  const kept=[]; const texts=[];
+  for(const o of (opts||[])){
+    if(!o||!o.text) continue;
+    const t=String(o.text);
+    // 连着给过几回了？跟上回近乎一样的算同一个
+    let run=1;
+    for(const k in S.optSeen) if(simRatio(t,k)>=0.72) run=Math.max(run,num(S.optSeen[k])+1);
+    seenNow[t]=run;
+    if(texts.some(x=>simRatio(x,t)>=0.68)) continue;                 // 同一批里换汤不换药的，一律去掉
+    // 比武、深谈、挂着人名地名宿命的选项留着：玩家没去做，不等于该把钩子收走
+    const anchored=(o.type==='duel'&&o.duel)||(o.type==='talk'&&o.target)||isPlotty(t);
+    if(!anchored){
+      if(done.some(x=>simRatio(t,x)>=0.55)) continue;               // 玩家刚做完的事
+      if(run>=3) continue;                                          // 连挂三回还没人点，换一个
+    }
+    texts.push(t); kept.push(o);
+  }
+  S.optSeen=seenNow;
+  let gi=num(S.freshSeq);
+  while(kept.length<3&&gi<num(S.freshSeq)+FRESH.length){
+    const f=Object.assign({},FRESH[gi++%FRESH.length]);
+    if(!texts.some(x=>simRatio(x,f.text)>=0.62)&&!done.some(x=>simRatio(f.text,x)>=0.62)){ texts.push(f.text); kept.push(f); }
+  }
+  S.freshSeq=gi;
+  return kept.length?kept:(opts||[]);
+}
 function fallbackOptions(){
   const p=S.player, o=[];
   if(p.hp<60) o.push({text:'先寻医问药，把伤将养好',hint:'花些银钱，稳妥',type:'rest',months:2});
@@ -3465,6 +3635,8 @@ function fallbackOptions(){
 }
 function makeJudge(opt){
   const judge={fate:d20(),check:null,worldEvent:pickWorldEvent(),duel:false,months:optMonths(opt)};
+  const stuck=stuckLevel();
+  if(stuck>=0.5){ judge.stuck=Math.round(stuck*100); judge.nudge=pickNudge(); }
   if(judge.fate<=3&&fdm().doom>0) judge.doom=makeDoom();
   if(opt&&opt.type==='check'&&opt.check&&opt.check.attr&&S.player.attributes[opt.check.attr]!==undefined) judge.check=rollCheck(opt.check.attr,opt.check.need||55);
   return judge;
@@ -3578,7 +3750,7 @@ async function runTurn(action, judge, extra){
     checkAchievements();
     if(d.newNpcs&&d.newNpcs.length) setDot('people',true);
     if((d.questUpdates&&d.questUpdates.length)||(d.newQuests&&d.newQuests.length)) setDot('world',true);
-    S.lastOptions=(d.options&&d.options.length)?d.options:fallbackOptions();
+    S.lastOptions=(d.options&&d.options.length)?dedupeOptions(d.options):fallbackOptions();
     if(d.gameOver){ saveGame(); await gameOverFlow(d.ending||'此局终了'); setBusy(false); return; }
     if(S.oldAgeDeath){ S.oldAgeDeath=false; saveGame(); await gameOverFlow(`年岁到了，${S.player.name}在${(S.scene&&S.scene.location)||'旅次之中'}溘然长逝，寿终正寝`); setBusy(false); return; }
     // 模型发起比武
@@ -3598,7 +3770,7 @@ async function runTurn(action, judge, extra){
     }
     const near=(S.vendettas||[]).find(v=>v.heat>=70&&v.heat<100);
     if(near) toast('⚑ 风声：'+near.name+'正在四处打听你的下落');
-    renderOptions((d.options&&d.options.length)?d.options:fallbackOptions());
+    renderOptions(S.lastOptions);            // 上面已经去过重了，这里渲染同一份
     saveGame();
     foldHistory();   // 后台压缩前尘，不挡玩家
   }catch(e){
