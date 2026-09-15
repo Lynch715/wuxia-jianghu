@@ -655,7 +655,7 @@ function plain(x){
 }
 const esc=s=>String(s==null?'':(typeof s==='object'?plain(s):s)).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 
-const SAVE_VERSION=7;
+const SAVE_VERSION=8;
 function newStateShell(){
   return {
     v:SAVE_VERSION, turn:0, date:'', player:null, npcs:[],
@@ -737,6 +737,11 @@ function migrate(s){
     }catch(e){ console.warn('伤病迁移失败',e); }
     S=keep;
     s.v=7;
+  }
+  if(s.v<8){
+    // 老存档里模型没填 bonus 的兵器，按名号补一个，不然后期一件神兵也不加武功
+    for(const w of ((s.player&&s.player.items&&s.player.items['武器'])||[])) normWeapon(w);
+    s.v=8;
   }
   if(!s.chapters) s.chapters=[];
   if(s.scene) s.scene=normScene(s.scene);
@@ -1245,7 +1250,21 @@ function artBonus(stance){
 }
 
 
-function weaponBonus(p){ let b=0; for(const w of (p.items&&p.items['武器']||[])) b=Math.max(b,num(w.bonus)); return Math.min(b,20); }
+// 兵器：模型给的 bonus 是 0-20 的「成色」，实际加成按当世水位放大——
+// 否则功力上了两三百之后，屠龙刀和烧火棍没什么分别
+function weaponScale(){ const lv=Math.max(100,(typeof powerLevel==='function'&&S)?powerLevel():100); return Math.min(10,lv/100); }
+function weaponPower(it){ return Math.round(Math.min(20,Math.max(0,num(it&&it.bonus)))*weaponScale()); }
+// 模型常忘了填 bonus，按名号成色估一个，免得新得的神兵一点加成都没有
+function guessWeaponBonus(it){
+  const s=((it&&it.name)||'')+((it&&it.desc)||'');
+  if(/镖|针|钉|蒺藜|石灰|袖箭|飞刀|暗器/.test(s)) return 2;
+  if(/神兵|仙|神器|轩辕|倚天|屠龙|诛|戮|陷仙|绝仙|玄铁|干将|莫邪|鱼肠|太阿|湛卢|赤霄|通灵|灵性|绝世|无双|天下第一/.test(s)) return 16;
+  if(/宝刀|宝剑|名刀|名剑|百炼|精钢|寒铁|乌金|镔铁|玄铁|重剑|软剑|镇派|祖传|上品|削铁如泥|吹毛断发/.test(s)) return 9;
+  if(/剑|刀|枪|棍|鞭|锏|戟|斧|钩|杖|笔|扇|匕首|拐|环|索/.test(s)) return 4;
+  return 2;
+}
+function normWeapon(it){ if(!it) return it; const b=Math.min(20,Math.max(0,num(it.bonus))); it.bonus=b||guessWeaponBonus(it); return it; }
+function weaponBonus(p){ let b=0; for(const w of (p.items&&p.items['武器']||[])) b=Math.max(b,Math.min(20,Math.max(0,num(w.bonus)))); return Math.round(b*weaponScale()); }
 function attrVal(p,attr){
   let v=num(p.attributes[attr]);
   if(attr==='武功'){
@@ -1678,6 +1697,7 @@ const WORLD_RULES = `你是一个武侠文字游戏引擎。世界观为最通�
 - 每门武学都有一路数，只能是这五种之一：刚猛（正面抢攻）、守御（沉稳守反）、诡变（虚实险招）、绝学（倾力绝招）、身法（轻功脱身）。给出武学时必须写 style。
 - 每门武学有熟练度level（0-100）：初学20上下，勤练日久可至七八十，登峰造极才近百。练得越熟，在比武中越占便宜。
 - 主角练功、被高人指点、与人拆招都会长熟练度，用playerChanges.artsTrain填增量（一回合寻常勤练+1到+3，名师亲授或苦修数月可更多）。
+- 兵器写进itemsAdd.武器时必须带 bonus（0-20的成色，不是最终加成）：寻常刀剑3-6，好刀好剑8-12，名器14-17，神兵利器18-20；暗器镖针1-3。引擎会按当世水位放大，所以只管按名号给成色。不给则由引擎按名字估。
 - 秘籍写进itemsAdd.秘籍时，可带 style、power（练成后武功增益8-26）、need（参悟难度52-92）、months（需闭关几个月）；不给则由引擎按书名自定。秘籍要参悟才有用，不可在剧情里直接送武功。
 判定制度（引擎已经掷过骰子、定好成败，你只负责如实叙述，绝不可篡改判定结果）：
 - 每回合有「天命骰」1-20：1-3大凶，4-8不顺，9-14平常，15-18顺遂，19-20大吉。引擎会给出本回合骰值和含义，剧情走向必须与之相符。
@@ -1959,7 +1979,7 @@ ${JSON_RULE}
 输出格式：
 {"narrative":"本回合剧情","summary":"一句话概括本回合（30字内）","scene":{"location":"","unresolved":[]},"resolvedInfo":[],
 "check":null或{"type":"说服","attr":"谈吐","need":70,"success":true},
-"playerChanges":{"age":null或新年龄,"lifespan":0,"lifespanReason":null,"attributes":{"武功":0},"hp":0,"fame":{"侠名":0,"恶名":0},"money":0,"faction":null,"contrib":0,"skills":{"技艺名":{"level":增量数字,"desc":"可选，改写说明"}},"artsAdd":[{"name":"","desc":"","style":"","level":0}],"artsTrain":[{"name":"已有武学名","level":熟练度增量}],"personalityAdd":[],"statusAdd":[{"name":"","desc":"","months":0}],"statusRemove":["伤名"],"itemsAdd":{"武器":[],"秘籍":[],"医药":[],"毒药":[],"杂书":[],"其他":[]},"itemsRemove":[]},
+"playerChanges":{"age":null或新年龄,"lifespan":0,"lifespanReason":null,"attributes":{"武功":0},"hp":0,"fame":{"侠名":0,"恶名":0},"money":0,"faction":null,"contrib":0,"skills":{"技艺名":{"level":增量数字,"desc":"可选，改写说明"}},"artsAdd":[{"name":"","desc":"","style":"","level":0}],"artsTrain":[{"name":"已有武学名","level":熟练度增量}],"personalityAdd":[],"statusAdd":[{"name":"","desc":"","months":0}],"statusRemove":["伤名"],"itemsAdd":{"武器":[{"name":"","desc":"","bonus":0到20的兵器成色}],"秘籍":[],"医药":[],"毒药":[],"杂书":[],"其他":[]},"itemsRemove":[]},
 "npcUpdates":[{"name":"","好感度":0,"爱恋值":null,"relation":null,"alive":true,"identity":null,"faction":null,"mood":null,"notes":null,"武功":0,"age":null,"secretRevealed":false}],
 "taughtNpc":[{"name":"NPC姓名","art":"主角教给他的武学名"}],
 "newNpcs":[${NPC_SCHEMA}],
@@ -2331,7 +2351,7 @@ function applyInit(d, opts){
   p['侠名']=clamp(num(p['侠名']),0,30); p['恶名']=clamp(num(p['恶名']),0,30);
   p.personality=p.personality||[];
   const it = p.items||{};
-  p.items = {'武器':it['武器']||[],'秘籍':it['秘籍']||[],'医药':it['医药']||[],'毒药':it['毒药']||[],'杂书':it['杂书']||[],'其他':it['其他']||[]};
+  p.items = {'武器':(it['武器']||[]).map(normWeapon),'秘籍':it['秘籍']||[],'医药':it['医药']||[],'毒药':it['毒药']||[],'杂书':it['杂书']||[],'其他':it['其他']||[]};
   p.attributes=p.attributes||{};
   for(const k of ['谈吐','才学','颖悟','武功']) p.attributes[k]=(k==='武功'?clampW(num(p.attributes[k])):clamp(num(p.attributes[k])));
   p.money=Math.max(0,num(p.money));
@@ -2500,7 +2520,7 @@ function applyTurn(d, action, judge){
   for(const t of asArr(ch.statusRemove)) dropAilment(t);
   if(ch.itemsAdd) for(const cat in ch.itemsAdd){
     if(!p.items[cat]) p.items[cat]=[];
-    for(const item of (ch.itemsAdd[cat]||[])) if(item&&item.name) p.items[cat].push(item);
+    for(const item of (ch.itemsAdd[cat]||[])) if(item&&item.name) p.items[cat].push(cat==='武器'?normWeapon(item):item);
   }
   if(ch.itemsRemove) for(const nm of ch.itemsRemove){ for(const cat in p.items) p.items[cat]=p.items[cat].filter(x=>x.name!==nm); }
   // 大凶：引擎先定死的损失，模型改不了
@@ -3164,7 +3184,7 @@ function applyConvoEffects(n, eff, attemptOk){
     if(!risky||!c.canItem){ out.push(`${n.name}到底没舍得把【${it.name}】给你`); continue; }
     const cat=(p.items[it.cat]!==undefined)?it.cat:'其他';
     p.items[cat]=p.items[cat]||[];
-    p.items[cat].push({name:it.name, desc:it.desc||'', bonus:cat==='武器'?clamp(num(it.bonus),0,20):undefined});
+    p.items[cat].push(cat==='武器'?normWeapon({name:it.name, desc:it.desc||'', bonus:num(it.bonus)}):{name:it.name, desc:it.desc||''});
     gain(out,`${n.name}给了你【${it.name}】`);
   }
   for(const nm of (eff.take||[]).slice(0,2)){
@@ -3472,7 +3492,7 @@ function renderPanel(){
 }
 function itemHtml(list,color,tag){
   if(!list||!list.length) return '<div class="empty">空空如也</div>';
-  return list.map(x=>`<div class="item"><span class="itag" style="background:${color}">${tag}</span><b>${esc(x.name)}</b>${x.bonus?`<span style="color:var(--accent);font-size:13px">（武功+${x.bonus}）</span>`:''}<div class="idesc">${esc(x.desc||'')}</div></div>`).join('');
+  return list.map(x=>`<div class="item"><span class="itag" style="background:${color}">${tag}</span><b>${esc(x.name)}</b>${tag==='兵'&&weaponPower(x)?`<span style="color:var(--accent);font-size:13px">（武功+${weaponPower(x)}）</span>`:(tag!=='兵'&&x.bonus?`<span style="color:var(--accent);font-size:13px">（武功+${x.bonus}）</span>`:'')}<div class="idesc">${esc(x.desc||'')}</div></div>`).join('');
 }
 function manualHtml(list){
   if(!list||!list.length) return '<div class="empty">空空如也</div>';

@@ -859,7 +859,7 @@ await p2.waitForTimeout(400);
 ok('样张已显示', (await p2.textContent('#story')).includes('样张'));
 ok('样张有引导按钮', (await p2.textContent('#choices')).includes('填入 API 密钥'));
 
-console.log('\n【旧存档升上 v7】');
+console.log('\n【旧存档升上 v8】');
 const ctx3=await br.newContext();
 const p3=await ctx3.newPage();
 p3.on('pageerror',e=>errs.push('v6迁移:'+String(e)));
@@ -871,9 +871,27 @@ await p3.goto('http://localhost:8931/');
 await p3.waitForTimeout(1200);
 const mg=await p3.evaluate(()=>({v:S.v, life:S.player.lifespan, led:Array.isArray(S.ledger), mem:S.memLong,
   meta:$('pMeta').textContent, story:$('story').textContent.length, prompt:stateBlocks().length}));
-ok('老存档补上寿元（'+mg.life+'）、台账与记忆档，版本升到 v'+mg.v, mg.v===7&&mg.life===78&&mg.led===true&&mg.mem===true);
+ok('老存档补上寿元（'+mg.life+'）、台账与记忆档，版本升到 v'+mg.v, mg.v===8&&mg.life===78&&mg.led===true&&mg.mem===true);
 ok('升级后面板照常：'+mg.meta.replace(/\s+/g,' ').slice(0,32), /岁／寿元78/.test(mg.meta)&&mg.story>50);
 ok('升级后提示词照样拼得出来（'+mg.prompt+' 字）', mg.prompt>500);
+
+console.log('\n【兵器加成】');
+const wp=await page.evaluate(()=>{
+  const mk=(o)=>{ const it=Object.assign({},o); normWeapon(it); return it; };
+  const shen=mk({name:'陷仙剑',desc:'幽冥铁铸成，剑有灵性'});      // 模型没填 bonus
+  const putong=mk({name:'百炼长剑',desc:'铁铺自打的日常佩剑'});
+  const biao=mk({name:'柳叶飞镖',desc:''});
+  const keep={rk:S.world.ranking.slice(), w:S.player.attributes['武功'], items:S.player.items['武器']};
+  const at=(lv)=>{ S.world.ranking=[{name:'x','武功':lv,alive:true}]; S.player.attributes['武功']=Math.round(lv*0.75);
+    S.player.items['武器']=[shen]; return {scale:weaponScale(), bonus:weaponBonus(S.player), attr:attrVal(S.player,'武功')-S.player.attributes['武功']}; };
+  const early=at(95), late=at(400);
+  S.world.ranking=keep.rk; S.player.attributes['武功']=keep.w; S.player.items['武器']=keep.items;
+  return {shen:shen.bonus, putong:putong.bonus, biao:biao.bonus, early, late};
+});
+ok('模型漏填 bonus 时按名号补成色（陷仙剑'+wp.shen+' 百炼长剑'+wp.putong+' 飞镖'+wp.biao+'）', wp.shen>=14&&wp.putong>=6&&wp.putong<14&&wp.biao<=4);
+ok('前期加成照旧（水位95 → +'+wp.early.bonus+'）', wp.early.scale===1&&wp.early.bonus===wp.shen);
+ok('后期水涨船高，神兵还管用（水位400 → +'+wp.late.bonus+'）', wp.late.bonus>=wp.early.bonus*3);
+ok('加成确实进了武功判定（attrVal +'+wp.late.attr+'）', wp.late.attr===wp.late.bonus);
 
 console.log('\n页面错误：', errs.length?errs.slice(0,5):'无');
 console.log(`\n结果：${oks.length} 通过，${fails.length} 失败`);
