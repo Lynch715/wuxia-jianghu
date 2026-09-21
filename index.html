@@ -165,6 +165,57 @@ body{
 .faction{margin-bottom:8px;font-size:14px}
 .faction .fl{display:flex;justify-content:space-between}
 .faction .fl small{color:var(--ink-soft)}
+/* 宗门页签 */
+.clanline{display:flex;justify-content:space-between;font-size:13.5px;padding:4px 0;border-bottom:1px dashed var(--paper-edge)}
+.clanline:last-of-type{border-bottom:none}
+.clanline b{font-weight:700;color:var(--ink)}
+.csort{display:flex;gap:3px;flex-wrap:wrap;align-items:center;margin-bottom:8px}
+.csort button{flex:0 0 auto;padding:3px 7px;font-family:inherit;font-size:12px;letter-spacing:0;border:1px solid var(--paper-edge);border-radius:11px;background:rgba(255,252,240,.6);color:var(--ink-soft);cursor:pointer}
+.csort button.on{border-color:var(--accent);background:rgba(156,47,36,.10);color:var(--accent);font-weight:700}
+.csort button.auto{margin-left:auto;border-color:var(--gold);color:var(--gold)}
+.disc{padding:6px 4px;border-bottom:1px dashed var(--paper-edge);cursor:pointer}
+.disc:last-of-type{border-bottom:none}
+.disc:hover{background:rgba(156,47,36,.05);border-radius:4px}
+.disc.hurt{opacity:.62}
+.disc .dl{display:flex;justify-content:space-between;align-items:baseline;gap:8px;font-size:14.5px}
+.disc .dn{flex:1;min-width:0;font-weight:700}
+.disc .dn small{display:block;font-weight:400;color:var(--ink-soft);font-size:11.5px;letter-spacing:0}
+.disc .dv{color:var(--accent);font-weight:700;font-variant-numeric:tabular-nums}
+.disc .dv small{color:var(--ink-soft);font-weight:400;font-size:11px}
+.disc .dmeta{display:flex;justify-content:space-between;font-size:11.5px;color:var(--ink-soft);margin-top:2px}
+.lrow{display:flex;align-items:center;gap:8px;padding:7px 2px;border-bottom:1px dashed var(--paper-edge);font-size:14.5px}
+.lrow:last-of-type{border-bottom:none}
+.lrow .ln{flex:1;min-width:0;font-weight:700}
+.lrow .ln small{display:block;font-weight:400;color:var(--ink-soft);font-size:11.5px;letter-spacing:0}
+.lrow .lo{color:var(--ink-soft);font-size:12px;font-variant-numeric:tabular-nums}
+.lrow .lv{flex:0 0 auto;width:44px;text-align:center;border-radius:11px;padding:2px 0;font-size:12.5px}
+.lrow.yes .lv{background:rgba(74,107,69,.16);color:#3f6b3a;border:1px solid rgba(74,107,69,.45)}
+.lrow.no .lv{background:rgba(156,47,36,.10);color:#9c2f24;border:1px solid rgba(156,47,36,.4)}
+#unifyBody .nrow{display:flex;justify-content:space-between;border-bottom:1px dashed var(--paper-edge);padding:7px 2px;font-size:14px}
+#unifyBody .nrow b{color:var(--ink-soft);font-weight:400;letter-spacing:2px;flex-shrink:0;margin-right:16px}
+#unifyBody .nrow span{text-align:right;line-height:1.7}
+.foe{margin-bottom:9px;font-size:14px}
+.foe .fl{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.foe .fl small{color:var(--ink-soft);font-size:11.5px}
+.foe .fmeta{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:12px;color:var(--ink-soft);margin-top:3px}
+.foe .fmeta .mbtn{flex:0 0 auto;padding:3px 9px;font-size:12px;letter-spacing:1px;max-width:62%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#warLog{background:rgba(0,0,0,.05);border:1px solid var(--paper-edge);border-radius:6px;padding:10px 14px;max-height:46vh;overflow-y:auto;font-size:14px;line-height:1.85}
+#warLog .r{border-bottom:1px dashed var(--paper-edge);padding:4px 0}
+#warLog .r:last-child{border-bottom:none}
+#warLog .hd{color:var(--accent);font-weight:700;letter-spacing:2px;border-bottom:none;padding-top:8px}
+#warLog .good{color:#3f6b3a} #warLog .bad{color:#9c2f24}
+#warLog .sum{color:var(--gold);font-weight:700}
+#warLog .sys{color:var(--ink-soft);font-size:13px}
+.cand{display:flex;align-items:center;gap:7px;padding:5px 2px;border-bottom:1px dashed var(--paper-edge);font-size:14px}
+.cand:last-of-type{border-bottom:none}
+.cand .cn{flex:1;min-width:0;font-weight:700}
+.cand .cn small{display:block;font-weight:400;color:var(--ink-soft);font-size:11.5px;letter-spacing:0}
+.cand .co{color:var(--gold);font-weight:700;font-variant-numeric:tabular-nums;flex:0 0 auto}
+.seg.wrap{flex-wrap:wrap}
+.seg.wrap button{flex:1 1 30%;font-size:14px;letter-spacing:1px;padding:7px 0}
+#discModal .nrow{display:flex;justify-content:space-between;border-bottom:1px dashed var(--paper-edge);padding:7px 2px;font-size:14.5px}
+#discModal .nrow b{color:var(--ink-soft);font-weight:400;letter-spacing:2px;flex-shrink:0;margin-right:16px}
+#discModal .nrow span{text-align:right;line-height:1.7}
 .ach{display:inline-block;border-radius:12px;padding:2px 10px;font-size:12.5px;margin:3px 4px 0 0;border:1px solid var(--paper-edge);color:#a89a80;background:rgba(0,0,0,.03)}
 .ach.on{background:rgba(138,109,47,.15);color:var(--gold);border-color:var(--gold);font-weight:700}
 .hall{font-size:13.5px;padding:6px 0;border-bottom:1px dashed var(--paper-edge);line-height:1.6}
@@ -350,6 +401,8 @@ body{
   #sideMask{top:52px}
   .tabpane{padding:12px 13px;-webkit-overflow-scrolling:touch}
   #tabs button{padding:12px 0;font-size:14px;letter-spacing:2px}
+  #tabs button[data-tab]{font-size:13px;letter-spacing:1px}
+  .csort button{font-size:11.5px;padding:3px 7px}
   #story{padding:14px 3.5%;-webkit-overflow-scrolling:touch}
   .chapter{padding:20px 16px 16px;margin-bottom:14px;border-radius:7px}
   .chapter .chapmark{left:14px;font-size:12px;padding:2px 9px 4px}
@@ -406,6 +459,7 @@ body{
       <button data-tab="bag">行囊</button>
       <button data-tab="people">人脉<span class="dot" id="dotPeople"></span></button>
       <button data-tab="world">江湖<span class="dot" id="dotWorld"></span></button>
+      <button data-tab="clan" id="tabClanBtn" style="display:none">宗门</button>
     </div>
     <div class="tabpane on" id="tab-panel">
       <div class="card">
@@ -448,6 +502,13 @@ body{
       <div class="card"><h3>❈ 仇家 <small>盯上你的人</small></h3><div id="wVendetta"></div></div>
       <div class="card"><h3>❈ 成就</h3><div id="wAch"></div></div>
       <div class="card"><h3>❈ 史册 <small>历代江湖人</small></h3><div id="wHall"></div></div>
+    </div>
+    <div class="tabpane" id="tab-clan">
+      <div class="card"><h3>❈ 山门</h3><div id="cSect"></div></div>
+      <div class="card"><h3>❈ 招徕 <small>把人弄进门来</small></h3><div id="cRecruit"></div></div>
+      <div class="card"><h3>❈ 一统江湖 <small>文武两条路</small></h3><div id="cLeague"></div></div>
+      <div class="card"><h3>❈ 征伐 <small>打出去</small></h3><div id="cWar"></div></div>
+      <div class="card"><h3>❈ 花名册 <small>点击可调差事、位阶</small></h3><div id="cRoster"></div></div>
     </div>
   </aside>
 
@@ -583,8 +644,76 @@ body{
     <div id="npcMBody"></div>
     <div class="mbtnrow stickyrow">
       <button class="mbtn" onclick="document.getElementById('npcMask').classList.remove('on')">合上</button>
+      <button class="mbtn" id="npcRecruitBtn" style="display:none">⛩ 招入门下</button>
       <button class="mbtn gold" id="npcTalkBtn">💬 交谈</button>
       <button class="mbtn primary" id="npcDuelBtn">⚔ 切磋</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-mask" id="foundMask">
+  <div class="modal">
+    <h2>开宗立派</h2>
+    <div class="sub">自此以后，江湖上多一块招牌，也多一群等你开饭的人</div>
+    <div class="field"><label>派名</label>
+      <input id="foundName" maxlength="8" placeholder="如：青锋门">
+      <div class="note" id="foundReq"></div></div>
+    <div class="field"><label>山门所在</label>
+      <input id="foundBase" maxlength="20" placeholder="如：雁回山"></div>
+    <div class="field"><label>立场</label>
+      <div class="seg" id="foundAlign">
+        <button data-v="正派">正派</button><button data-v="中立">中立</button><button data-v="邪道">邪道</button>
+      </div>
+      <div class="note" id="foundAlignNote"></div></div>
+    <div class="field"><label>门规</label>
+      <input id="foundCreed" maxlength="40" placeholder="一句话，写给门下看的"></div>
+    <div class="field"><div class="note" id="foundWhy"></div></div>
+    <div class="mbtnrow">
+      <button class="mbtn" id="foundCancel">再想想</button>
+      <button class="mbtn" id="foundDice">换一个</button>
+      <button class="mbtn primary" id="foundGo">开山</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-mask" id="discMask">
+  <div class="modal" id="discModal">
+    <h2 id="discTitle">弟子</h2>
+    <div class="sub" id="discSub"></div>
+    <div id="discBody"></div>
+    <div class="mbtnrow">
+      <button class="mbtn" onclick="document.getElementById('discMask').classList.remove('on')">合上</button>
+      <button class="mbtn" id="discExpel" style="color:#9c2f24;border-color:#9c2f24">逐出门墙</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-mask" id="warMask">
+  <div class="modal" id="warModal">
+    <h2 id="warTitle">门派战</h2>
+    <div class="sub" id="warSub"></div>
+    <div id="warLog"></div>
+    <div id="warActions" style="margin-top:14px"></div>
+  </div>
+</div>
+
+<div class="modal-mask" id="leagueMask">
+  <div class="modal">
+    <h2 id="leagueTitle">武林大会</h2>
+    <div class="sub" id="leagueSub"></div>
+    <div id="leagueBody"></div>
+    <div class="mbtnrow"><button class="mbtn primary" id="leagueGo" style="width:100%">散会</button></div>
+  </div>
+</div>
+
+<div class="modal-mask" id="unifyMask">
+  <div class="modal">
+    <h2 style="letter-spacing:9px">一 统 江 湖</h2>
+    <div class="sub">江湖上再没有第二个声音</div>
+    <div id="unifyBody"></div>
+    <div class="mbtnrow">
+      <button class="mbtn" id="unifyEnd">就此收官立传</button>
+      <button class="mbtn primary" id="unifyStay">接着走下去</button>
     </div>
   </div>
 </div>
@@ -655,7 +784,7 @@ function plain(x){
 }
 const esc=s=>String(s==null?'':(typeof s==='object'?plain(s):s)).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 
-const SAVE_VERSION=8;
+const SAVE_VERSION=9;
 function newStateShell(){
   return {
     v:SAVE_VERSION, turn:0, date:'', player:null, npcs:[],
@@ -664,13 +793,13 @@ function newStateShell(){
     months:0, ganzhi:0, upkeepLast:0, destitute:false, starveMonths:0, oldAgeDeath:false,
     vendettas:[], scars:[], ailments:[], engineNews:[], ranked:false, lastChallengeMonth:-99, volumes:[], ledger:[],
     memLong:true,
-    sect:null,
+    sect:null, clan:null,
     world:{factions:[],ranking:[],events:[],fallen:[],vacant:0},
     rankVacantTurns:0,
     quests:[], achievements:[],
     stats:{duelWins:0,duelLosses:0,kills:0,spares:0,escapes:0,secrets:0,talks:0,questsDone:0},
     lastWorldEventTurn:-9, lastOptions:[],
-    chapters:[], pending:null, duelState:null, convoState:null
+    chapters:[], pending:null, duelState:null, convoState:null, war:null
   };
 }
 // 旧存档升级
@@ -743,6 +872,14 @@ function migrate(s){
     for(const w of ((s.player&&s.player.items&&s.player.items['武器'])||[])) normWeapon(w);
     s.v=8;
   }
+  if(s.v<9){
+    // 自己开的门派另起一本账；老存档一律视为没开派
+    if(s.clan===undefined) s.clan=null;
+    if(s.war===undefined) s.war=null;
+    if(s.sect&&s.sect.own===undefined) s.sect.own=false;
+    s.v=9;
+  }
+  if(s.war===undefined) s.war=null;
   if(!s.chapters) s.chapters=[];
   if(s.scene) s.scene=normScene(s.scene);
   return s;
@@ -1093,6 +1230,7 @@ function advanceTime(n){
   }
   tickNpcs(n);
   sectTick(n);
+  clanTick(n);
   S.upkeepLast=cost; S.starveMonths=starve; S.destitute=starve>0;
   if(S.destitute){ p.hp=Math.max(1,p.hp-Math.round(4*starve*fdm().starve)); }
   const healedNow=tickAilments(n);
@@ -1293,27 +1431,36 @@ function sectRank(c){ let t=SECT_RANKS[0][1]; for(const [need,name] of SECT_RANK
 function sectNext(c){ for(const [need,name] of SECT_RANKS) if(c<need) return {need,name}; return null; }
 function factionOf(name){ return (S.world&&S.world.factions||[]).find(f=>f.name===name)||null; }
 // 主角所属门派同步（LLM 改 faction 时引擎跟着记账）
+// 叛离师门是要还的
+function betraySect(oldName,newName){
+  if(!oldName) return;
+  for(const n of S.npcs){ if(n.alive&&n.faction===oldName){ n['好感度']=clamp(n['好感度']-30); } }
+  const head=S.npcs.find(n=>n.alive&&n.faction===oldName&&/掌门|长老|师父|师傅/.test(n.identity||n.relation||''));
+  if(head) addVendetta(head.name,`你叛出${oldName}，师门不肯干休`,false,40);
+  news(newName?`主角叛出${oldName}，改投${newName}，旧日同门无不侧目`:`主角叛出${oldName}，自此另起炉灶，旧日同门无不侧目`);
+  S.player['侠名']=clamp(S.player['侠名']-8);
+}
 function syncSect(){
-  const p=S.player, fn=p.faction;
+  const p=S.player;
+  // 自己开的派：模型在剧情里把你写出师门也不算数，一律拨回来
+  if(typeof hasClan==='function'&&hasClan()){
+    if(p.faction!==S.clan.name) p.faction=S.clan.name;
+    if(!S.sect||S.sect.name!==S.clan.name) S.sect={name:S.clan.name, contrib:num(S.sect&&S.sect.contrib), joined:S.turn};
+    S.sect.own=true;
+    return;
+  }
+  const fn=p.faction;
   const isSect=fn&&!/散人|^无$|^$/.test(fn);
   if(!isSect){ if(S.sect){ news(`主角已不再属于${S.sect.name}`); S.sect=null; } return; }
   if(!S.sect||S.sect.name!==fn){
     const old=S.sect;
-    if(old){
-      // 叛离师门是要还的
-      const f=factionOf(old.name);
-      for(const n of S.npcs){ if(n.alive&&n.faction===old.name){ n['好感度']=clamp(n['好感度']-30); } }
-      const head=S.npcs.find(n=>n.alive&&n.faction===old.name&&/掌门|长老|师父|师傅/.test(n.identity||n.relation||''));
-      if(head) addVendetta(head.name,`你叛出${old.name}，师门不肯干休`,false,40);
-      news(`主角叛出${old.name}，改投${fn}，旧日同门无不侧目`);
-      S.player['侠名']=clamp(S.player['侠名']-8);
-    }
-    S.sect={name:fn, contrib:0, joined:S.turn};
+    if(old) betraySect(old.name,fn);
+    S.sect={name:fn, contrib:0, joined:S.turn, own:false};
   }
 }
 // 门派月例：位阶越高、门派越强，拿得越多
 function sectStipend(){
-  if(!S.sect) return 0;
+  if(!S.sect||S.sect.own) return 0;
   const f=factionOf(S.sect.name);
   const power=f?num(f.power):50;
   const idx=SECT_RANKS.findIndex(r=>r[1]===sectRank(S.sect.contrib));
@@ -1321,13 +1468,530 @@ function sectStipend(){
 }
 function sectTick(months){
   syncSect();
-  if(!S.sect) return;
+  if(!S.sect||S.sect.own) return;
   const before=sectRank(S.sect.contrib);
   const pay=sectStipend()*months;
   S.player.money+=pay;
   S.sectPay=pay;
   const after=sectRank(S.sect.contrib);
   if(before!==after) news(`主角在${S.sect.name}中升为${after}`);
+}
+
+/* ================= 本派（开宗立派） =================
+   自己开的门派不走 S.sect 那本「在别人门下攒贡献」的账，另记一本 S.clan。
+   弟子、公帐、威望、势力全由引擎按月结算——模型只能读，不能改。 */
+const CLAN_RANKS=['弟子','执事','长老','副掌门'];
+const RANK_COST={'弟子':2,'执事':4,'长老':8,'副掌门':12};
+const RANK_QUOTA={'弟子':999,'执事':6,'长老':3,'副掌门':1};
+const CLAN_JOBS=['修炼','授艺','护山','云游','经商'];
+const JOB_DESC={
+  '修炼':'闭门练功，武功涨得最快',
+  '授艺':'教导同门，全派修炼都快一截',
+  '护山':'守着山门，别派打上来时顶在前头',
+  '云游':'行走江湖，偶尔带回银两、线索或新人，也偶尔回不来',
+  '经商':'打理产业，每月给公帐进项'
+};
+function clanOf(){ return (S&&S.clan&&S.clan.name)?S.clan:null; }
+function hasClan(){ return !!clanOf(); }
+function clanDisciples(){ const c=clanOf(); return c?c.disciples.filter(d=>d.alive):[]; }
+function clanFighters(){ return clanDisciples().filter(d=>num(d.hurt)<50); }
+function clanCap(){ const c=clanOf(); if(!c) return 0; return Math.max(6,Math.round(20+num(c.power)/5)-(S.freedom==='strict'?5:0)); }
+
+/* ---- 立派门槛：随自由度浮动 ---- */
+function foundReq(){
+  if(S.freedom==='free')   return {wu:Math.max(30,Math.round(powerLevel()*0.5)), money:200,  fame:20};
+  if(S.freedom==='strict') return {wu:75, money:2000, fame:60};
+  return {wu:60, money:800, fame:40};
+}
+// 空字符串＝可以立派；否则是拦下来的理由
+function foundBlock(){
+  if(!S||!S.player) return '尚未开局';
+  if(hasClan()) return '你已经有了自己的门派';
+  const p=S.player, r=foundReq(), w=num(p.attributes['武功']);
+  const fame=Math.max(num(p['侠名']),num(p['恶名']));
+  if(w<r.wu)          return `武功不足：需 ${r.wu}，你 ${w}——没人肯拜一个打不过自己的人为师`;
+  if(fame<r.fame)     return `名声不足：侠名或恶名需 ${r.fame}，你 ${fame}——江湖上没几个人听说过你`;
+  if(num(p.money)<r.money) return `家财不足：置办山门需 ${r.money} 两，你只有 ${num(p.money)} 两`;
+  return '';
+}
+
+/* ---- 弟子 ---- */
+let _dSeq=0;
+function nameTakenInWorld(nm){
+  return (S.npcs||[]).some(n=>n.name===nm)
+    || ((S.clan&&S.clan.disciples)||[]).some(d=>d.name===nm)
+    || ((S.world&&S.world.ranking)||[]).some(r=>r.name===nm);
+}
+function makeDiscipleName(){
+  for(let i=0;i<40;i++){ const nm=RK_SUR[Math.floor(Math.random()*RK_SUR.length)]+pick(RK_GIVEN); if(!nameTakenInWorld(nm)) return nm; }
+  return RK_SUR[Math.floor(Math.random()*RK_SUR.length)]+pick(RK_GIVEN)+'儿';
+}
+// 门派越兴旺，来投的资质越好
+function rollTalent(){
+  const pw=hasClan()?num(S.clan.power):0;
+  return clamp(rnd(1,7)+(Math.random()<pw/140?rnd(1,3):0),1,10);
+}
+// 两道天花板取低的那道：
+// 一是徒不过师（寻常弟子顶到你武功-5，天资极高的能逼到 -1），
+// 二是他自己的资质——资质一的庸才练一辈子也就三流。
+function discCap(d){
+  const mine=num(S.player&&S.player.attributes&&S.player.attributes['武功']);
+  const sectCap=Math.max(10, mine-(num(d&&d.talent)>=9?1:5));
+  const lv=Math.max(100,powerLevel());
+  const own=Math.round((25+num(d&&d.talent)*7.5)/100*lv);
+  return clampW(Math.max(10,Math.min(sectCap,own)));
+}
+function makeDisciple(o){
+  o=o||{};
+  const talent=o.talent!=null?clamp(num(o.talent),1,10):rollTalent();
+  const mine=num(S.player.attributes['武功']);
+  const base=o['武功']!=null?num(o['武功']):Math.max(5,Math.round(mine*(0.15+Math.random()*0.25)));
+  return {
+    id:'d'+(++_dSeq)+'_'+Date.now().toString(36).slice(-4),
+    name:o.name||makeDiscipleName(),
+    gender:o.gender||(Math.random()<0.65?'男':'女'),
+    age:num(o.age)||rnd(14,30),
+    '武功':clampW(Math.min(base,discCap({talent}))),
+    talent, loyalty:clamp(num(o.loyalty)||rnd(45,70)),
+    rank:o.rank||'弟子', job:o.job||suggestJob(),
+    bond:rnd(-9,9),
+    hurt:0, prog:0, lowMonths:0, capped:false, alive:true, left:false,
+    from:o.from||'招募', joinedMonth:num(S.months)
+  };
+}
+// 忠诚的天花板：门派兴不兴旺、你这个掌门称不称他的心，决定他最多能服你几分
+function loyaltyCeil(d){
+  const c=clanOf(); if(!c||!d) return 60;
+  const p=S.player;
+  let t=52+Math.min(20,num(c.power)/5);
+  if(c.alignment==='正派'&&num(p['侠名'])>=50) t+=14;
+  if(c.alignment==='邪道'&&num(p['恶名'])>=50) t+=14;
+  if(c.alignment==='正派'&&num(p['恶名'])>=50) t-=12;      // 打着正派旗号做恶事，门下先寒心
+  t+={'弟子':0,'执事':5,'长老':8,'副掌门':11}[d.rank]||0;
+  if(d.capped&&num(d.talent)>=9) t-=18;                     // 已经教无可教，翅膀硬了
+  if(num(c.lastUnpaid)>0) t-=10;
+  t+=num(d.bond);
+  return clamp(Math.round(t));
+}
+// 门中哪个位置最缺人，新来的就先补哪个
+function suggestJob(){
+  const ds=clanDisciples(); const n=ds.length||1;
+  const want={'修炼':0.30,'授艺':0.15,'护山':0.25,'经商':0.20,'云游':0.10};
+  let best='修炼', gap=-9;
+  for(const j of CLAN_JOBS){
+    const have=ds.filter(d=>d.job===j).length/n;
+    const g=want[j]-have;
+    if(g>gap){ gap=g; best=j; }
+  }
+  return best;
+}
+function addDisciple(d,quiet){
+  const c=clanOf(); if(!c||!d) return null;
+  c.disciples.push(d);
+  if(!quiet) news(`${d.name}拜入${c.name}门下`);
+  return d;
+}
+function rankQuotaLeft(rank){
+  const q=RANK_QUOTA[rank]; if(q==null) return 0;
+  return q-clanDisciples().filter(d=>d.rank===rank).length;
+}
+function setDiscRank(d,rank){
+  if(!d||CLAN_RANKS.indexOf(rank)<0) return '没有这个位阶';
+  if(d.rank===rank) return '';
+  if(rank!=='弟子'&&rankQuotaLeft(rank)<=0) return `${rank}的位子满了`;
+  const up=CLAN_RANKS.indexOf(rank)>CLAN_RANKS.indexOf(d.rank);
+  d.rank=rank;
+  d.loyalty=clamp(num(d.loyalty)+(up?6:-10));
+  news(`${d.name}${up?'升':'降'}为${rank}`);
+  return '';
+}
+function setDiscJob(d,job){ if(!d||CLAN_JOBS.indexOf(job)<0) return; d.job=job; }
+function expelDisciple(d){
+  const c=clanOf(); if(!c||!d) return;
+  d.alive=false; d.left=true; d.expelled=true;
+  c.power=clamp(num(c.power)-1);
+  for(const o of clanDisciples()) o.loyalty=clamp(num(o.loyalty)-3);
+  news(`${d.name}被逐出${c.name}`);
+  ledger(`逐${d.name}出门墙`);
+  if(Math.random()<0.55){
+    const nn=ensureNpcFor(d,'被逐门人',5);
+    nn.faction='散人';
+    addVendetta(nn.name,`你当众把他逐出${c.name}，这口气他咽不下`,false,rnd(30,48));
+  }
+  sweepGone();
+}
+// 按资质自动分派：天资高的去修炼，武功高的去授艺与护山，年轻的出去云游，剩下的经商
+function autoAssignJobs(){
+  const c=clanOf(); if(!c) return 0;
+  const ds=clanDisciples(); const n=ds.length;
+  if(!n) return 0;
+  const wantTeach=Math.max(1,Math.round(n*0.15));
+  const wantGuard=Math.max(1,Math.round(n*0.25));
+  const wantTrade=Math.max(1,Math.round(n*0.20));
+  const wantRoam=Math.round(n*0.10);
+  const wantTrain=Math.max(0,n-wantTeach-wantGuard-wantTrade-wantRoam);
+  const done=new Set(); let moved=0;
+  const give=(d,job)=>{ if(done.has(d.id)) return false; done.add(d.id); if(d.job!==job){ d.job=job; moved++; } return true; };
+  const byWu=ds.slice().sort((a,b)=>num(b['武功'])-num(a['武功']));
+  const byTalent=ds.slice().sort((a,b)=>num(b.talent)-num(a.talent));
+  const byAge=ds.slice().sort((a,b)=>num(a.age)-num(b.age));
+  let k=0; for(const d of byWu){ if(k>=wantTeach) break; if(give(d,'授艺')) k++; }
+  k=0; for(const d of byTalent){ if(k>=wantTrain) break; if(give(d,'修炼')) k++; }
+  k=0; for(const d of byWu){ if(k>=wantGuard) break; if(give(d,'护山')) k++; }
+  k=0; for(const d of byAge){ if(k>=wantRoam) break; if(give(d,'云游')) k++; }
+  for(const d of ds) give(d,'经商');
+  return moved;
+}
+
+/* ---- 银钱 ---- */
+function clanUpkeep(){
+  const c=clanOf(); if(!c) return 0;
+  let s=0; for(const d of clanDisciples()) s+=(RANK_COST[d.rank]||2);
+  s+=Math.round(num(c.power)/10);
+  return Math.max(0,Math.round(s*fdm().upkeep));
+}
+function clanIncome(){
+  const c=clanOf(); if(!c) return 0;
+  let s=0;
+  for(const d of clanDisciples()) if(d.job==='经商'&&num(d.hurt)<60) s+=3+num(d['武功'])/20;
+  // 供奉：正派靠名望细水长流，邪道收保护费来得快，中立居间
+  const k=c.alignment==='邪道'?0.95:(c.alignment==='正派'?0.70:0.82);
+  s+=(num(c.power)*0.50+num(c.fame)*0.35)*k;
+  const m=(S.difficulty==='hard'?0.75:(S.difficulty==='easy'?1.3:1))*Math.max(0.5,fdm().money/3);
+  return Math.max(0,Math.round(s*m));
+}
+function clanNet(){ return clanIncome()-clanUpkeep(); }
+function clanTeachBonus(){
+  let b=0;
+  for(const d of clanDisciples()) if(d.job==='授艺'&&num(d.hurt)<60) b+=0.2+num(d['武功'])/400;
+  return Math.min(2.5,b);
+}
+
+/* ---- 势力与威望：每月往目标值挪一截 ---- */
+function clanForce(){
+  const c=clanOf(); if(!c) return 0;
+  const ds=clanFighters().slice().sort((a,b)=>num(b['武功'])-num(a['武功']));
+  const top=ds.slice(0,5).reduce((s,d)=>s+num(d['武功']),0);
+  return num(S.player.attributes['武功'])*1.5+top+ds.length*2;
+}
+function clanPowerTarget(){
+  const c=S.clan, lv=Math.max(100,powerLevel());
+  let t=clanForce()/(lv*0.08);
+  t+=Math.min(15,num(c.treasury)/400);
+  t+=num(c.wins)*3-num(c.losses)*2;
+  return clamp(Math.round(t),0,100);
+}
+function clanFameTarget(){
+  const c=S.clan, p=S.player;
+  let t=Math.max(num(p['侠名']),num(p['恶名']))*0.45+num(c.power)*0.35
+       +num(c.wins)*4-num(c.losses)*3+(c.annexed||[]).length*5+(c.allies||[]).length*3;
+  return clamp(Math.round(t),0,100);
+}
+function driftTo(cur,target){
+  const d=num(target)-num(cur); if(!d) return num(cur);
+  const step=d*0.15;
+  return clamp(num(cur)+(Math.abs(step)<1?(d>0?1:-1):Math.round(step)));
+}
+// 本派要在「门派势力」那张表里占一行，不然江湖看不见你
+function clanSyncFaction(){
+  const c=clanOf(); if(!c) return;
+  S.world=S.world||{factions:[],ranking:[],events:[],fallen:[],vacant:0};
+  S.world.factions=S.world.factions||[];
+  let f=S.world.factions.find(x=>x.name===c.name);
+  if(!f){ f={name:c.name,alignment:c.alignment,power:0,leader:'',desc:''}; S.world.factions.push(f); }
+  f.own=true; f.power=clamp(num(c.power)); f.leader=S.player.name; f.alignment=c.alignment;
+  if(c.creed) f.desc=c.creed;
+}
+
+/* ---- 月结 ---- */
+function clanMonth(){
+  const c=S.clan, p=S.player;
+  const inc=clanIncome(), cost=clanUpkeep();
+  c.treasury=Math.max(0,num(c.treasury)+inc);
+  let unpaid=0;
+  if(c.treasury>=cost) c.treasury-=cost;
+  else{
+    let short=cost-c.treasury; c.treasury=0;
+    if(num(p.money)>=short) p.money=num(p.money)-short;
+    else{ short-=num(p.money); p.money=0; unpaid=short; }
+  }
+  c.lastIncome=inc; c.lastCost=cost; c.lastUnpaid=unpaid;
+  // 邪道的钱来得脏，侠名一点点往下掉
+  if(c.alignment==='邪道'&&inc>0){
+    c.sinAcc=num(c.sinAcc)+0.25;
+    if(c.sinAcc>=1){ c.sinAcc-=1; p['侠名']=clamp(num(p['侠名'])-1); }
+  }
+  const tb=clanTeachBonus(), g=fdm().growth;
+  for(const d of c.disciples){
+    if(!d.alive) continue;
+    if(num(d.hurt)>0) d.hurt=Math.max(0,num(d.hurt)-rnd(8,18));
+    let rate = d.job==='修炼' ? num(d.talent)*0.25
+             : d.job==='授艺' ? num(d.talent)*0.10
+             : num(d.talent)*0.06;
+    rate=(rate+tb*0.5)*g*(num(d.hurt)>0?0.3:1);
+    const cap=discCap(d);
+    if(num(d['武功'])<cap){
+      // 越接近自己的极限，长得越慢——最后那几分功夫是最难的
+      const room=Math.max(0,1-num(d['武功'])/Math.max(1,cap));
+      d.prog=num(d.prog)+rate*Math.pow(room,1.1);
+      while(d.prog>=1&&num(d['武功'])<cap){ d.prog-=1; d['武功']=num(d['武功'])+1; }
+      if(num(d['武功'])>=cap){
+        d.prog=0;
+        if(!d.capped){ d.capped=true; if(num(d.talent)>=9) news(`${d.name}天资太好，一身功夫已逼到你身后`); }
+      }
+    }
+    const ceil=loyaltyCeil(d);
+    let dl;
+    if(unpaid>0) dl=-8;
+    else if(d.loyalty<ceil) dl=Math.min(2,ceil-d.loyalty);
+    else if(d.loyalty>ceil) dl=-1;
+    else dl=0;
+    d.loyalty=clamp(num(d.loyalty)+dl);
+    if(c.alignment==='邪道'&&d.loyalty<25) d.loyalty=25;   // 靠威慑，怯而不叛
+    d.lowMonths = d.loyalty<20 ? num(d.lowMonths)+1 : 0;
+  }
+  // 叛门
+  for(const d of c.disciples){
+    if(!d.alive) continue;
+    if(num(d.lowMonths)>=2&&Math.random()<0.45){
+      d.alive=false; d.left=true;
+      c.power=clamp(num(c.power)-2);
+      news(`${d.name}负气离了${c.name}`);
+      ledger(`${d.name}叛出${c.name}`);
+      // 走得不痛快的，把这笔账记在你头上
+      if(Math.random()<0.35){
+        const nn=ensureNpcFor(d,'昔日门人',8);
+        nn.faction='散人';
+        addVendetta(nn.name,`他在${c.name}受了委屈，负气出走，这笔账算在你头上`,false,rnd(22,38));
+      }
+    }
+  }
+  // 云游在外的际遇
+  for(const d of c.disciples){
+    if(!d.alive||d.job!=='云游'||Math.random()>=0.12) continue;
+    const r=Math.random();
+    if(r<0.35){ const g2=rnd(20,90); c.treasury=num(c.treasury)+g2; news(`${d.name}云游归来，替门中带回${g2}两`); }
+    else if(r<0.60){ news(`${d.name}在外头听来一桩江湖事，回山说与你听`); }
+    else if(r<0.85){
+      if(clanDisciples().length<clanCap()){ const nd=makeDisciple({from:'招募'}); addDisciple(nd,true); news(`${d.name}引了一个叫${nd.name}的后生回山`); }
+    }else{
+      if(Math.random()<0.35*fdm().injury){ d.alive=false; news(`${d.name}云游在外，再没回来`); ledger(`${d.name}死在外头`); }
+      else{ d.hurt=clamp(num(d.hurt)+rnd(25,60)); news(`${d.name}在外头挂了彩，被人抬回山门`); }
+    }
+  }
+  // 慕名来投
+  if(clanDisciples().length<clanCap()){
+    let chance=0.08+((num(c.power)*0.5+num(c.fame)*0.5)/100)*0.55;
+    chance*= S.freedom==='strict'?0.6:(S.freedom==='free'?1.5:1);
+    if(unpaid>0) chance*=0.3;
+    if(Math.random()<chance){
+      const d=makeDisciple({from:'招募'});
+      addDisciple(d,true);
+      news(`一个叫${d.name}的${num(d.age)<20?'少年':'江湖客'}慕名上山，拜入${c.name}`);
+    }
+  }
+  raidCheck();
+  if(num(c.months)%12===11) c.treasury=num(c.treasury)+allyTribute();
+  unifyCheck();
+  c.power=driftTo(c.power,clanPowerTarget());
+  c.fame =driftTo(c.fame ,clanFameTarget());
+  clanSyncFaction();
+  c.months=num(c.months)+1;
+}
+// 走的人和死的人从花名册里挪进往事
+function sweepGone(){
+  const c=clanOf(); if(!c) return;
+  const gone=c.disciples.filter(d=>!d.alive);
+  if(!gone.length) return;
+  c.fallen=(c.fallen||[]).concat(gone.map(d=>({name:d.name,'武功':num(d['武功']),when:S.date||'',how:d.expelled?'被逐':(d.left?'离山':'亡故')})));
+  while(c.fallen.length>30) c.fallen.shift();
+  c.disciples=c.disciples.filter(d=>d.alive);
+}
+function clanTick(n){
+  if(!hasClan()) return;
+  n=Math.max(0,Math.min(12,num(n)));
+  syncDiscNpcs();
+  const c=S.clan;
+  let inc=0,cost=0,unpaid=0;
+  for(let i=0;i<n;i++){ clanMonth(); inc+=num(c.lastIncome); cost+=num(c.lastCost); unpaid+=num(c.lastUnpaid); }
+  syncDiscNpcs();
+  c.lastIncome=inc; c.lastCost=cost; c.lastUnpaid=unpaid;
+  sweepGone();
+  if(unpaid>0) news(`${c.name}这个月的月例发不出来，门下颇有怨言`);
+}
+
+/* ---- 立派 ---- */
+function foundClan(o){
+  o=o||{};
+  const why=foundBlock(); if(why) return {ok:false,why};
+  const p=S.player;
+  const name=String(o.name||'').trim().slice(0,8);
+  if(!name) return {ok:false,why:'总得有个派名'};
+  if((S.world&&S.world.factions||[]).some(f=>f.name===name)) return {ok:false,why:'江湖上已经有一个叫这名字的门派了'};
+  const cost=Math.round(foundReq().money*0.6);
+  const old=S.sect&&S.sect.name;
+  p.money=Math.max(0,num(p.money)-cost);
+  S.clan={
+    name,
+    alignment:(['正派','邪道','中立'].indexOf(o.alignment)>=0?o.alignment:'中立'),
+    creed:String(o.creed||'').slice(0,40),
+    base:String(o.base||'').slice(0,20),
+    founded:num(S.months), months:0,
+    power:clamp(10+Math.round(num(p.attributes['武功'])/10)),
+    fame:clamp(Math.round(Math.max(num(p['侠名']),num(p['恶名']))*0.4)),
+    treasury:0, disciples:[], fallen:[], wars:[], annexed:[], allies:[],
+    wins:0, losses:0, leagueHeld:false, unified:false,
+    sinAcc:0, lastIncome:0, lastCost:0, lastUnpaid:0, lastWarMonth:-99
+  };
+  if(old&&old!==name) betraySect(old);
+  p.faction=name;
+  S.sect={name, contrib:0, joined:S.turn, own:true};
+  clanSyncFaction();
+  news(`${p.name}在${S.clan.base||'一处山中'}开宗立派，自立${name}`);
+  ledger(`开宗立派：${name}（${S.clan.alignment}），耗银${cost}两`);
+  return {ok:true,cost};
+}
+
+/* ================= 招徕门人 =================
+   三条来路：名录里招揽熟人、张榜招徒、战后收降（收降由门派战调用）。 */
+// 把一个弟子在人物名录里的那条记录找出来；没有就造一条
+function ensureNpcFor(d,identity,favor){
+  let n=findNpc(d.npcName||d.name);
+  if(n) return n;
+  const c=clanOf();
+  n=normNpc({name:d.name, gender:d.gender||'男', age:num(d.age)||rnd(20,45),
+    identity:identity||'昔日门人', faction:'散人', alignment:(c&&c.alignment)||'中立',
+    personality:[pick(['倔强','记仇','沉默','孤僻'])], appearance:'',
+    '武功':num(d['武功']), '谈吐':rnd(30,60), signature:'',
+    relation:identity||'昔日门人', '好感度':(favor==null?10:favor),
+    alive:true, secret:'', notes:c?`曾在${c.name}门下`:''});
+  S.npcs.push(n);
+  d.npcName=n.name;
+  return n;
+}
+// 弟子与名录两本账对齐：练出来的功夫写回名录，名录里死了的人也从花名册除名
+function syncDiscNpcs(){
+  const c=clanOf(); if(!c) return;
+  for(const d of c.disciples){
+    if(!d.npcName||!d.alive) continue;
+    const n=findNpc(d.npcName); if(!n) continue;
+    if(!n.alive){ d.alive=false; news(`${d.name}身故，${c.name}少了一个人`); continue; }
+    const w=Math.max(num(d['武功']),num(n['武功']));
+    d['武功']=clampW(Math.min(w,discCap(d)));
+    n['武功']=clampW(w);
+    if(n.faction!==c.name) n.faction=c.name;      // 模型把他写出师门也不算数
+    n['好感度']=clamp(Math.max(num(n['好感度']),Math.round(num(d.loyalty)*0.7)));
+  }
+  sweepGone();
+}
+
+/* ---- 名录招揽 ---- */
+const HEAD_RE=/掌门|门主|帮主|教主|庄主|寨主|宗主|盟主/;
+function recruitBlock(n){
+  const c=clanOf();
+  if(!c) return '你还没有自己的门派';
+  if(!n) return '没有这个人';
+  if(!n.alive) return `${n.name}已经不在了`;
+  if(clanDisciples().some(d=>(d.npcName||d.name)===n.name)) return `${n.name}已在门下`;
+  if(clanDisciples().length>=clanCap()) return '山门住不下更多人了';
+  const mine=num(S.player.attributes['武功']);
+  if(num(n['武功'])>=mine) return `${n.name}武功不在你之下，不会拜你为师`;
+  if(HEAD_RE.test(n.identity||'')) return `${n.name}自己就是一派之主，不会屈居你门下`;
+  // 刚被回绝过的先说这个，别让掉下去的好感把话说岔了
+  if(num(n.recruitFail)>0&&num(S.months)-num(n.recruitTry)<12) return `${n.name}前些日子才回绝过，容他再想想`;
+  if(num(n['好感度'])<55) return `交情还不够（好感 ${num(n['好感度'])}，需 55）`;
+  return '';
+}
+function recruitOdds(n){
+  const c=clanOf(); if(!c||!n) return 0;
+  const mine=Math.max(1,num(S.player.attributes['武功']));
+  let p=0.20+(num(n['好感度'])-55)/100*1.1;                    // 好感 55→两成，满好感→七成
+  p+=num(c.power)/100*0.25+num(c.fame)/100*0.15;               // 门派有气象，人才肯来
+  p+=Math.max(-0.2,Math.min(0.2,(mine-num(n['武功']))/mine*0.35));
+  if(n.alignment&&c.alignment!=='中立'&&n.alignment!=='中立'&&n.alignment!==c.alignment) p-=0.22;
+  if(n.faction&&!/散人|^无$|^$/.test(n.faction)&&n.faction!==c.name) p-=0.18;   // 得先叛出旧门
+  p*= S.freedom==='free'?1.5:(S.freedom==='strict'?0.75:1);
+  return Math.max(0.05,Math.min(0.95,p));
+}
+// 名录里的人有多少斤两，折成资质
+function talentFromNpc(n){
+  const lv=Math.max(60,powerLevel());
+  return clamp(Math.round(num(n['武功'])/lv*10)+rnd(-1,1),1,10);
+}
+function recruitNpc(n){
+  const why=recruitBlock(n); if(why) return {ok:false,why};
+  const c=S.clan;
+  n.recruitTry=num(S.months);
+  if(Math.random()>=recruitOdds(n)){
+    n.recruitFail=num(n.recruitFail)+1;
+    n['好感度']=clamp(num(n['好感度'])-5);
+    return {ok:false,why:`${n.name}婉拒了——他还不想把这条命拴在你的招牌上`,refused:true};
+  }
+  const old=n.faction;
+  const d=makeDisciple({name:n.name, gender:n.gender, age:num(n.age)||rnd(20,40),
+    '武功':num(n['武功']), talent:talentFromNpc(n),
+    loyalty:clamp(30+Math.round(num(n['好感度'])*0.5)), from:'名录'});
+  d.npcName=n.name;
+  n.faction=c.name;
+  addDisciple(d,true);
+  news(`${n.name}投入${c.name}，拜在你门下`);
+  ledger(`${n.name}拜入${c.name}`);
+  if(old&&!/散人|^无$|^$/.test(old)&&old!==c.name){
+    news(`${n.name}为此离了${old}，那边未必肯善罢甘休`);
+    for(const o of S.npcs) if(o.alive&&o.faction===old&&o.name!==n.name) o['好感度']=clamp(num(o['好感度'])-12);
+    const f=factionOf(old); if(f) f.power=clamp(num(f.power)-2);
+  }
+  return {ok:true,d,old};
+}
+// 眼下够格招揽的人，按招得动的把握排
+function recruitCandidates(){
+  if(!hasClan()) return [];
+  return (S.npcs||[]).filter(n=>n.alive&&!recruitBlock(n))
+    .map(n=>({n,odds:recruitOdds(n)}))
+    .sort((a,b)=>b.odds-a.odds);
+}
+
+/* ---- 张榜招徒 ---- */
+function postCost(){ const c=clanOf(); return c?Math.max(30,Math.round(60+num(c.power)*4)):0; }
+function postBlock(){
+  const c=clanOf(); if(!c) return '你还没有自己的门派';
+  if(clanDisciples().length>=clanCap()) return '山门住不下更多人了';
+  const wait=6-(num(S.months)-num(c.lastPost==null?-99:c.lastPost));
+  if(wait>0) return `刚张过榜，且等 ${wait} 个月`;
+  if(num(c.treasury)+num(S.player.money)<postCost()) return `摆擂设宴待客要 ${postCost()} 两，凑不齐`;
+  return '';
+}
+function postRecruit(){
+  const why=postBlock(); if(why) return {ok:false,why};
+  const c=S.clan, cost=postCost();
+  if(num(c.treasury)>=cost) c.treasury=num(c.treasury)-cost;
+  else{ const short=cost-num(c.treasury); c.treasury=0; S.player.money=Math.max(0,num(S.player.money)-short); }
+  c.lastPost=num(S.months);
+  const pull=(num(c.power)*0.5+num(c.fame)*0.5)/100;
+  let n=1+(Math.random()<0.5?1:0)+(Math.random()<pull?1:0);
+  n=Math.max(1,Math.min(n,clanCap()-clanDisciples().length));
+  const got=[];
+  for(let i=0;i<n;i++){
+    // 张榜来的比自己摸上门的稍强些
+    const d=makeDisciple({from:'招募',talent:clamp(rollTalent()+rnd(0,2),1,10)});
+    addDisciple(d,true); got.push(d);
+  }
+  c.fame=clamp(num(c.fame)+2);
+  ledger(`${c.name}张榜招徒，耗银${cost}两，收了${got.map(d=>d.name).join('、')}`);
+  return {ok:true,got,cost};
+}
+
+/* ---- 战后收降（门派战调用） ---- */
+function takeDefector(o){
+  const c=clanOf(); if(!c) return null;
+  if(clanDisciples().length>=clanCap()) return null;
+  const d=makeDisciple({name:o.name,gender:o.gender,age:o.age,'武功':num(o['武功']),
+    talent:o.talent!=null?o.talent:clamp(rollTalent()+1,1,10),
+    loyalty:clamp(rnd(20,40)), from:'收降'});
+  d.hurt=clamp(num(o.hurt));
+  addDisciple(d,true);
+  news(`${d.name}放下兵器，归入${c.name}`);
+  return d;
 }
 
 /* ================= 伤残 ================= */
@@ -1836,6 +2500,22 @@ function isRelevantNpc(n){
   if(S.sect&&n.faction===S.sect.name&&/掌门|长老/.test(n.identity||'')) return true;
   return false;
 }
+// 本派状态：给模型看的一段。开着长记忆写全，短记忆只写一行
+function clanBlock(){
+  const c=clanOf(); if(!c) return '';
+  const ds=clanDisciples(), lng=(MEM()===MEM_PRESET.long);
+  const rivals=(typeof rivalFactions==='function')?rivalFactions():[];
+  if(!lng) return `\n【本派】${c.name}（${c.alignment}，${c.base||'山中'}），主角是掌门。门下${ds.length}人，势力${c.power}，威望${c.fame}${c.unified?'，已一统江湖':(c.leagueLeader?'，主角是武林盟主':'')}。门派的数字由引擎记账，你只管叙述，不要改。`;
+  const top=ds.slice().sort((a,b)=>num(b['武功'])-num(a['武功'])).slice(0,4)
+    .map(d=>`${d.name}(${d.rank}，${d.job}，武功${d['武功']}${num(d.hurt)>=50?'，重伤':''})`).join('、')||'尚无弟子';
+  const lastWar=(c.wars||[]).slice(-1)[0];
+  return `\n【本派】${c.name}——主角一手创立，他是掌门，这不是别人的门派。
+- 立场${c.alignment}，山门在${c.base||'山中'}${c.creed?`，门规「${c.creed}」`:''}；势力${c.power}，威望${c.fame}，公帐${c.treasury}两。
+- 门下${ds.length}人（能战${clanFighters().length}人）。挑得出头的：${top}。${(c.fallen||[]).length?`近来去的人：${c.fallen.slice(-4).map(x=>x.name+'('+x.how+')').join('、')}。`:''}
+- ${(c.annexed||[]).length?`已吞并：${c.annexed.join('、')}。`:''}${(c.allies||[]).length?`已臣服本派：${c.allies.join('、')}。`:''}${rivals.length?`尚未低头的：${rivals.map(f=>f.name).join('、')}。`:''}
+- ${c.unified?'主角已一统江湖，天下再无与之抗礼者。':(c.leagueLeader?'主角是当世武林盟主。':`战史 ${num(c.wins)} 胜 ${num(c.losses)} 负。`)}${lastWar?`最近一仗：${lastWar.result==='lose'?'败于':'胜'}${lastWar.foe}。`:''}
+- 写到门派时：弟子可以在剧情里说话、办事、出岔子、送命，这些都写得；但门派的势力、威望、公帐、弟子人数与武功全由引擎记账，不要在任何字段里改动，也不要凭空说门派壮大了或垮了。`;
+}
 function stateBlocks(){
   const p=S.player;
   const M=MEM();
@@ -1865,7 +2545,7 @@ function stateBlocks(){
 【终身旧伤（治不好，此后剧情须一直体现，不可写成痊愈）】${(S.scars||[]).length?S.scars.map(x=>x.name+'（'+x.text+'）').join('；'):'无'}
 【眼下的伤病（会自己好，引擎在倒计时，不必反复提，好了引擎会销）】${(S.ailments||[]).length?S.ailments.map(a=>`${a.name}${a.desc?'（'+a.desc+'）':''}——还需将养约${Math.max(1,Math.ceil(num(a.months)))}个月`).join('；'):'无'}
 【盯着主角的仇家】${(S.vendettas||[]).filter(v=>v.heat>0).length?S.vendettas.filter(v=>v.heat>0).map(v=>`${v.name}（${v.reason}，${vStateText(v)}）`).join('；'):'无'}——仇家要打上门来由引擎裁定，你不可自作主张写他突然出现动手；上面写「尚在远处」「不敢露面」的人，这一回合就不会到。
-【主角身世】${p.backstory}
+【主角身世】${p.backstory}${clanBlock()}
 【宿命】
 ${quests}
 【眼下要紧的人】${JSON.stringify(npcBrief)}
@@ -2590,8 +3270,11 @@ function applyTurn(d, action, judge){
   }
   for(const f of (d.factionUpdates||[])){
     const t=(S.world.factions||[]).find(x=>x.name===f.name);
-    if(t){ if(f.power) t.power=clamp(t.power+num(f.power)); if(f.leader) t.leader=f.leader; }
+    if(!t||t.own) continue;                      // 本派的数字只认引擎的账
+    if(f.power) t.power=clamp(t.power+num(f.power));
+    if(f.leader) t.leader=f.leader;
   }
+  if(typeof clanSyncFaction==='function') clanSyncFaction();
   // 地点没给就沿用旧的，但未了之事该进该出照样走——不再整块跳过
   if(d.scene&&typeof d.scene==='object'){
     const sc=sceneU();
@@ -2694,6 +3377,12 @@ const ACHIEVEMENTS=[
  ['quest3','宿命所归',s=>s.stats.questsDone>=3,'完成三条宿命'],
  ['turn30','半生江湖',s=>s.turn>=30,'走过三十回'],
  ['turn80','老江湖',s=>s.turn>=80,'走过八十回'],
+ ['clan','开宗立派',s=>!!(s.clan&&s.clan.name),'自立一派'],
+ ['disciple1','首徒',s=>!!(s.clan&&(s.clan.disciples||[]).some(d=>d.alive)),'收下第一个弟子'],
+ ['clan20','门庭若市',s=>!!(s.clan&&(s.clan.disciples||[]).filter(d=>d.alive).length>=20),'门下弟子满二十'],
+ ['annex','踏平一派',s=>!!(s.clan&&(s.clan.annexed||[]).length>=1),'吞并一个门派'],
+ ['league','武林盟主',s=>!!(s.clan&&s.clan.leagueLeader),'召开武林大会，获群雄推戴'],
+ ['unify','一统江湖',s=>!!(s.clan&&s.clan.unified),'江湖再无与你抗礼者'],
  ['near_death','大难不死',s=>s.player.hp<=10&&s.player.hp>0&&!s.over,'气血跌至10以下仍活着'],
 ];
 function checkAchievements(){
@@ -2764,7 +3453,7 @@ function startDuel(opp, o){
   const p=S.player;
   const oppW=clampW(opp['武功']+diff().opp);
   duel={
-    opp, lethal:!!o.lethal, reason:o.reason||'', action:o.action||`与${opp.name}比武`, judge:o.judge||null, vendetta:o.vendetta||null,
+    opp, lethal:!!o.lethal, reason:o.reason||'', action:o.action||`与${opp.name}比武`, judge:o.judge||null, vendetta:o.vendetta||null, war:!!o.war,
     pHp:p.hp, oHp:o.oppHp||100, pQi:clamp(50+wuNorm(p.attributes['武功'])/2), oQi:clamp(50+wuNorm(oppW)/2),
     oppW, pW:attrVal(p,'武功'), round:0, log:[], over:false, result:null, resultText:'', profile:oppProfile(opp), friendly:!!o.friendly
   };
@@ -2979,11 +3668,11 @@ function duelSys(t){ const el=document.createElement('div'); el.className='r sys
 // 比武结束后的「续写此战」面板（读档恢复时也用它）
 function showDuelGo(){
   $('duelActions').innerHTML=`<div class="duelend"><p>${esc(duel.resultText)}</p><button class="mbtn primary" id="duelGo">续写此战</button></div>`;
-  $('duelGo').onclick=()=>{ $('duelMask').classList.remove('on'); afterDuel(); };
+  $('duelGo').onclick=()=>{ $('duelMask').classList.remove('on'); if(duel&&duel.war) afterWarDuel(); else afterDuel(); };
 }
 function showDuelDeath(){
   $('duelActions').innerHTML=`<div class="duelend"><div class="verdict">殒命</div><p>${esc(duel.resultText)}</p><button class="mbtn primary" id="duelGo">盖棺定论</button></div>`;
-  $('duelGo').onclick=()=>{ $('duelMask').classList.remove('on'); finalizeDuelHp(); S.player.hp=0; S.duelState=null; S.recent.push({action:duel.action,narrative:'【比武实录】'+duel.log.map(r=>r.plain).join('\n')+'\n'+duel.resultText}); gameOverFlow(duel.resultText); };
+  $('duelGo').onclick=()=>{ $('duelMask').classList.remove('on'); finalizeDuelHp(); S.player.hp=0; S.duelState=null; war=null; S.war=null; S.recent.push({action:duel.action,narrative:'【比武实录】'+duel.log.map(r=>r.plain).join('\n')+'\n'+duel.resultText}); gameOverFlow(duel.resultText); };
 }
 // 胜后处置面板（留手/重创/杀）
 function showWinChoice(){
@@ -3128,6 +3817,451 @@ async function afterDuel(){
   const dl=duel;
   duel=null; S.duelState=null; saveGame();
   await runTurn(dl.action, judge, {duelData:dl});
+}
+
+/* ================= 门派对战 =================
+   三阵定胜负：先锋、中军由引擎逐对掷骰，真死人真伤残；
+   主将一阵直接开比武界面，你亲自对上人家掌门。 */
+let war=null;
+
+// 别派能拉出多少人、什么成色，按它的势力值现推
+function foeForce(f){
+  const lv=Math.max(100,powerLevel()), p=Math.max(5,num(f.power));
+  return {n:Math.max(4,Math.round(p/7)+rnd(1,3)), base:Math.round(lv*(0.22+p/100*0.55))};
+}
+function foeLeaderWu(f){
+  const lv=Math.max(100,powerLevel());
+  return clampW(Math.round(lv*(0.45+num(f.power)/100*0.60)));
+}
+// 对方掌门：名录里有就用名录里的，没有就现立一个
+function warLeaderNpc(f){
+  let n=f.leader?findNpc(f.leader):null;
+  if(n&&n.alive) return n;
+  const nm=(f.leader&&!n)?f.leader:makeRankName();
+  n=findNpc(nm);
+  if(!n||!n.alive){
+    n=normNpc({name:nm, gender:Math.random()<0.8?'男':'女', age:rnd(38,62),
+      identity:`${f.name}掌门`, faction:f.name, alignment:f.alignment||'中立',
+      personality:[pick(['威严','阴鸷','沉稳','刚烈','倨傲'])], appearance:'气度不凡',
+      '武功':foeLeaderWu(f), '谈吐':rnd(50,85), signature:pick(RK_NOTE),
+      relation:'素未谋面', '好感度':18, alive:true, secret:'', notes:`${f.name}之主`});
+    S.npcs.push(n);
+  }
+  f.leader=n.name;
+  return n;
+}
+function makeFoeFighters(f){
+  const ff=foeForce(f), out=[];
+  for(let i=0;i<ff.n;i++) out.push({
+    name:makeRankName(), gender:Math.random()<0.75?'男':'女', age:rnd(18,48),
+    '武功':clampW(Math.round(ff.base*(0.70+Math.random()*0.65))),
+    talent:clamp(Math.round(num(f.power)/12)+rnd(0,3),1,10),
+    hurt:0, alive:true
+  });
+  return out.sort((a,b)=>num(a['武功'])-num(b['武功']));
+}
+
+function warCost(f){ return Math.max(50,Math.round(40+num(f.power)*6)); }
+function myWarForce(){
+  const fs=clanFighters().filter(d=>d.job!=='护山').sort((a,b)=>num(b['武功'])-num(a['武功']));
+  return Math.round(num(S.player.attributes['武功'])*1.2+fs.slice(0,6).reduce((s,d)=>s+num(d['武功']),0));
+}
+function foeWarForce(f){
+  const ff=foeForce(f);
+  return Math.round(foeLeaderWu(f)*1.2+ff.base*Math.min(6,ff.n));
+}
+function warFieldable(){ return clanFighters().filter(d=>d.job!=='护山'); }
+function warBlock(f){
+  const c=clanOf();
+  if(!c) return '你还没有自己的门派';
+  if(!f) return '没有这个门派';
+  if(f.own) return '这是本派';
+  if(num(f.power)<=0) return `${f.name}已经名存实亡`;
+  const wait=6-(num(S.months)-num(c.lastWarMonth==null?-99:c.lastWarMonth));
+  if(wait>0) return `刚动过刀兵，门下要将养，且等 ${wait} 个月`;
+  if(warFieldable().length<3) return '能出征的人不足三个（护山弟子不外调），点不出一阵';
+  if(num(c.treasury)+num(S.player.money)<warCost(f)) return `粮饷要 ${warCost(f)} 两，凑不齐`;
+  return '';
+}
+
+/* ---- 一对一：战力＋骰，输的人死伤 ---- */
+function warHarsh(mine){ return mine?Math.max(0.12,fdm().injury):Math.max(0.5,fdm().injury); }
+function clash(a,b){
+  const av=num(a['武功'])+rollMod(d20())-Math.round(num(a.hurt)/4);
+  const bv=num(b['武功'])+rollMod(d20())-Math.round(num(b.hurt)/4);
+  const aWin=av>=bv, gap=Math.abs(av-bv);
+  const loser=aWin?b:a, winner=aWin?a:b;
+  const killP=Math.min(0.55,0.10+gap/280)*warHarsh(loser===a);
+  let dead=false;
+  if(Math.random()<killP){ loser.alive=false; dead=true; }
+  else loser.hurt=clamp(num(loser.hurt)+rnd(25,70));
+  if(Math.random()<0.35) winner.hurt=clamp(num(winner.hurt)+rnd(5,25));
+  return {aWin,dead,loser,winner,gap};
+}
+function warSys(t,cls){
+  if(!war) return;
+  war.log.push(t);
+  const el=$('warLog'); if(!el) return;
+  const d=document.createElement('div'); d.className='r '+(cls||''); d.innerHTML=t;
+  el.appendChild(d); el.scrollTop=el.scrollHeight;
+}
+
+/* ---- 出征 ---- */
+function startWar(foeName){
+  const c=clanOf();
+  const f=((S.world&&S.world.factions)||[]).find(x=>x.name===foeName);
+  const why=warBlock(f); if(why) return {ok:false,why};
+  const cost=warCost(f);
+  if(num(c.treasury)>=cost) c.treasury=num(c.treasury)-cost;
+  else{ const short=cost-num(c.treasury); c.treasury=0; S.player.money=Math.max(0,num(S.player.money)-short); }
+  c.lastWarMonth=num(S.months);
+  const leader=warLeaderNpc(f);
+  war={
+    foe:f.name, alignment:f.alignment||'中立', cost,
+    foeSide:makeFoeFighters(f), leaderName:leader.name, leaderWu:num(leader['武功']),
+    guards:clanFighters().filter(d=>d.job==='护山').length,
+    me:0, them:0, stage:'先锋', rounds:[], log:[],
+    myDead:[], myHurt:[], foeDead:[], foeHurt:[],
+    powerBefore:num(f.power), over:false, result:null
+  };
+  S.war=war; saveGame();
+  setDrawer(false);
+  openWarModal();
+  warSys(`你点起${warFieldable().length}名门人，兵发${esc(f.name)}。${war.guards?`${war.guards}名护山弟子留守${esc(c.base||'山门')}。`:'山门无人留守——这是个险棋。'}`,'sys');
+  warSys(`对方拉得出${war.foeSide.length}人，掌门${esc(leader.name)}武功${leader['武功']}。`,'sys');
+  return {ok:true};
+}
+
+// 一阵：三对三，人不够的空位算输
+function warRound(label, minePicked, foePicked){
+  let mw=0, tw=0;
+  warSys(`<b>【${label}阵】</b>`,'hd');
+  for(let i=0;i<3;i++){
+    const a=minePicked[i], b=foePicked[i];
+    if(!a&&!b) continue;
+    if(!a){ tw++; warSys(`本派无人应${esc(b.name)}这一阵，白白输了一场。`,'bad'); continue; }
+    if(!b){ mw++; warSys(`${esc(a.name)}无人可敌，这一场算本派的。`,'good'); continue; }
+    const r=clash(a,b);
+    const win=r.aWin;
+    const loser=r.loser, txt=r.dead?'当场毙命':(num(loser.hurt)>=60?'重伤倒地':'负伤退下');
+    if(win){ mw++; warSys(`${esc(a.name)}(${a['武功']}) 胜 ${esc(b.name)}(${b['武功']})，${esc(b.name)}${txt}。`,'good'); }
+    else   { tw++; warSys(`${esc(a.name)}(${a['武功']}) 败于 ${esc(b.name)}(${b['武功']})，${esc(a.name)}${txt}。`,'bad'); }
+    (r.dead?(loser.id?war.myDead:war.foeDead):(loser.id?war.myHurt:war.foeHurt)).push(loser.name);
+  }
+  if(mw>tw) war.me++; else if(tw>mw) war.them++;
+  warSys(`${label}阵：本派 ${mw} 胜 ${tw} 负，${mw>tw?'这一阵拿下了':(tw>mw?'这一阵丢了':'打成平手，双方各不算数')}。`,'sum');
+  war.rounds.push({label,mw,tw});
+  sweepGone();
+  return mw>tw;
+}
+function warVanguard(){
+  const mine=warFieldable().sort((a,b)=>num(a['武功'])-num(b['武功'])).slice(0,3);
+  const foe=war.foeSide.filter(x=>x.alive).sort((a,b)=>num(a['武功'])-num(b['武功'])).slice(0,3);
+  warRound('先锋',mine,foe);
+  war.stage='中军'; S.war=war; saveGame(); renderWarActions();
+}
+function warMain(){
+  const all=warFieldable().sort((a,b)=>num(b['武功'])-num(a['武功']));
+  const mine=all.slice(0,3);
+  if(all.length<=3&&all.length) warSys(`门下只剩这几个能站着的，只得再上一阵。`,'sys');
+  const foe=war.foeSide.filter(x=>x.alive).sort((a,b)=>num(b['武功'])-num(a['武功'])).slice(0,3);
+  warRound('中军',mine,foe);
+  war.stage='主将'; S.war=war; saveGame(); renderWarActions();
+}
+function warDuel(){
+  const f=((S.world&&S.world.factions)||[]).find(x=>x.name===war.foe);
+  const n=warLeaderNpc(f);
+  war.stage='主将进行中'; S.war=war; saveGame();
+  $('warMask').classList.remove('on');
+  const lethal = war.alignment==='邪道' || (S.clan&&S.clan.alignment==='邪道') || war.them>=2;
+  startDuel(n,{war:true, lethal, friendly:false,
+    reason:`两派交兵，你与${n.name}对阵于阵前`,
+    action:`率${S.clan.name}攻打${war.foe}，与其掌门${n.name}阵前对决`,
+    judge:{fate:d20(),check:null,worldEvent:pickWorldEvent(),months:2}});
+}
+
+/* ---- 战后清算 ---- */
+function settleWar(leaderWon){
+  const c=S.clan, w=war;
+  if(leaderWon) w.me++; else w.them++;
+  const won=w.me>w.them;
+  const kind = won ? (leaderWon?'rout':'pyrrhic') : 'lose';
+  w.result=kind;
+  const f=((S.world&&S.world.factions)||[]).find(x=>x.name===w.foe);
+  const fp=f?num(f.power):0;
+  const lines=[];
+  if(kind==='lose'){
+    c.losses=num(c.losses)+1;
+    const lost=Math.round(num(c.power)*0.25);
+    c.power=clamp(num(c.power)-lost);
+    const loot=Math.round(num(c.treasury)*0.4);
+    c.treasury=Math.max(0,num(c.treasury)-loot);
+    if(f) f.power=clamp(fp+6);
+    for(const d of clanDisciples()) d.loyalty=clamp(num(d.loyalty)-6);
+    addVendetta(w.leaderName,`你率${c.name}攻打${w.foe}未遂，梁子结下了`,false,45);
+    lines.push(`本派势力 -${lost}`,`公帐被掠 ${loot} 两`,`门下士气低落`);
+    news(`${c.name}攻打${w.foe}折戟，门下折损不少`);
+    ledger(`${c.name}攻${w.foe}败北`);
+  }else{
+    c.wins=num(c.wins)+1;
+    const take=Math.round(fp*(kind==='rout'?0.40:0.15));
+    const loot=Math.round(fp*(kind==='rout'?20:8));
+    c.power=clamp(num(c.power)+take);
+    c.treasury=num(c.treasury)+loot;
+    if(f) f.power=clamp(fp-take-(kind==='rout'?rnd(4,10):0));
+    lines.push(`本派势力 +${take}`,`缴获 ${loot} 两入公帐`);
+    // 收降
+    if(kind==='rout'){
+      const alive=w.foeSide.filter(x=>x.alive);
+      for(const x of alive){
+        if(clanDisciples().length>=clanCap()) break;
+        const p=0.30+Math.max(0,(num(S.player.attributes['武功'])-num(x['武功']))/Math.max(1,num(S.player.attributes['武功'])))*0.35;
+        if(Math.random()<p){ const d=takeDefector(x); if(d) w.taken=(w.taken||[]).concat(d.name); }
+      }
+      if((w.taken||[]).length) lines.push(`${w.taken.join('、')}归降`);
+    }
+    // 打没了就是吞并
+    if(f&&num(f.power)<=5){
+      c.annexed=(c.annexed||[]).concat(f.name);
+      S.world.factions=S.world.factions.filter(x=>x.name!==f.name);
+      c.power=clamp(num(c.power)+8);
+      lines.push(`${f.name}就此除名，并入${c.name}`);
+      news(`${w.foe}不复存在，其众尽归${c.name}`);
+      ledger(`${c.name}吞并${w.foe}`);
+      const ln=findNpc(w.leaderName);
+      if(ln&&ln.alive) addVendetta(ln.name,`你灭了他的${w.foe}，他不死不休`,true,80);
+    }else{
+      news(`${c.name}大破${w.foe}，江湖为之侧目`);
+      ledger(`${c.name}${kind==='rout'?'大破':'小胜'}${w.foe}`);
+      if(kind!=='rout'){ const ln=findNpc(w.leaderName); if(ln&&ln.alive) addVendetta(ln.name,`两派阵前结下的梁子`,false,40); }
+    }
+    for(const d of clanDisciples()) d.loyalty=clamp(num(d.loyalty)+5);
+  }
+  // 死在阵前的算在你头上
+  const killed=w.foeDead.length;
+  if(killed>=3) S.player['恶名']=clamp(num(S.player['恶名'])+Math.min(8,killed));
+  if(kind!=='lose'&&(S.clan.alignment==='正派')) S.player['侠名']=clamp(num(S.player['侠名'])+3);
+  c.wars=(c.wars||[]).concat([{foe:w.foe,month:num(S.months),result:kind,
+    score:`${w.me}:${w.them}`,myDead:w.myDead.slice(),foeDead:w.foeDead.slice(),taken:(w.taken||[]).slice()}]);
+  while(c.wars.length>20) c.wars.shift();
+  w.settle=lines;
+  clanSyncFaction();
+  unifyCheck();
+  checkAchievements();
+  return kind;
+}
+// 主将阵打完，接着把这一仗交给模型写
+async function afterWarDuel(){
+  finalizeDuelHp();
+  if(S.player.hp<=0) S.player.hp=1;
+  const dl=duel;
+  const leaderWon = dl.result==='win'||dl.result==='oppYield';
+  const kind=settleWar(leaderWon);
+  const w=war;
+  war=null; S.war=null; duel=null; S.duelState=null;
+  renderPanel(); saveGame();
+  const judge=dl.judge||{fate:d20(),check:null,worldEvent:null,months:2};
+  judge.duel=true;
+  await runTurn(dl.action, judge, {warData:{w,duel:dl,kind}});
+}
+
+function warResultText(kind){
+  return kind==='rout'?'大胜：阵也赢了，人也赢了'
+       :kind==='pyrrhic'?'惨胜：阵上占了上风，主将一场却输了，吞并不成，只讨得些赔偿'
+       :'败北：这一仗输了';
+}
+function warAftermathPrompt(action, judge, wd){
+  const w=wd.w, d=wd.duel, c=S.clan;
+  const log=d.log.map(r=>r.plain).join('\n');
+  return `${worldRules()}
+
+${stateBlocks()}
+
+【本回合起因】${action}
+【门派战实录（引擎已推演完毕，胜负已定，不可更改）】
+${c?c.name:'本派'}（${c?c.alignment:''}，势力${c?c.power:0}）攻打 ${w.foe}（${w.alignment}，战前势力${w.powerBefore}）
+${w.log.map(x=>String(x).replace(/<[^>]+>/g,'')).join('\n')}
+【主将阵·比武实录】
+对手：${w.leaderName}（${w.foe}掌门，武功${w.leaderWu}）
+${log}
+${d.resultText}
+【三阵总计】本派 ${w.me} 胜 ${w.them} 负——${warResultText(wd.kind)}
+【本派阵亡】${w.myDead.length?w.myDead.join('、'):'无'}
+【本派负伤】${w.myHurt.length?w.myHurt.join('、'):'无'}
+【对方阵亡】${w.foeDead.length?w.foeDead.join('、'):'无'}
+【归降本派】${(w.taken||[]).length?w.taken.join('、'):'无'}
+【引擎已结算】${(w.settle||[]).join('；')||'无'}
+【主角气血】${S.player.hp}/100
+【本回合其他判定】
+${judgeBlock(judge)}
+
+请把这一仗写成一段门派大战（400-650字）：
+- 按实录的顺序写，先锋、中军、主将三阵都要写到，阵亡和负伤的人要点名字，不许改写胜负、不许让死人活过来、不许让活人死。
+- 主将那一场按比武实录的回合铺陈，招式名用上（主角的武学：${(S.player.arts||[]).map(a=>a.name).join('、')||'无名野路子'}）。
+- 再写这一仗之后的江湖：两派门人的反应、旁观者怎么说、${w.foe}那边接下来会怎么样。
+- 门派的数字（势力、威望、公帐、弟子）全部由引擎记账，你只管叙述，不要在任何字段里改动它们；factionUpdates 只在本派与${w.foe}之外的第三方门派要表态时才用。
+- 数值变化如实写入playerChanges（气血hp已由引擎结算，不要再写hp）与npcUpdates。
+- duel字段必须为null；若主角已死则gameOver为true并写ending。
+- ${OPTIONS_RULE}
+
+${JSON_RULE}
+输出格式同常规回合：
+{"narrative":"","summary":"","scene":{"location":"","unresolved":[]},"check":null,
+"playerChanges":{"attributes":{},"fame":{"侠名":0,"恶名":0},"money":0,"skills":{},"artsAdd":[],"artsTrain":[],"statusAdd":[],"statusRemove":[],"itemsAdd":{},"itemsRemove":[]},
+"npcUpdates":[],"newNpcs":[],"npcEvents":[],"rumors":[],"newVendettas":[],"questUpdates":[],"newQuests":[],"rankingUpdates":[],"rankingAdd":[],"factionUpdates":[],"duel":null,"options":[],"gameOver":false,"ending":null}`;
+}
+
+/* ---- 别人打上门来：势力大了就有人惦记 ---- */
+function raidCheck(){
+  const c=clanOf(); if(!c||num(c.power)<30) return;
+  const foes=((S.world&&S.world.factions)||[]).filter(f=>!f.own&&num(f.power)>=25&&(c.allies||[]).indexOf(f.name)<0);
+  if(!foes.length) return;
+  let chance=0.035+num(c.power)/100*0.05;
+  if(c.alignment==='邪道') chance*=1.4;
+  if(Math.random()>=chance) return;
+  const f=pick(foes);
+  const guards=clanDisciples().filter(d=>d.job==='护山'&&num(d.hurt)<50);
+  // 来的是一队人，不是一个人——守山的人数与门派家底都算数
+  const base=foeForce(f).base;
+  const party=Math.max(3,Math.round(num(f.power)/12)+rnd(0,2));
+  const atk=Math.round(base*party*(0.85+Math.random()*0.35));
+  // 护山的顶在前头算足，其余人正在练功经商，只帮得上一点忙
+  const others=clanDisciples().filter(d=>d.job!=='护山'&&num(d.hurt)<50);
+  const def=Math.round(guards.reduce((s,d)=>s+num(d['武功']),0)*1.5
+            +others.reduce((s,d)=>s+num(d['武功']),0)*0.25
+            +num(S.player.attributes['武功'])*0.5
+            +num(c.power)*0.8);
+  const held=def>=atk;
+  if(held){
+    news(`${f.name}纠集${party}人夜里摸上${c.base||'山门'}，${guards.length?`${guards.length}名护山弟子`:'门中之人'}把他们挡了回去`);
+    c.fame=clamp(num(c.fame)+2);
+    for(const d of guards) if(Math.random()<0.4) d.hurt=clamp(num(d.hurt)+rnd(15,45));
+  }else{
+    const loot=Math.round(num(c.treasury)*0.25);
+    c.treasury=Math.max(0,num(c.treasury)-loot);
+    c.power=clamp(num(c.power)-rnd(3,8));
+    let hurtN=0, deadN=0;
+    for(const d of clanDisciples()){
+      if(Math.random()>=0.35) continue;
+      if(Math.random()<0.12*Math.max(0.3,fdm().injury)){ d.alive=false; deadN++; }
+      else { d.hurt=clamp(num(d.hurt)+rnd(20,55)); hurtN++; }
+    }
+    sweepGone();
+    news(`${f.name}纠集${party}人打上${c.base||'山门'}，${guards.length?'护山弟子挡不住':'山门竟无人留守'}，掠走${loot}两${deadN?`，折了${deadN}人`:''}${hurtN?`，另有${hurtN}人挂彩`:''}`);
+    ledger(`${f.name}袭山门，损${loot}两${deadN?`、折${deadN}人`:''}`);
+    const ln=f.leader?findNpc(f.leader):null;
+    if(ln&&ln.alive) addVendetta(ln.name,`他的人打上过你的山门`,false,30);
+  }
+}
+
+/* ================= 一统江湖 =================
+   两条路：武路把各派打光，文路召开武林大会让各派签下盟约。 */
+function rivalFactions(){
+  const c=clanOf(); if(!c) return [];
+  const allies=c.allies||[];
+  return ((S.world&&S.world.factions)||[]).filter(f=>!f.own&&num(f.power)>5&&allies.indexOf(f.name)<0);
+}
+function alliedFactions(){
+  const c=clanOf(); if(!c) return [];
+  return ((S.world&&S.world.factions)||[]).filter(f=>!f.own&&(c.allies||[]).indexOf(f.name)>=0);
+}
+function unifyCheck(){
+  const c=clanOf(); if(!c||c.unified) return false;
+  if(rivalFactions().length) return false;
+  // 防个万一：开局世界本来就空荡荡的，不算一统
+  if(((c.annexed||[]).length+(c.allies||[]).length)<1) return false;
+  if(num(c.power)<55) return false;
+  c.unified=true;
+  c.unifiedMonth=num(S.months);
+  c.unifiedWay=(c.allies||[]).length>(c.annexed||[]).length?'盟':'兵';
+  news(`${c.name}一统江湖，天下再无与之抗礼者`);
+  ledger(`${c.name}一统江湖（${c.unifiedWay==='盟'?'以盟约收服群雄':'以刀兵扫平诸派'}）`);
+  S.unifyPending=true;
+  checkAchievements();
+  return true;
+}
+
+/* ---- 武林大会 ---- */
+function leagueCost(){ const c=clanOf(); return c?Math.max(300,Math.round(300+num(c.power)*4)):0; }
+function leagueNeed(){
+  const c=clanOf(); if(!c) return [];
+  const rk=playerRank();
+  return [
+    {k:'威望', have:num(c.fame), need:85, ok:num(c.fame)>=85},
+    {k:'势力', have:num(c.power), need:70, ok:num(c.power)>=70},
+    {k:'江湖榜', have:rk==null?'未入榜':'第'+rk, need:'前三', ok:rk!=null&&rk<=3}
+  ];
+}
+function leagueBlock(){
+  const c=clanOf(); if(!c) return '你还没有自己的门派';
+  if(c.unified) return '江湖已经是你的了';
+  if(!rivalFactions().length) return '已无人可请';
+  const bad=leagueNeed().filter(x=>!x.ok);
+  if(bad.length) return bad.map(x=>`${x.k}不够（${x.have}／需${x.need}）`).join('，');
+  const wait=24-(num(S.months)-num(c.lastLeague==null?-99:c.lastLeague));
+  if(wait>0) return `上回大会才过去不久，且等 ${wait} 个月`;
+  if(num(c.treasury)+num(S.player.money)<leagueCost()) return `遍邀群雄、开销浩大，要 ${leagueCost()} 两，凑不齐`;
+  return '';
+}
+// 这一派肯不肯低头
+function submitOdds(f){
+  const c=clanOf(); if(!c||!f) return 0;
+  let p=0.18;
+  p+=Math.max(-0.35,Math.min(0.35,(num(c.power)-num(f.power))/100*0.9));
+  p+=(num(c.fame)-70)/100*0.6;
+  if(f.alignment===c.alignment) p+=0.12;
+  else if((f.alignment==='正派'&&c.alignment==='邪道')||(f.alignment==='邪道'&&c.alignment==='正派')) p-=0.25;
+  const ln=f.leader?findNpc(f.leader):null;
+  if(ln) p+=(num(ln['好感度'])-40)/100*0.5;
+  if((c.wars||[]).some(w=>w.foe===f.name&&w.result!=='lose')) p+=0.22;    // 手下败将好说话
+  if((c.wars||[]).some(w=>w.foe===f.name&&w.result==='lose')) p-=0.20;
+  if(ln&&(S.vendettas||[]).some(v=>v.name===ln.name&&v.lethal)) p-=0.40;  // 死仇不可能低头
+  p*= S.freedom==='free'?1.4:(S.freedom==='strict'?0.8:1);
+  return Math.max(0.03,Math.min(0.88,p));
+}
+function holdLeague(){
+  const why=leagueBlock(); if(why) return {ok:false,why};
+  const c=S.clan, cost=leagueCost();
+  if(num(c.treasury)>=cost) c.treasury=num(c.treasury)-cost;
+  else{ const short=cost-num(c.treasury); c.treasury=0; S.player.money=Math.max(0,num(S.player.money)-short); }
+  c.lastLeague=num(S.months);
+  c.leagueHeld=true;
+  const list=rivalFactions().slice();
+  const res=[];
+  for(const f of list){
+    const odds=submitOdds(f);
+    const yes=Math.random()<odds;
+    if(yes){
+      c.allies=(c.allies||[]).concat(f.name);
+      const ln=f.leader?findNpc(f.leader):null;
+      if(ln) ln['好感度']=clamp(num(ln['好感度'])+15);
+      news(`${f.name}在武林大会上签下盟约，奉${c.name}为尊`);
+    }else{
+      f.power=clamp(num(f.power)+5);
+      const ln=f.leader?findNpc(f.leader):null;
+      if(ln){ ln['好感度']=clamp(num(ln['好感度'])-10); addVendetta(ln.name,`他在武林大会上当众驳了你的面子`,false,28); }
+      news(`${f.name}当场拂袖而去，不肯奉${c.name}号令`);
+    }
+    res.push({name:f.name, alignment:f.alignment, odds, yes});
+  }
+  const yesN=res.filter(r=>r.yes).length;
+  if(yesN*2>res.length&&!c.leagueLeader){
+    c.leagueLeader=true;
+    c.fame=clamp(num(c.fame)+10);
+    S.player['侠名']=clamp(num(S.player['侠名'])+6);
+    news(`群雄推戴，${S.player.name}就此执掌武林盟主之位`);
+    ledger(`${S.player.name}当上武林盟主`);
+  }
+  const unified=unifyCheck();
+  clanSyncFaction(); checkAchievements();
+  return {ok:true,res,yesN,total:res.length,cost,unified,leader:!!c.leagueLeader};
+}
+// 盟下各派每年的供奉
+function allyTribute(){
+  const c=clanOf(); if(!c) return 0;
+  const n=alliedFactions().length;
+  if(!n) return 0;
+  return Math.round(n*(5+num(c.power)/25)*(c.leagueLeader?1.4:1));
 }
 
 /* ================= 对话的实效 =================
@@ -3472,14 +4606,25 @@ function renderPanel(){
       <div class="bar" style="height:5px"><i style="width:${lv}%;background:#8a6d2f"></i></div>
       <div class="idesc">${esc(a.desc||'')}${a.style?`　<span style="color:#8a7a60">（${esc(STYLE_DESC[a.style]||'')}）</span>`:''}</div></div>`;
   }).join(''):'<div class="empty">尚未习得武学</div>';
-  if(S.sect){
-    const f=factionOf(S.sect.name), rk=sectRank(S.sect.contrib), nx=sectNext(S.sect.contrib);
-    $('pSect').innerHTML=`<div class="artrow"><b>${esc(S.sect.name)}</b> <span class="trait">${esc(rk)}</span>
-      ${f?`<div class="idesc">${esc(f.alignment)} · 掌门${esc(f.leader||'不详')} · 势力${f.power}</div>`:''}
-      <div class="lab" style="display:flex;justify-content:space-between;font-size:12px;color:var(--ink-soft)"><span>门派贡献</span><span>${S.sect.contrib}${nx?' / '+nx.need:''}${deltaTag(lastDeltas['门派贡献'])}</span></div>
-      <div class="bar" style="height:5px"><i style="width:${nx?Math.min(100,S.sect.contrib/nx.need*100):100}%;background:#4a6b45"></i></div>
-      <div class="idesc">${nx?`再积 ${nx.need-S.sect.contrib} 贡献可升为${nx.name}`:'已至掌门之位'}　月例 ${sectStipend()} 两</div></div>`;
-  } else $('pSect').innerHTML='<div class="empty">无门无派，食宿全靠自己</div>';
+  if(hasClan()){
+    const c=S.clan;
+    $('pSect').innerHTML=`<div class="artrow"><b>${esc(c.name)}</b> <span class="trait">掌门</span>
+      <div class="idesc">${esc(c.alignment)} · ${esc(c.base||'山中')} · 势力 ${c.power} · 威望 ${c.fame}</div>
+      <div class="idesc">门下 ${clanDisciples().length} 人　公帐 ${c.treasury} 两</div></div>
+      <button class="mbtn" id="goClan" style="width:100%;margin-top:7px">打理门派</button>`;
+    const gb=$('goClan'); if(gb) gb.onclick=()=>gotoTab('clan');
+  } else {
+    const foundBtn=`<button class="mbtn" id="btnFound" style="width:100%;margin-top:7px">开宗立派</button>`;
+    if(S.sect){
+      const f=factionOf(S.sect.name), rk=sectRank(S.sect.contrib), nx=sectNext(S.sect.contrib);
+      $('pSect').innerHTML=`<div class="artrow"><b>${esc(S.sect.name)}</b> <span class="trait">${esc(rk)}</span>
+        ${f?`<div class="idesc">${esc(f.alignment)} · 掌门${esc(f.leader||'不详')} · 势力${f.power}</div>`:''}
+        <div class="lab" style="display:flex;justify-content:space-between;font-size:12px;color:var(--ink-soft)"><span>门派贡献</span><span>${S.sect.contrib}${nx?' / '+nx.need:''}${deltaTag(lastDeltas['门派贡献'])}</span></div>
+        <div class="bar" style="height:5px"><i style="width:${nx?Math.min(100,S.sect.contrib/nx.need*100):100}%;background:#4a6b45"></i></div>
+        <div class="idesc">${nx?`再积 ${nx.need-S.sect.contrib} 贡献可升为${nx.name}`:'已至掌门之位'}　月例 ${sectStipend()} 两</div></div>`+foundBtn;
+    } else $('pSect').innerHTML='<div class="empty">无门无派，食宿全靠自己</div>'+foundBtn;
+    const fb=$('btnFound'); if(fb) fb.onclick=openFound;
+  }
   const sk=Object.entries(p.skills||{});
   $('pSkills').innerHTML=sk.length?sk.map(([k,v])=>{
     const lv=skillLevel(v), ds=skillDesc(v), d=lastDeltas['技艺·'+k];
@@ -3488,7 +4633,8 @@ function renderPanel(){
   }).join(''):'<div class="empty">尚无一技之长</div>';
   $('pLooks').textContent=p.appearance||'—';
   $('pStory').textContent=p.backstory||'—';
-  renderBag(); renderPeople(); renderWorld();
+  renderBag(); renderPeople(); renderWorld(); renderClan();
+  if(S.unifyPending&&!busy&&!S.over){ S.unifyPending=false; setTimeout(()=>{ try{ showUnify(); }catch(e){} },400); }
 }
 function itemHtml(list,color,tag){
   if(!list||!list.length) return '<div class="empty">空空如也</div>';
@@ -3630,6 +4776,14 @@ function showNpc(n){
   $('npcTalkBtn').disabled=!n.alive||S.over; $('npcDuelBtn').disabled=!n.alive||S.over;
   $('npcTalkBtn').onclick=()=>openConvo(n);
   $('npcDuelBtn').onclick=()=>{ if(busy||S.over) return; $('npcMask').classList.remove('on'); startDuel(n,{friendly:true,lethal:false,reason:`你向${n.name}提出切磋武艺`,action:`向${n.name}提出切磋，二人动手比试`}); };
+  const rb=$('npcRecruitBtn');
+  if(rb){
+    const why=hasClan()?recruitBlock(n):'x';
+    rb.style.display=hasClan()?'':'none';
+    rb.disabled=!!why;
+    rb.textContent=why&&why!=='x'?'⛩ '+why:'⛩ 招入门下（'+Math.round(recruitOdds(n)*100)+'%）';
+    rb.onclick=()=>{ if(busy||S.over||why) return; $('npcMask').classList.remove('on'); doRecruit(n.name); };
+  }
   $('npcMask').classList.add('on');
 }
 function renderWorld(){
@@ -3812,6 +4966,355 @@ function renderOptions(opts){
     box.appendChild(b);
   });
   $('story').scrollTop=$('story').scrollHeight;
+}
+
+/* ================= 宗门界面 ================= */
+const CLAN_PRE=['青锋','天罡','无量','凌霄','玄音','断刃','听雨','白石','昆吾','不归','长歌','孤山','寒潭','铁衣','沧浪','余晖','拂尘','九曜','枕流','明月','惊蛰','木石','太华','燕归','素心'];
+const CLAN_SUF=['门','派','宫','堂','帮','教','山庄','剑阁','斋','阁'];
+const CLAN_BASE=['雁回山','听松崖','落梅坞','断云岭','白石涧','孤鹤峰','青竹坪','寒潭底','古道驿','废寺旧址','望乡台','石鼓塘','半山老观','沉沙渡','枕流溪'];
+const CREED_BY_ALIGN={
+  '正派':['锄强扶弱，不问出身','以武止戈，不开杀戒','义之所在，虽千万人吾往矣','门下不得恃强凌弱'],
+  '邪道':['强者为尊，弱者无声','恩怨分明，睚眦必报','取我所欲，不问是非','入我门者，生死自负'],
+  '中立':['只做买卖，不问善恶','进退有度，不结死仇','门中之事，门中了断','各凭本事，各安天命']
+};
+function randClanName(){
+  for(let i=0;i<30;i++){
+    const nm=pick(CLAN_PRE)+pick(CLAN_SUF);
+    if(!((S.world&&S.world.factions)||[]).some(f=>f.name===nm)) return nm;
+  }
+  return pick(CLAN_PRE)+pick(CLAN_PRE)+'派';
+}
+let foundSel={alignment:'中立'};
+function openFound(){
+  if(busy||!S||S.over) return;
+  const why=foundBlock();
+  const r=foundReq(), cost=Math.round(r.money*0.6);
+  $('foundWhy').innerHTML = why
+    ? `<span style="color:#9c2f24">${esc(why)}</span>`
+    : `置办山门需纹银 <b>${cost}</b> 两，立时扣除。`;
+  $('foundGo').disabled=!!why;
+  if(!$('foundName').value) $('foundName').value=randClanName();
+  if(!$('foundBase').value) $('foundBase').value=pick(CLAN_BASE);
+  foundSel.alignment=foundSel.alignment||'中立';
+  renderFoundSeg();
+  $('foundReq').innerHTML=`本局门槛：武功 ${r.wu}　名声 ${r.fame}（侠名或恶名取高者）　家财 ${r.money} 两`;
+  setDrawer(false);
+  $('foundMask').classList.add('on');
+}
+function renderFoundSeg(){
+  $('foundAlign').querySelectorAll('button').forEach(b=>b.classList.toggle('sel',b.dataset.v===foundSel.alignment));
+  const cur=$('foundCreed').value;
+  if(!cur||Object.values(CREED_BY_ALIGN).some(arr=>arr.includes(cur))) $('foundCreed').value=pick(CREED_BY_ALIGN[foundSel.alignment]);
+  $('foundAlignNote').textContent = foundSel.alignment==='正派'
+    ? '名门正派：供奉细水长流，你侠名越高门下越服你；行事乖张则人心先散。'
+    : foundSel.alignment==='邪道'
+      ? '邪道魔教：收保护费来钱快，但每月折损侠名；门下靠威慑压着，怯而不叛。'
+      : '中立帮会：不沾两头，进项居中，门下只认规矩不认善恶。';
+}
+function doFound(){
+  const res=foundClan({name:$('foundName').value, alignment:foundSel.alignment, creed:$('foundCreed').value, base:$('foundBase').value});
+  if(!res.ok){ toast(res.why); return; }
+  $('foundMask').classList.remove('on');
+  checkAchievements();
+  renderPanel(); saveGame();
+  toast('✦ '+S.clan.name+' 自今日立','ach');
+  // 开山这件事得让模型写成一回
+  act(`在${S.clan.base||'山中'}开宗立派，自立${S.clan.name}（${S.clan.alignment}），立下门规「${S.clan.creed}」，遍请江湖人物观礼`,null);
+}
+
+/* ---- 花名册 ---- */
+let clanSort='武功';
+const SORTERS={
+  '武功':(a,b)=>num(b['武功'])-num(a['武功']),
+  '资质':(a,b)=>num(b.talent)-num(a.talent),
+  '忠诚':(a,b)=>num(b.loyalty)-num(a.loyalty),
+  '位阶':(a,b)=>CLAN_RANKS.indexOf(b.rank)-CLAN_RANKS.indexOf(a.rank)||num(b['武功'])-num(a['武功']),
+  '入门':(a,b)=>num(a.joinedMonth)-num(b.joinedMonth)
+};
+const JOB_ICON={'修炼':'✦','授艺':'✎','护山':'⛨','云游':'⛰','经商':'❋'};
+function talentWord(t){ t=num(t); return t>=9?'天纵':(t>=7?'上乘':(t>=5?'中平':(t>=3?'平庸':'愚钝'))); }
+function loyWord(l){ l=num(l); return l>=80?'死忠':(l>=60?'归心':(l>=40?'安分':(l>=20?'心浮':'离意已决'))); }
+function renderClan(){
+  const btn=$('tabClanBtn'); if(!btn) return;
+  const c=clanOf();
+  btn.style.display=c?'':'none';
+  if(!c){
+    // 门派没了（比如被灭），别把人卡在一个空页签上
+    if($('tab-clan').classList.contains('on')){
+      document.querySelectorAll('#tabs button').forEach(x=>x.classList.remove('on'));
+      document.querySelectorAll('.tabpane').forEach(x=>x.classList.remove('on'));
+      const pb=document.querySelector('#tabs button[data-tab="panel"]'); if(pb) pb.classList.add('on');
+      $('tab-panel').classList.add('on');
+    }
+    return;
+  }
+  const ds=clanDisciples(), fit=clanFighters();
+  const net=clanNet();
+  $('cSect').innerHTML=`
+    <div class="artrow" style="border:none;padding-top:0">
+      <b style="font-size:17px">${esc(c.name)}</b> <span class="trait">${esc(c.alignment)}</span>
+      <div class="idesc">${esc(c.base||'山中')} · 立派于${esc(dateOf(S.ganzhi||0,num(c.founded)))} · 掌门${esc(S.player.name)}</div>
+      ${c.creed?`<div class="idesc" style="color:var(--gold)">门规：${esc(c.creed)}</div>`:''}
+    </div>
+    <div class="lab" style="display:flex;justify-content:space-between;font-size:12px;color:var(--ink-soft);margin-top:6px"><span>势力</span><span>${c.power}</span></div>
+    <div class="bar" style="height:6px"><i style="width:${c.power}%;background:${c.alignment==='邪道'?'#5a3a6a':c.alignment==='正派'?'#4a6b45':'#7a6a50'}"></i></div>
+    <div class="lab" style="display:flex;justify-content:space-between;font-size:12px;color:var(--ink-soft);margin-top:5px"><span>威望</span><span>${c.fame}</span></div>
+    <div class="bar" style="height:6px"><i style="width:${c.fame}%;background:#8a6d2f"></i></div>
+    <div class="clanline"><span>公帐</span><b>${c.treasury} 两</b></div>
+    <div class="clanline"><span>上回进出</span><b style="color:${net>=0?'var(--green)':'#9c2f24'}">进 ${c.lastIncome} · 出 ${c.lastCost}${num(c.lastUnpaid)>0?`　<span style="color:#9c2f24">欠饷 ${c.lastUnpaid}</span>`:''}</b></div>
+    <div class="clanline"><span>门下</span><b>${ds.length} / ${clanCap()} 人　能战 ${fit.length} 人</b></div>
+    <div style="font-size:12px;color:var(--ink-soft);margin-top:5px;line-height:1.6">月入按 势力＋威望＋经商弟子 算，月支按 位阶＋山门维护 算。公帐不够先掏你自己的腰包，都不够就是欠饷——门下会寒心，久了要散。</div>`;
+
+  const head=`<div class="csort">${Object.keys(SORTERS).map(k=>`<button data-s="${k}" class="${clanSort===k?'on':''}">${k}</button>`).join('')}
+    <button class="auto" id="cAuto" title="按资质与武功自动分派职务">一键分派</button></div>`;
+  $('cRoster').innerHTML = head + (ds.length
+    ? ds.slice().sort(SORTERS[clanSort]||SORTERS['武功']).map(d=>{
+        const cap=discCap(d), hurt=num(d.hurt);
+        return `<div class="disc${hurt>=50?' hurt':''}" data-id="${esc(d.id)}">
+          <div class="dl">
+            <span class="dn">${esc(d.name)}<small>${d.rank}·${JOB_ICON[d.job]||''}${d.job}${hurt>0?`　<i style="color:#9c2f24;font-style:normal">伤${hurt}</i>`:''}</small></span>
+            <span class="dv">${d['武功']}<small>/${cap}</small></span>
+          </div>
+          <div class="bar" style="height:5px"><i style="width:${Math.min(100,d['武功']/Math.max(1,cap)*100)}%;background:#9c2f24"></i></div>
+          <div class="dmeta"><span>资质 ${d.talent}·${talentWord(d.talent)}</span><span>忠诚 ${d.loyalty}·${loyWord(d.loyalty)}</span></div>
+        </div>`;
+      }).join('')
+    : '<div class="empty">门下尚无弟子。势力与威望越高，慕名上山的人越多；也可以去人脉里招揽熟人。</div>')
+    + ((c.fallen||[]).length?`<div style="font-size:12px;color:var(--ink-soft);margin-top:6px;border-top:1px dashed var(--paper-edge);padding-top:5px">来去之人：${c.fallen.slice(-8).map(x=>esc(x.name)+'（'+x.how+'）').join('、')}</div>`:'');
+  $('cRoster').querySelectorAll('.csort button[data-s]').forEach(b=>b.onclick=()=>{ clanSort=b.dataset.s; renderClan(); });
+  const ab=$('cAuto'); if(ab) ab.onclick=()=>{
+    if(!clanDisciples().length){ toast('门下还没人'); return; }
+    const n=autoAssignJobs();
+    saveGame(); renderClan();
+    toast(n?`调了 ${n} 个人的差事`:'原本就分派得当，没什么可调的');
+  };
+  $('cRoster').querySelectorAll('.disc').forEach(el=>el.onclick=()=>showDisc(el.dataset.id));
+  renderRecruit(); renderLeague(); renderWarCard();
+}
+
+/* ---- 单个弟子 ---- */
+let discSel=null;
+function showDisc(id){
+  const c=clanOf(); if(!c) return;
+  const d=clanDisciples().find(x=>x.id===id); if(!d) return;
+  discSel=d;
+  const cap=discCap(d), mine=num(S.player.attributes['武功']);
+  $('discTitle').textContent=d.name;
+  $('discSub').textContent=`${d.gender} · ${d.age}岁 · ${d.rank} · 入门于${dateOf(S.ganzhi||0,num(d.joinedMonth))}`;
+  $('discBody').innerHTML=`
+    <div class="nrow"><b>武功</b><span>${d['武功']}　<small style="color:var(--ink-soft)">此生到顶 ${cap}${cap>=mine-1?'（已逼到你身后）':''}</small></span></div>
+    <div class="nrow"><b>资质</b><span>${d.talent} · ${talentWord(d.talent)}</span></div>
+    <div class="nrow"><b>忠诚</b><span>${d.loyalty} · ${loyWord(d.loyalty)}　<small style="color:var(--ink-soft)">他最多能服你 ${loyaltyCeil(d)} 分</small></span></div>
+    ${num(d.hurt)>0?`<div class="nrow"><b>伤势</b><span style="color:#9c2f24">${d.hurt}${num(d.hurt)>=50?'　重伤，不能出战':'　将养中'}</span></div>`:''}
+    <div class="nrow"><b>来历</b><span>${esc(d.from)}</span></div>
+    <div class="field" style="margin-top:14px"><label>差事</label>
+      <div class="seg wrap" id="discJob">${CLAN_JOBS.map(j=>`<button data-v="${j}" class="${d.job===j?'sel':''}">${j}</button>`).join('')}</div>
+      <div class="note" id="discJobNote">${esc(JOB_DESC[d.job]||'')}</div></div>
+    <div class="field"><label>位阶　<small style="color:var(--ink-soft)">位阶越高月例越贵，但他也越服你</small></label>
+      <div class="seg wrap" id="discRank">${CLAN_RANKS.map(rk=>{
+        const left=rankQuotaLeft(rk), full=rk!=='弟子'&&left<=0&&d.rank!==rk;
+        return `<button data-v="${rk}" class="${d.rank===rk?'sel':''}" ${full?'disabled style="opacity:.4"':''}>${rk}${rk==='弟子'?'':`<small style="display:block;font-size:10px;letter-spacing:0">月例${RANK_COST[rk]}两</small>`}</button>`;
+      }).join('')}</div></div>`;
+  $('discJob').querySelectorAll('button').forEach(b=>b.onclick=()=>{
+    setDiscJob(d,b.dataset.v);
+    $('discJob').querySelectorAll('button').forEach(x=>x.classList.toggle('sel',x.dataset.v===d.job));
+    $('discJobNote').textContent=JOB_DESC[d.job]||'';
+    saveGame(); renderClan();
+  });
+  $('discRank').querySelectorAll('button').forEach(b=>b.onclick=()=>{
+    const err=setDiscRank(d,b.dataset.v);
+    if(err){ toast(err); return; }
+    saveGame(); renderClan(); showDisc(d.id);
+  });
+  $('discMask').classList.add('on');
+}
+function expelSel(){
+  const d=discSel; if(!d) return;
+  if(!confirm(`将${d.name}逐出门墙？门下人人看着，士气要掉。`)) return;
+  expelDisciple(d);
+  $('discMask').classList.remove('on');
+  saveGame(); renderClan(); renderPanel();
+}
+
+
+/* ---- 招徕卡（宗门页） ---- */
+function renderRecruit(){
+  const el=$('cRecruit'); if(!el) return;
+  const c=clanOf(); if(!c){ el.innerHTML=''; return; }
+  const pb=postBlock(), full=clanDisciples().length>=clanCap();
+  const cands=recruitCandidates().slice(0,8);
+  el.innerHTML=`
+    <div class="clanline"><span>张榜招徒</span><b>${postCost()} 两</b></div>
+    <div style="font-size:12.5px;color:var(--ink-soft);margin:3px 0 7px;line-height:1.6">摆下擂台、设宴待客，一次能招进一到三人，来的比自己摸上山的稍强些，还能添两分威望。六个月只能张一次榜。</div>
+    <button class="mbtn" id="cPost" style="width:100%" ${pb?'disabled':''}>${pb?esc(pb):'张榜招徒'}</button>
+    <div style="margin-top:12px;border-top:1px dashed var(--paper-edge);padding-top:8px">
+      <div style="font-size:13px;color:var(--ink-soft);margin-bottom:5px">名录里够格招揽的人${full?'（山门已满）':''}</div>
+      ${cands.length?cands.map(({n,odds})=>`
+        <div class="cand">
+          <span class="cn">${esc(n.name)}<small>${esc(n.identity||'江湖客')} · ${esc(n.faction||'散人')} · 武功${n['武功']} · 好感${n['好感度']}</small></span>
+          <span class="co">${Math.round(odds*100)}%</span>
+          <button class="mbtn" data-rc="${esc(n.name)}" style="flex:0 0 auto;padding:3px 9px;font-size:12px;letter-spacing:1px" ${full?'disabled':''}>招揽</button>
+        </div>`).join('')
+      :'<div class="empty">眼下没人够格——交情要到 55，武功还得在你之下，一派之主也请不动</div>'}
+      <div style="font-size:12px;color:var(--ink-soft);margin-top:5px">把握看交情、看你压不压得住他、看门派有没有气象；立场相左、原本另有师门都要打折扣。被回绝了要隔一年才好再开口。</div>
+    </div>`;
+  const b=$('cPost');
+  if(b&&!pb) b.onclick=()=>{
+    const r=postRecruit();
+    if(!r.ok){ toast(r.why); return; }
+    saveGame(); renderPanel();
+    act(`在${S.clan.base||'山门'}外张榜招徒，摆下擂台设宴待客，${r.got.map(d=>d.name).join('、')}等${r.got.length}人拜入${S.clan.name}`,null);
+  };
+  el.querySelectorAll('button[data-rc]').forEach(x=>x.onclick=()=>doRecruit(x.dataset.rc));
+}
+function doRecruit(name){
+  const n=findNpc(name); if(!n) return;
+  const odds=recruitOdds(n);
+  if(!confirm(`请${n.name}拜入${S.clan.name}？把握约 ${Math.round(odds*100)}%。开了口就不好收回——被回绝要隔一年才好再提，交情也要折损几分。`)) return;
+  const r=recruitNpc(n);
+  saveGame(); renderPanel();
+  if(!r.ok){
+    toast(r.why);
+    if(r.refused) act(`向${n.name}开口，请他拜入${S.clan.name}，被婉拒了`,null);
+    return;
+  }
+  toast(`✦ ${n.name}拜入${S.clan.name}`,'ach');
+  act(`向${n.name}开口，请他拜入${S.clan.name}，他应下了${r.old&&!/散人|^无$|^$/.test(r.old)?`，为此离了${r.old}`:''}`,null);
+}
+
+
+/* ---- 征伐卡与战阵弹窗 ---- */
+function renderWarCard(){
+  const el=$('cWar'); if(!el) return;
+  const c=clanOf(); if(!c){ el.innerHTML=''; return; }
+  const fs=((S.world&&S.world.factions)||[]).filter(f=>!f.own);
+  const mine=myWarForce();
+  el.innerHTML=`
+    <div class="clanline"><span>本派可战之力</span><b>${mine}</b></div>
+    <div style="font-size:12.5px;color:var(--ink-soft);margin:3px 0 8px;line-height:1.6">出征的是除护山弟子之外的人。三阵两胜定胜负：先锋、中军由门人厮杀，主将一阵你亲自上。赢了阵还得赢人，才谈得上吞并。</div>
+    ${fs.length?fs.map(f=>{
+      const allied=(c.allies||[]).indexOf(f.name)>=0;
+      const why=allied?'已臣服本派':warBlock(f), ff=foeWarForce(f), odd=mine/Math.max(1,mine+ff);
+      return `<div class="foe">
+        <div class="fl"><span><b>${esc(f.name)}</b> <small>${esc(f.alignment)} · ${esc(f.leader||'掌门不详')}</small></span><small>势力 ${f.power}</small></div>
+        <div class="bar" style="height:6px"><i style="width:${Math.round(odd*100)}%;background:${odd>=0.6?'#4a6b45':odd>=0.45?'#8a6d2f':'#9c2f24'}"></i></div>
+        <div class="fmeta"><span>敌 ${ff} · 我 ${mine}　${odd>=0.62?'稳操胜券':odd>=0.52?'略占上风':odd>=0.45?'胜负难料':odd>=0.35?'不容乐观':'以卵击石'}</span>
+          <button class="mbtn" data-war="${esc(f.name)}" ${why?'disabled':''} title="${esc(why)}">${why?esc(why.length>12?why.slice(0,12)+'…':why):'出兵 '+warCost(f)+'两'}</button></div>
+      </div>`;
+    }).join(''):'<div class="empty">江湖上已无别派——该去看看「一统江湖」了</div>'}
+    ${(c.annexed||[]).length?`<div style="font-size:12px;color:var(--gold);margin-top:6px;border-top:1px dashed var(--paper-edge);padding-top:5px">已吞并：${c.annexed.map(esc).join('、')}</div>`:''}
+    ${(c.wars||[]).length?`<div style="font-size:12px;color:var(--ink-soft);margin-top:5px">战史：${c.wars.slice(-6).map(x=>esc(x.foe)+(x.result==='lose'?'（败）':x.result==='rout'?'（大胜）':'（惨胜）')).join('、')}</div>`:''}`;
+  el.querySelectorAll('button[data-war]').forEach(b=>b.onclick=()=>askWar(b.dataset.war));
+}
+function askWar(name){
+  if(busy||!S||S.over) return;
+  const f=((S.world&&S.world.factions)||[]).find(x=>x.name===name); if(!f) return;
+  const why=warBlock(f); if(why){ toast(why); return; }
+  const g=clanFighters().filter(d=>d.job==='护山').length;
+  if(!confirm(`发兵攻打${f.name}？\n\n粮饷 ${warCost(f)} 两，出征 ${warFieldable().length} 人，留守 ${g} 人。\n门人会死，你自己也要上阵。这一去不能回头。`)) return;
+  const r=startWar(name);
+  if(!r.ok) toast(r.why);
+}
+function openWarModal(){
+  $('warTitle').textContent=`${S.clan.name} × ${war.foe}`;
+  $('warSub').textContent=`本派 ${war.me} 胜 ${war.them} 负　三阵两胜`;
+  $('warLog').innerHTML=war.log.map(t=>`<div class="r">${t}</div>`).join('');
+  $('warMask').classList.add('on');
+  renderWarActions();
+}
+function renderWarActions(){
+  if(!war) return;
+  $('warSub').textContent=`本派 ${war.me} 胜 ${war.them} 负　三阵两胜　已折 ${war.myDead.length} 人`;
+  const el=$('warActions');
+  const btn=(id,txt,cls)=>`<button class="mbtn ${cls||''}" id="${id}" style="width:100%">${txt}</button>`;
+  if(war.stage==='先锋'){
+    el.innerHTML=btn('wGo','先锋出阵','primary');
+    $('wGo').onclick=()=>{ $('wGo').disabled=true; warVanguard(); };
+  }else if(war.stage==='中军'){
+    el.innerHTML=btn('wGo','中军出阵','primary');
+    $('wGo').onclick=()=>{ $('wGo').disabled=true; warMain(); };
+  }else if(war.stage==='主将'){
+    const need=war.me>=2?'两阵已胜，但赢了阵还得赢人——吞并要看你这一场':
+               war.them>=2?'两阵已失，只剩你这一场了':'一胜一负，这一场定胜负';
+    el.innerHTML=`<div style="font-size:13px;color:var(--ink-soft);margin-bottom:7px;text-align:center">${need}</div>`
+      +btn('wGo','点将——你亲自上','primary');
+    $('wGo').onclick=warDuel;
+  }else el.innerHTML='';
+}
+
+
+/* ---- 武林大会与终局屏 ---- */
+function renderLeague(){
+  const el=$('cLeague'); if(!el) return;
+  const c=clanOf(); if(!c){ el.innerHTML=''; return; }
+  const rivals=rivalFactions(), allies=alliedFactions();
+  if(c.unified){
+    el.innerHTML=`<div style="text-align:center;padding:6px 0">
+      <div style="font-size:19px;color:var(--gold);letter-spacing:6px;font-weight:700">一 统 江 湖</div>
+      <div style="font-size:13px;color:var(--ink-soft);margin-top:5px">${c.unifiedWay==='盟'?'群雄俯首，盟约在手':'诸派扫平，再无异声'}</div></div>
+      <button class="mbtn" id="cUnifyView" style="width:100%;margin-top:8px">看看这份江山</button>`;
+    const b=$('cUnifyView'); if(b) b.onclick=showUnify;
+    return;
+  }
+  const why=leagueBlock();
+  el.innerHTML=`
+    <div style="font-size:12.5px;color:var(--ink-soft);margin-bottom:7px;line-height:1.6">两条路：把各派一家家打光，或者威望够了召开武林大会，让他们自己签下盟约。不服的当场翻脸。</div>
+    <div class="clanline"><span>武路</span><b>还剩 ${rivals.length} 家未服${(c.annexed||[]).length?`（已吞并 ${c.annexed.length} 家）`:''}</b></div>
+    <div class="clanline"><span>文路</span><b>${c.leagueLeader?'你已是武林盟主':'尚未推戴盟主'}${allies.length?`　已臣服 ${allies.length} 家`:''}</b></div>
+    ${leagueNeed().map(x=>`<div class="clanline"><span>${x.k}</span><b style="color:${x.ok?'var(--green)':'var(--ink-soft)'}">${x.have} / ${x.need}${x.ok?' ✓':''}</b></div>`).join('')}
+    <div class="clanline"><span>开销</span><b>${leagueCost()} 两</b></div>
+    <button class="mbtn ${why?'':'gold'}" id="cLeagueGo" style="width:100%;margin-top:8px" ${why?'disabled':''}>${why?esc(why):'召开武林大会'}</button>
+    ${allies.length?`<div style="font-size:12px;color:var(--gold);margin-top:6px">盟下：${allies.map(f=>esc(f.name)).join('、')}　每年供奉 ${allyTribute()} 两</div>`:''}`;
+  const b=$('cLeagueGo');
+  if(b&&!why) b.onclick=()=>{
+    if(!confirm(`遍邀群雄，开销 ${leagueCost()} 两。肯低头的签下盟约，不肯的当场翻脸——从此就是死对头。确定？`)) return;
+    const r=holdLeague();
+    if(!r.ok){ toast(r.why); return; }
+    saveGame(); renderPanel();
+    showLeagueResult(r);
+  };
+}
+function showLeagueResult(r){
+  $('leagueTitle').textContent='武林大会';
+  $('leagueSub').textContent=`${r.total} 家赴会，${r.yesN} 家签了盟约`;
+  $('leagueBody').innerHTML=r.res.map(x=>`
+    <div class="lrow ${x.yes?'yes':'no'}">
+      <span class="ln">${esc(x.name)}<small>${esc(x.alignment)}</small></span>
+      <span class="lo">${Math.round(x.odds*100)}%</span>
+      <span class="lv">${x.yes?'签':'拂袖'}</span>
+    </div>`).join('')
+    + (r.leader?`<div style="margin-top:10px;text-align:center;color:var(--gold);letter-spacing:3px;font-weight:700">群雄推戴　武林盟主</div>`:'')
+    + `<div style="font-size:12.5px;color:var(--ink-soft);margin-top:8px;line-height:1.6">${
+        r.unified?'再无一家不服——江湖是你的了。':
+        r.res.some(x=>!x.yes)?'不肯低头的那几家，往后要么再开一次大会，要么就只能刀兵相见。':'各派都签了。'}</div>`;
+  $('leagueMask').classList.add('on');
+  $('leagueGo').onclick=()=>{
+    $('leagueMask').classList.remove('on');
+    const yes=r.res.filter(x=>x.yes).map(x=>x.name), no=r.res.filter(x=>!x.yes).map(x=>x.name);
+    act(`以${S.clan.name}的名义召开武林大会，遍邀群雄。${yes.length?yes.join('、')+'签下盟约，奉本派为尊；':''}${no.length?no.join('、')+'当场拂袖而去，不肯低头。':''}${r.leader?'群雄推戴，你就此执掌武林盟主之位。':''}`,null);
+  };
+}
+function showUnify(){
+  const c=clanOf(); if(!c) return;
+  const ds=clanDisciples();
+  $('unifyBody').innerHTML=`
+    <div class="nrow"><b>门派</b><span>${esc(c.name)}（${esc(c.alignment)}）　${esc(c.base||'')}</span></div>
+    <div class="nrow"><b>历时</b><span>立派 ${Math.max(1,Math.round((num(c.unifiedMonth||S.months)-num(c.founded))/12*10)/10)} 年，走过 ${S.turn} 回</span></div>
+    <div class="nrow"><b>门下</b><span>${ds.length} 人　长老 ${ds.filter(d=>d.rank==='长老').length} 人　公帐 ${c.treasury} 两</span></div>
+    <div class="nrow"><b>吞并</b><span>${(c.annexed||[]).length?(c.annexed||[]).map(esc).join('、'):'无'}</span></div>
+    <div class="nrow"><b>臣服</b><span>${(c.allies||[]).length?(c.allies||[]).map(esc).join('、'):'无'}</span></div>
+    <div class="nrow"><b>战史</b><span>${num(c.wins)} 胜 ${num(c.losses)} 负${(c.fallen||[]).filter(x=>x.how==='亡故').length?`　门下阵亡 ${(c.fallen||[]).filter(x=>x.how==='亡故').length} 人`:''}</span></div>
+    <div class="nrow"><b>评分</b><span>${scoreOf()}　成就 ${S.achievements.length} 项</span></div>
+    <div style="font-size:13px;color:var(--ink-soft);margin-top:12px;line-height:1.75">${
+      c.unifiedWay==='盟'?'你没把江湖杀光，只是让所有人都同意，话该由你来说。往后的日子，是坐这把椅子的日子。'
+                        :'刀兵所至，诸派俯首。江湖清净了——清净得有点空。'}</div>`;
+  $('unifyMask').classList.add('on');
+  $('unifyStay').onclick=()=>{ $('unifyMask').classList.remove('on'); };
+  $('unifyEnd').onclick=()=>{
+    if(!confirm('就此收官，为这一生立传？立传之后这一局就结束了。')) return;
+    $('unifyMask').classList.remove('on');
+    gameOverFlow(`${S.player.name}以${S.clan.name}一统江湖，${S.clan.unifiedWay==='盟'?'群雄俯首奉其号令':'诸派尽为其所并'}，此后江湖再无与之抗礼者。`);
+  };
 }
 
 /* ================= 流程 ================= */
@@ -4093,11 +5596,12 @@ async function act(action, opt){
 async function runTurn(action, judge, extra){
   extra=extra||{};
   $('choices').innerHTML='';
-  setBusy(true, extra.duelData?'刀光剑影，正在记下这一战……':'笔走龙蛇，正在推演江湖……');
+  setBusy(true, extra.warData?'两派交兵，正在记下这一仗……':(extra.duelData?'刀光剑影，正在记下这一战……':'笔走龙蛇，正在推演江湖……'));
   beginChapter('第 '+cnNum(S.turn)+' 回',S.date,action,judge);
   S.pending={action,judge,duelData:extra.duelData?{opp:extra.duelData.opp,log:extra.duelData.log,resultText:extra.duelData.resultText}:null}; saveGame();
   try{
-    const prompt=extra.duelData?duelAftermathPrompt(action,judge,extra.duelData):turnPrompt(action,judge);
+    const prompt=extra.warData?warAftermathPrompt(action,judge,extra.warData)
+               :extra.duelData?duelAftermathPrompt(action,judge,extra.duelData):turnPrompt(action,judge);
     const consumedNews=(S.engineNews||[]).slice();
     const d=fixNames(await llmJSON(prompt,raw=>{ const t=extractPartialField(raw,'narrative'); if(t) updateChapterNarrative(t); }));
     updateChapterNarrative(d.narrative);
@@ -4308,19 +5812,31 @@ function loadGame(){
     $('choices').prepend(b);
   }
   // 比武 / 对话打到一半关了页面：原地恢复
+  if(S.war&&!S.over) war=S.war;
   if(S.duelState&&!S.over) setTimeout(()=>restoreDuel(),100);
+  else if(war&&!S.over&&war.stage!=='主将进行中') setTimeout(()=>{ try{ openWarModal(); }catch(e){ war=null; S.war=null; } },120);
   else if(S.convoState&&!S.over) setTimeout(()=>restoreConvo(),100);
   return true;
 }
 
 /* ================= 界面事件 ================= */
-document.querySelectorAll('#tabs button').forEach(b=>b.onclick=()=>{
+function gotoTab(name){
+  const b=document.querySelector('#tabs button[data-tab="'+name+'"]');
+  if(!b) return;
   document.querySelectorAll('#tabs button').forEach(x=>x.classList.remove('on'));
   document.querySelectorAll('.tabpane').forEach(x=>x.classList.remove('on'));
   b.classList.add('on');
-  $('tab-'+b.dataset.tab).classList.add('on');
-  setDot(b.dataset.tab,false);
-});
+  $('tab-'+name).classList.add('on');
+  setDot(name,false);
+  const pane=$('tab-'+name); if(pane) pane.scrollTop=0;
+}
+document.querySelectorAll('#tabs button').forEach(b=>b.onclick=()=>gotoTab(b.dataset.tab));
+// 立派弹窗
+$('foundCancel').onclick=()=>$('foundMask').classList.remove('on');
+$('foundGo').onclick=doFound;
+$('foundDice').onclick=()=>{ $('foundName').value=randClanName(); $('foundBase').value=pick(CLAN_BASE); $('foundCreed').value=pick(CREED_BY_ALIGN[foundSel.alignment]); };
+$('foundAlign').querySelectorAll('button').forEach(b=>b.onclick=()=>{ foundSel.alignment=b.dataset.v; $('foundCreed').value=''; renderFoundSeg(); });
+$('discExpel').onclick=expelSel;
 function setDrawer(open){ $('sidebar').classList.toggle('open',open); $('sideMask').classList.toggle('on',open); }
 $('panelToggle').onclick=()=>setDrawer(!$('sidebar').classList.contains('open'));
 $('sideMask').onclick=()=>setDrawer(false);
