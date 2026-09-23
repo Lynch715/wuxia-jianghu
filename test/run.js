@@ -184,17 +184,16 @@ const talkPrompt=async(free)=>{
 };
 const talkBase=await page.evaluate(()=>S.player.attributes['谈吐']);
 const pFree=await talkPrompt('free');
-ok('随心所欲：对话提示词带上促成口径', /本局对话口径：随心所欲/.test(pFree)&&/顺着来/.test(pFree));
-ok(`随心所欲：说服判定吃到 +25 气运（谈吐 ${talkBase} → ${(pFree.match(/说服\/欺骗\/套话用谈吐(\d+)/)||[])[1]}）`,
-   pFree.includes('说服/欺骗/套话用谈吐'+(talkBase+25)));
-ok('随心所欲：秘密门槛降到 50，且不翻脸', /好感≥50、或主角说服\/套话成功/.test(pFree)&&/也别翻脸/.test(pFree));
-ok('随心所欲：不再说「不会无缘无故帮他」', !/不会无缘无故帮他/.test(pFree)&&/十有八九求得动/.test(pFree));
-ok('随心所欲：NPC 主动想帮他，不必等他开口', /主动想帮他/.test(pFree)&&/不必等他开口/.test(pFree));
+ok('随心所欲：对话提示词带上言出法随口径', /本局对话口径：随心所欲·言出法随/.test(pFree)&&/主角的话就是命令/.test(pFree));
+ok('随心所欲：不做说服判定（谈吐 '+talkBase+' 不再参与）', /不做说服判定/.test(pFree)&&!/说服\/欺骗\/套话用谈吐/.test(pFree));
+ok('随心所欲：秘密一问就说，不看好感', /主角一问，你就原原本本说出来/.test(pFree)&&!/好感≥\d+、或主角说服/.test(pFree));
+ok('随心所欲：不再说「不会无缘无故帮他」', !/不会无缘无故帮他/.test(pFree)&&/他开口，世人照办/.test(pFree));
+ok('随心所欲：NPC 主动帮他，不必等他开口', /主角没开口的，也可以主动帮/.test(pFree));
 ok('随心所欲：每句话末尾留一个邀约或线索', /末尾留一个邀约或一条线索/.test(pFree));
 ok('随心所欲：不许拂袖而去（endTalk 恒 false）', /endTalk 一律填 false/.test(pFree));
-ok('随心所欲：请求门槛往低里设（随口小事30）', /随口小事30/.test(pFree));
+ok('随心所欲：attempt 一律 null，没有说不动', /attempt 一律填 null/.test(pFree)&&!/随口小事30/.test(pFree));
 const convoGate=await page.evaluate(()=>['free','mid','strict'].map(f=>{const x=FREEDOM[f];return f+':'+x.check+'/'+x.secretGate;}).join(' '));
-ok('三档对话门槛依次放宽：'+convoGate, /free:25\/50/.test(convoGate)&&/strict:0\/80/.test(convoGate));
+ok('三档对话门槛依次放宽：'+convoGate, /free:25\/0/.test(convoGate)&&/mid:8\/70/.test(convoGate)&&/strict:0\/80/.test(convoGate));
 const pStrict=await talkPrompt('strict');
 ok('写实江湖：仍是原来的严苛口径', /不会无缘无故帮他/.test(pStrict)&&/好感≥80且被直接问及/.test(pStrict));
 ok('对话也吃自由度：NPC 资料带上画像', /portrait/.test(pStrict));
@@ -214,7 +213,8 @@ ok('写实江湖仍允许剧情杀', strictAllows);
 
 console.log('\n【对话退得出去】');
 // 送东西要好感≥45，而好感是前面几场对话攒出来的、会浮动；这一段测的是落账不是攒好感，先钉死
-await page.evaluate(()=>{ S.freedom='mid'; S.npcs[0]['好感度']=60; });
+// 前面随心所欲那场对话不设限、已经接济过一回，这里把接济总数清掉，只测江湖传奇的按好感削减
+await page.evaluate(()=>{ S.freedom='mid'; S.npcs[0]['好感度']=60; S.npcs[0].gave=0; });
 await page.click('#tabs button[data-tab="people"]');
 await page.click('#npcList .npc >> nth=0');
 await page.click('#npcTalkBtn');
