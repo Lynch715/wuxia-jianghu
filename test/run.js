@@ -859,7 +859,7 @@ await p2.waitForTimeout(400);
 ok('样张已显示', (await p2.textContent('#story')).includes('样张'));
 ok('样张有引导按钮', (await p2.textContent('#choices')).includes('填入 API 密钥'));
 
-console.log('\n【旧存档升上 v9】');
+console.log('\n【旧存档升上最新版】');
 const ctx3=await br.newContext();
 const p3=await ctx3.newPage();
 p3.on('pageerror',e=>errs.push('v6迁移:'+String(e)));
@@ -869,9 +869,9 @@ await p3.route('**/chat/completions',async route=>{
 await p3.addInitScript(sv=>{ localStorage.setItem('wuxia_cfg',JSON.stringify({base:'https://api.deepseek.com',key:'sk-test',model:'deepseek-v4-flash',think:false})); localStorage.setItem('wuxia_save_v1',sv); }, oldSave);
 await p3.goto('http://localhost:8931/');
 await p3.waitForTimeout(1200);
-const mg=await p3.evaluate(()=>({v:S.v, life:S.player.lifespan, led:Array.isArray(S.ledger), mem:S.memLong,
+const mg=await p3.evaluate(()=>({v:S.v, sv:SAVE_VERSION, life:S.player.lifespan, led:Array.isArray(S.ledger), mem:S.memLong,
   meta:$('pMeta').textContent, story:$('story').textContent.length, prompt:stateBlocks().length}));
-ok('老存档补上寿元（'+mg.life+'）、台账与记忆档，版本升到 v'+mg.v, mg.v===9&&mg.life===78&&mg.led===true&&mg.mem===true);
+ok('老存档补上寿元（'+mg.life+'）、台账与记忆档，版本升到 v'+mg.v, mg.v===mg.sv&&mg.life===78&&mg.led===true&&mg.mem===true);
 ok('升级后面板照常：'+mg.meta.replace(/\s+/g,' ').slice(0,32), /岁／寿元78/.test(mg.meta)&&mg.story>50);
 ok('升级后提示词照样拼得出来（'+mg.prompt+' 字）', mg.prompt>500);
 

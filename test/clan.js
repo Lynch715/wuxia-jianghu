@@ -107,8 +107,8 @@ const mg=await page.evaluate(E(`
   const old={v:8,turn:5,player:{name:'旧人',attributes:{'武功':50},status:[],money:10,'侠名':10,'恶名':0,age:30,hp:80,items:{}},
     npcs:[],history:[],recent:[],world:{factions:[],ranking:[],events:[],fallen:[],vacant:0},
     sect:{name:'华山',contrib:40,joined:1},chapters:[],achievements:[],quests:[],ledger:[]};
-  const m=migrate(old); return {v:m.v, clan:m.clan, own:m.sect.own, contrib:m.sect.contrib};`));
-ok('老存档升到 v9、无自家门派、原贡献不丢（'+mg.contrib+'）', mg.v===9&&mg.clan===null&&mg.own===false&&mg.contrib===40);
+  const m=migrate(old); return {v:m.v, sv:SAVE_VERSION, clan:m.clan, own:m.sect.own, contrib:m.sect.contrib};`));
+ok('老存档升到最新版、无自家门派、原贡献不丢（'+mg.contrib+'）', mg.v===mg.sv&&mg.clan===null&&mg.own===false&&mg.contrib===40);
 
 console.log('\n【无自家门派时一切照旧】');
 const nc=await page.evaluate(E(mk('mid',70,5000,50)+`

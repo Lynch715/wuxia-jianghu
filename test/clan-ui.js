@@ -109,9 +109,9 @@ console.log('\n【存档往返】');
 const rt=await page.evaluate(E(`saveGame();
   const raw=localStorage.getItem('wuxia_save_v1');
   const back=migrate(JSON.parse(raw));
-  return {v:back.v, name:back.clan&&back.clan.name, n:(back.clan.disciples||[]).length,
+  return {v:back.v, sv:SAVE_VERSION, name:back.clan&&back.clan.name, n:(back.clan.disciples||[]).length,
     job:(back.clan.disciples[0]||{}).job, treasury:back.clan.treasury};`));
-ok('存进去再读回来，门派还在：'+rt.name+' '+rt.n+'人 公帐'+rt.treasury+'两', rt.v===9&&rt.name==='青锋门'&&rt.n===afterN);
+ok('存进去再读回来，门派还在：'+rt.name+' '+rt.n+'人 公帐'+rt.treasury+'两', rt.v===rt.sv&&rt.name==='青锋门'&&rt.n===afterN);
 
 console.log('\n【截图】');
 await page.screenshot({path:(process.env.SHOT_DIR||'.')+'/宗门_桌面.png'});
