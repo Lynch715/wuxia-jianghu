@@ -60,11 +60,11 @@ await page.click('#cfgCancel');
 // 比武
 await page.evaluate(()=>{ const n=S.npcs.find(x=>x.alive); startDuel(n,{lethal:false,reason:'切磋',action:'比武',judge:{fate:10,check:null,worldEvent:null,months:1}}); });
 await page.waitForSelector('#duelMask.on'); await snap('15_比武');
-await page.click('#duelActions .stance[data-k="A"]'); await page.waitForTimeout(300);
-await page.click('#duelActions .stance[data-k="X"]').catch(()=>{});
-await page.waitForTimeout(300); await snap('16_比武中');
-await page.evaluate(()=>{ duel.oHp=1; });
-for(let i=0;i<12;i++){ const b=await page.$('#duelActions .stance[data-k="A"]:not([disabled])'); if(!b) break; await b.click(); await page.waitForTimeout(120); if(await page.$('#dSpare')) break; }
+await page.click('#duelStart'); await page.waitForTimeout(1200);
+await snap('16_比武中');
+await page.evaluate(()=>{ duel.eng.O.hp=1; });
+await page.click('#duelSkip').catch(()=>{});
+await page.waitForSelector('#dSpare,#duelGo',{timeout:8000});
 await snap('17_胜后处置');
 await page.click('#dSpare').catch(()=>{});
 await page.click('#duelGo').catch(()=>{});

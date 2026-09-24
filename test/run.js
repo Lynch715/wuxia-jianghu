@@ -135,25 +135,24 @@ console.log('\n【比武：战术与仇家】');
 const duelBtn=await page.$('#choices .opt:has-text("秃鹰")');
 if(duelBtn){ await duelBtn.click(); await page.waitForSelector('#duelMask.on',{timeout:20000}); }
 ok('比武弹窗打开', !!(await page.$('#duelMask.on')));
-const stances=await page.$$eval('#duelActions .stance',es=>es.map(e=>e.textContent.replace(/\s+/g,' ').trim()));
-ok('八个动作（五架势+三手段）：'+stances.join(' | ').slice(0,120), stances.length===8);
-ok('架势上标了对路武学与熟练度', stances.some(t=>/熟\d+/.test(t)));
-ok('暗器可用（有蚀骨散）', stances.some(t=>t.includes('蚀骨散')));
-// 打到结束
-for(let i=0;i<30;i++){
-  const btns=await page.$$('#duelActions .stance:not([disabled])');
-  if(!btns.length) break;
-  const x=await page.$('#duelActions .stance[data-k="X"]:not([disabled])');
-  await (x||btns[0]).click();
-  await page.waitForTimeout(60);
-  if(await page.$('#duelGo')) break;
-  if(await page.$('#dSpare')) break;
-}
+ok('开打前是「开打 / 速战」，没有点招按钮', !!(await page.$('#duelStart'))&&!!(await page.$('#duelSkip'))&&!(await page.$('#duelActions .stance')));
+const chips=await page.$$eval('#fP .dchip',es=>es.map(e=>e.textContent.replace(/\s+/g,' ').trim()));
+ok('主角武学成了技能小印：'+chips.join(' | '), chips.length>=1&&!/无武学/.test(chips.join('')));
+ok('对手配了招（'+(await page.$$eval('#fO .dchip',es=>es.map(e=>e.textContent.trim()).join('、')))+'）', (await page.$$('#fO .dchip')).length>=1);
+ok('暗器可勾选（有蚀骨散）', /蚀骨散/.test(await page.textContent('#duelActions')));
+await page.check('#duelDart');
+await page.click('#duelStart');
+await page.waitForTimeout(400);
+ok('开打后出现脱身/认输', !!(await page.$('#duelFlee'))&&!!(await page.$('#duelYield')));
+if(await page.$('#duelSkip')) await page.click('#duelSkip');
+await page.waitForSelector('#duelGo,#dSpare',{timeout:8000});
 const dlog=await page.textContent('#duelLog');
 ok('战报含毒发', dlog.includes('毒性'));
 if(await page.$('#dKill')){ await page.click('#dKill'); }
 if(await page.$('#duelGo')){ await page.click('#duelGo'); await page.waitForSelector('#choices .opt',{timeout:25000}); }
 ok('比武后续写完成', (await page.textContent('#story')).includes('刀光闪过'));
+ok('续写提示词说明实录是自动推演、招式照原样用', /实录由引擎自动推演/.test(global.__lastPrompt||'')&&/招式名（「」里的）照原样用上/.test(global.__lastPrompt||''));
+ok('人物弹窗显示交过手的招式', await page.evaluate(()=>{ const n=findNpc('秃鹰'); return !!(n&&n.kit&&n.kit.length); }));
 
 console.log('\n【自由度：随时切换与提示词口径】');
 ok('面板徽章标出凶险/自由度：'+(await page.textContent('#pTitle')).replace(/\s+/g,' ').trim(), (await page.textContent('#pTitle')).includes('江湖传奇'));

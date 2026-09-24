@@ -51,6 +51,21 @@ ok('对话提示词：不设限的额度说明', fp.convo.indexOf('本局不设�
 ok('姓名铁律、比武制度还在', fp.turn.indexOf('姓名铁律')>=0&&fp.turn.indexOf('比武制度')>=0);
 ok('剔除后没有留下空的「- 」行', !/\n\s*-\s*\n/.test(fp.world));
 
+console.log('\n【括号里的描写/推演要求】');
+let pb=await page.evaluate(E(mk('free')+`
+  return {turn:turnPrompt('去黑风寨找冷面判官（描写寨门口的两株老槐树；他见我先是一愣、再冷笑；写800字）',{fate:2,check:null,worldEvent:null,months:1}),
+    plain:turnPrompt('去黑风寨找冷面判官',{fate:2,check:null,worldEvent:null,months:1}),
+    convo:convoPrompt(S.npcs[0],'你父亲当年的事，说吧(他说到一半手抖了一下)',2,null),
+    half:parenReqs('a(一)b（二）c')};`));
+ok('回合：口径里有括号条', /括号「（）」内的文字/.test(pb.turn)&&/以括号为准/.test(pb.turn));
+ok('回合：括号要求单独摘出成块、逐条编号', /【玩家的描写\/推演要求/.test(pb.turn)&&/1\. 描写寨门口的两株老槐树/.test(pb.turn)&&/2\. 他见我先是一愣、再冷笑/.test(pb.turn)&&/3\. 写800字/.test(pb.turn));
+ok('回合：提了篇幅就不受 250-500 限制', /不受「剧情250-500字」限制/.test(pb.turn));
+ok('回合：没括号就不出这个块', !/【玩家的描写\/推演要求/.test(pb.plain));
+ok('对话：口径里有括号条，半角括号也摘得出', /括号「（）」内的文字/.test(pb.convo)&&/1\. 他说到一半手抖了一下/.test(pb.convo)&&/不要在 reply 里复述/.test(pb.convo));
+ok('全角半角都认（'+pb.half.join('/')+'）', pb.half.length===2);
+pb=await page.evaluate(E(mk('mid')+`return turnPrompt('去黑风寨（写800字）',{fate:2,check:null,worldEvent:null,months:1})+convoPrompt(S.npcs[0],'说吧（手抖）',2,null);`));
+ok('江湖传奇档：不摘、不加口径', !/【玩家的描写\/推演要求/.test(pb)&&!/以括号为准/.test(pb));
+
 console.log('\n【另外两档不受影响】');
 for(const k of ['mid','strict']){
   const p=await page.evaluate(E(mk(k)+prompts));

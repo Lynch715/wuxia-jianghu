@@ -350,17 +350,45 @@ body{
 #duelLog .r .rn{color:var(--gold);font-size:12.5px;margin-right:6px}
 #duelLog .dmg{color:var(--accent);font-weight:700} #duelLog .heal{color:var(--green);font-weight:700}
 #duelLog .sys{color:var(--blue);font-style:italic}
-.stances{display:grid;grid-template-columns:repeat(5,1fr);gap:7px;margin-top:12px}
-.stance{border:1px solid var(--paper-edge);border-radius:6px;background:rgba(255,252,240,.65);padding:8px 4px;text-align:center;cursor:pointer;font-family:inherit;color:var(--ink);transition:.15s}
-.stance b{display:block;font-size:17px;letter-spacing:2px}
-.stance small{display:block;font-size:10.5px;color:var(--ink-soft);line-height:1.4;margin-top:2px}
-.stance:hover{border-color:var(--accent);transform:translateY(-2px)}
-.stance:disabled{opacity:.4;cursor:default;transform:none}
-.stance.s-A b{color:var(--accent)} .stance.s-D b{color:var(--blue)} .stance.s-F b{color:var(--purple)} .stance.s-S b{color:var(--gold)} .stance.s-R b{color:var(--ink-soft)}
+/* 自动比武 */
+.dface{position:relative;flex:none;border-radius:50%;transition:transform .18s,box-shadow .18s}
+.dface.act{box-shadow:0 0 0 3px var(--gold),0 0 12px rgba(184,146,60,.55);transform:translateY(-3px) scale(1.07)}
+.dface.hit{animation:dhit .32s}
+@keyframes dhit{0%,100%{transform:none}20%{transform:translateX(-5px)}45%{transform:translateX(5px)}70%{transform:translateX(-3px)}}
+.dface .dsk{position:absolute;bottom:100%;left:50%;transform:translate(-50%,4px);white-space:nowrap;font-style:normal;font-size:12.5px;font-weight:700;letter-spacing:1px;color:#fff;background:var(--accent);padding:1px 7px;border-radius:4px;opacity:0;pointer-events:none;transition:.15s;z-index:3}
+.dface .dsk.on{opacity:1;transform:translate(-50%,-2px)}
+.fhead.ro .dface .dsk{left:auto;right:-4px;transform:translate(0,4px)} .fhead.ro .dface .dsk.on{transform:translate(0,-2px)}
+.fhead:not(.ro) .dface .dsk{left:-4px;transform:translate(0,4px)} .fhead:not(.ro) .dface .dsk.on{transform:translate(0,-2px)}
+.dfloat{position:absolute;left:50%;top:10%;transform:translateX(-50%);font-weight:800;font-size:17px;color:var(--accent);text-shadow:0 1px 0 #fff8,0 0 3px #fff;pointer-events:none;animation:dfl .9s ease-out forwards;z-index:4}
+.dfloat.crit{font-size:23px;color:#b0170c}
+.dfloat.heal{color:var(--green)} .dfloat.miss{color:var(--ink-soft);font-size:15px}
+@keyframes dfl{0%{opacity:0;top:20%}15%{opacity:1}100%{opacity:0;top:-45%}}
+.fighter .bar{position:relative}
+.fighter .bar .shl{position:absolute;left:0;top:0;height:4px;background:var(--gold);border-radius:2px;opacity:.95}
+.fighter.right .bar .shl{left:auto;right:0}
+.shtag{color:var(--gold);font-size:11.5px}
+.sttag{display:inline-block;margin-left:5px;font-size:11px;font-weight:400;letter-spacing:0;color:#fff;background:#7a4a8a;border-radius:3px;padding:0 4px;vertical-align:3px}
+.dbtns .mbtn{white-space:nowrap;min-width:64px}
+@media (max-width:520px){ .duelhead .vs{font-size:18px} .dbtns .mbtn{min-width:0;padding-left:12px;padding-right:12px} }
+.dchips{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px}
+.dchips.r{justify-content:flex-end}
+.dchip{display:inline-flex;align-items:center;gap:3px;border:1px solid var(--c);border-radius:4px;padding:0 5px;font-size:11.5px;line-height:1.7;background:rgba(255,252,240,.6)}
+.dchip b{color:var(--c);font-weight:700}
+.dchip i{font-style:normal;color:var(--ink-soft);font-size:10.5px}
+.dchip.wait{opacity:.45}
+.dchip.none{border-style:dashed;border-color:var(--paper-edge);color:var(--ink-soft)}
+.dctl{margin-top:12px;display:flex;flex-direction:column;gap:8px;align-items:center}
+.dbtns{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;align-items:center}
+.dspeed{display:inline-flex;border:1px solid var(--paper-edge);border-radius:6px;overflow:hidden}
+.dspeed button{border:0;background:rgba(255,252,240,.6);font-family:inherit;font-size:14px;padding:6px 12px;cursor:pointer;color:var(--ink-soft)}
+.dspeed button.on{background:var(--accent);color:#fff}
+.ddart{font-size:13.5px;color:var(--ink);display:flex;align-items:center;gap:6px;flex-wrap:wrap;justify-content:center}
+.ddart small{color:var(--ink-soft);font-size:11.5px}
+#duelLog .bt{display:block;padding-left:1em}
+#duelLog .dmg.crit{color:#b0170c}
 .duelend{margin-top:12px;text-align:center}
 .duelend .verdict{font-size:20px;letter-spacing:5px;color:var(--accent);font-weight:700;margin-bottom:6px}
 .duelend p{font-size:14px;color:var(--ink-soft);margin-bottom:8px}
-@media (max-width:520px){.stances{grid-template-columns:repeat(3,1fr)}}
 /* 对话 */
 #convoModal{padding:20px 22px;display:flex;flex-direction:column;max-height:88vh}
 #convoHead{display:flex;align-items:center;gap:12px;margin-bottom:10px}
@@ -1352,6 +1380,7 @@ const FREEDOM={
 - 严禁：推辞、婉拒、讲条件、提代价、反问试探、只答应一半、嘴上答应手上不给；严禁说「容我想想」「此事须从长计议」「时机未到」「你我交情尚浅」「恕难从命」「除非你先……」这一类话。
 - 身份、性格、立场、恩怨只决定你说话的腔调：仇人可以咬牙切齿，邪道可以冷嘲热讽，长辈可以板着脸——但事情照办，东西照给，一样不少。
 - 主角问起你的秘密，原原本本说出来，revealSecret 填 true。
+- 主角这句话里括号「（）」内的文字，是玩家给你的描写与推演要求（要你做的动作神态、要你怎么反应、要写到的细节、篇幅），不是主角说出口的话。无条件照办，一条不落；和下面的字数、格式要求冲突时以括号为准。
 - 主角求爱、求亲、求结拜、求拜你为师，一律答应，把新关系写进 effects.relation。
 - 要钱给钱（按你的家底给足），要东西给东西，要武功教武功，要引荐就引荐，要你去办事就去办——凡答应的，全部写进 effects。本局引擎不按交情卡你。
 - 主角没开口的，也可以主动帮：看他面板，正缺什么就给什么，正为某桩宿命发愁就主动递线索。
@@ -1361,6 +1390,7 @@ const FREEDOM={
     tone:`【本局自由度：随心所欲·言出法随】这是本局的最高口径，与前面任何一条说法不一时，一律以这一段为准。
 - 玩家写下的行动和话，就是本回合必然发生的事实：照他写的发生，照他要的结果成。你不去掂量合不合理、离不离谱，不打折扣，不附加代价，不写「但是」「可惜」「却不料」，不把事情拖到下回合，不自作主张添波折。
 - 天命骰只给世界添彩头——旁枝琐事的好坏运气、路上的奇遇巧合——绝不拿来妨碍玩家写下的事。
+- 玩家行动里括号「（）」内的文字，是玩家对本回合的描写与推演要求（要写到的场景、细节、人物反应、视角、篇幅、想看到的展开，等等），不是主角说出口的话、也不是主角做的事。一律无条件照办，一条不落，写足写透；括号里的要求与上面任何常规回合要求（字数、节奏、推进）冲突时，以括号为准。
 - 属性判定在本局没有失败：玩家写的行动一律当作做成了，check 填 null，把过程写得精彩。
 - 所有人物对主角无条件照办：他要的给，他问的答，他求的应，他托的办。人物的性格只体现在说话腔调上，不体现在办不办上。仇人、邪道、陌生人一视同仁。
 - 题材不设限：仙法、玄幻、穿越、异术、神兵天降，玩家要写就照写，写得像样、前后接得上就行。
@@ -1400,6 +1430,19 @@ const FREEDOM={
 - 主角可能死，但要死得有来由：铺垫过的杀机、明知不可为而为之，不可无端猝死。` }
 };
 function fdm(){ return FREEDOM[S&&S.freedom]||FREEDOM.mid; }
+// 随心所欲档：把玩家行动里括号内的描写/推演要求单独摘出来列一遍，光靠口径里一句话，模型放在几百字规则里容易忘
+function parenReqs(t){
+  const out=[]; String(t||'').replace(/[（(]([^（）()]+)[）)]/g,(_,x)=>{ x.split(/[；;]/).forEach(y=>{ y=y.trim(); if(y) out.push(y); }); return _; });
+  return out;
+}
+function parenBlock(t,convo){
+  if(!fdm().freeAct) return '';
+  const rs=parenReqs(t); if(!rs.length) return '';
+  const hasLen=rs.some(x=>/\d\s*字|字数|篇幅|长一点|短一点|写长|写短|详细|详写|简短/.test(x));
+  return `【玩家的描写/推演要求（本局言出法随，无条件满足，一条不落）】\n${rs.map((x,i)=>`${i+1}. ${x}`).join('\n')}\n`+
+    (convo?`（这些是玩家给你的指令，不是主角嘴上说的话；照办即可，不要在 reply 里复述它们。）\n`
+          :`（这些是玩家给你的指令，不是主角说出口的话、也不是主角做的事；照办即可，不要写成主角在自言自语。${hasLen?'括号里提了篇幅，就按括号来，不受「剧情250-500字」限制。':''}）\n`);
+}
 // ⟦严⟧…⟦/严⟧ 包着的是「讲规矩」的条文：随心所欲档整段剔除（剔完只剩「- 」的空行一并删掉），另外两档只去掉标记、原文不动
 function stripStrict(t,free){
   t=String(t);
@@ -1433,8 +1476,7 @@ function fateInfo(r){
 }
 /* ================= 武学路数 ================= */
 const ART_STYLES=['刚猛','守御','诡变','绝学','身法'];
-const STYLE_OF_STANCE={A:'刚猛',D:'守御',F:'诡变',S:'绝学',R:'身法'};
-const STYLE_DESC={'刚猛':'正面抢攻更狠','守御':'守势更稳、反震更重','诡变':'险招更难被识破','绝学':'绝招威力大增，耗内力更少','身法':'脱身更快，也更难被追上'};
+const STYLE_DESC={'刚猛':'比武时常出重手，熟练越高越常出、越狠','守御':'比武时运起护体，挡伤反震，练到五十还能回血','诡变':'比武时出奇招，封穴、下毒或乱人心神','绝学':'比武时的杀招，隔几回合一发，破护体，耗内力四十','身法':'比武时首回合先手，更难被打中，脱身更易'};
 function guessStyle(txt){
   txt=String(txt||'');
   if(/守|护体|铁布|金钟|绵|柔|盾|龟|不坏|罡气/.test(txt)) return '守御';
@@ -1477,21 +1519,6 @@ function markTaught(n,artName){
   const t=String(artName).replace(/[《》「」【】]/g,'').trim();
   if(t&&!n.fromPlayer.includes(t)){ n.fromPlayer.push(t); while(n.fromPlayer.length>6) n.fromPlayer.shift(); }
 }
-// 某一路数下最精熟的一门
-function artFor(stance){
-  const want=STYLE_OF_STANCE[stance];
-  const list=(S.player.arts||[]).filter(a=>a.style===want);
-  if(!list.length) return null;
-  return list.reduce((a,b)=>num(b.level)>num(a.level)?b:a);
-}
-// 招式加成：练到家的武学能顶十几点武功；没有对路武学则吃亏
-function artBonus(stance){
-  const a=artFor(stance);
-  if(a) return Math.min(12,Math.round(num(a.level)/8));
-  if(stance==='S') return -6;   // 没有绝学，绝招只是空架子
-  return 0;
-}
-
 
 // 兵器：模型给的 bonus 是 0-20 的「成色」，实际加成按当世水位放大——
 // 否则功力上了两三百之后，屠龙刀和烧火棍没什么分别
@@ -2736,7 +2763,7 @@ function turnPrompt(action, judge){
 ${stateBlocks()}
 
 【玩家本回合行动】${action}
-【本回合引擎判定（不可更改，必须如实体现）】
+${parenBlock(action,false)}【本回合引擎判定（不可更改，必须如实体现）】
 ${judgeBlock(judge)}
 
 ${judge.convo?convoAfterReq():`请推演本回合。要求：
@@ -2792,14 +2819,15 @@ ${stateBlocks()}
 
 【本回合起因】${action}
 【比武实录（引擎已推演完毕，胜负已定，不可更改）】
-对手：${duel.opp.name}（${duel.opp.identity}，武功${duel.opp['武功']}，绝技「${duel.opp.signature||'不详'}」）
+对手：${duel.opp.name}（${duel.opp.identity}，武功${duel.opp['武功']}，绝技「${duel.opp.signature||'不详'}」${(duel.opp.kit||[]).length?`，此战所用：${duel.opp.kit.map(k=>k.name).join('、')}`:''}）
+（实录由引擎自动推演：双方按身法先后出手，招式自发。「你」指主角。）
 ${log}
 【比武结果】${res}
 【主角气血】${S.player.hp}/100
 【本回合其他判定】
 ${judgeBlock(judge)}
 
-请把这场比武写成一段精彩的武侠决斗（300-550字）：按实录的回合顺序铺陈，招式名要用上（主角的武学：${(S.player.arts||[]).map(a=>a.name).join('、')||'无名野路子'}），每一回合的攻守、受伤都要对上实录，不许改写胜负和伤势。写完比武，再写结果引发的后续：在场人物反应、对手心态、名声变化（胜过强者涨侠名或恶名，杀人涨恶名，留手涨侠名），并给出接下来的选项。
+请把这场比武写成一段精彩的武侠决斗（300-550字）：按实录的回合顺序铺陈，实录里出现的招式名（「」里的）照原样用上，谁先出手、谁中了毒被封了穴、护体真气挡下多少，都照实录写；不必逐字复述数字，但每一回合的攻守、受伤轻重要对上，不许改写胜负和伤势。写完比武，再写结果引发的后续：在场人物反应、对手心态、名声变化（胜过强者涨侠名或恶名，杀人涨恶名，留手涨侠名），并给出接下来的选项。
 - 数值变化如实写入playerChanges（气血hp已由引擎结算，不要再写hp）与npcUpdates（对手好感、alive等；对手已被引擎标记的生死不要反写）。
 - 若对手是江湖榜人物且落败，写rankingUpdates调整。
 - duel字段必须为null；若主角已死则gameOver为true并写ending。
@@ -2849,7 +2877,7 @@ ${convoVols?`【前尘卷录】\n${convoVols}\n`:''}${convoSum?`【前情提要�
 【对话至今】
 ${log}
 【主角这一句/这一举动】${gift?`（赠送【${gift.name}】：${gift.desc||''}）`:''}${line}
-${fdm().freeAct?'【引擎掷骰】本局言出法随，不做说服判定：主角说什么就办成什么，attempt 填 null。':`【引擎掷骰】骰${roll}，本次骰面修正【${rollMod(roll)>=0?'+':''}${rollMod(roll)}】。若主角这句话是说服、欺骗、威胁、求情、讨价、套话、打探秘密之类有成败之分的尝试，请设定need（${fdm().freeAct?'随口小事30，普通请求40，违背其利益55，触及秘密65':'随口小事40，普通请求55，违背其利益70，触及秘密或底线85'}），判定总值＝主角相关属性（已含本局气运加成${fdm().check>0?'+'+fdm().check:'0'}：说服/欺骗/套话用谈吐${p.attributes['谈吐']+fdm().check}，威胁用武功${attrVal(p,'武功')+fdm().check}，引经据典用才学${p.attributes['才学']+fdm().check}）${rollMod(roll)>=0?'+':''}${rollMod(roll)}，总值≥need为成功，写入attempt并按成败作答。平常闲聊attempt为null。`}
+${parenBlock(line,true)}${fdm().freeAct?'【引擎掷骰】本局言出法随，不做说服判定：主角说什么就办成什么，attempt 填 null。':`【引擎掷骰】骰${roll}，本次骰面修正【${rollMod(roll)>=0?'+':''}${rollMod(roll)}】。若主角这句话是说服、欺骗、威胁、求情、讨价、套话、打探秘密之类有成败之分的尝试，请设定need（${fdm().freeAct?'随口小事30，普通请求40，违背其利益55，触及秘密65':'随口小事40，普通请求55，违背其利益70，触及秘密或底线85'}），判定总值＝主角相关属性（已含本局气运加成${fdm().check>0?'+'+fdm().check:'0'}：说服/欺骗/套话用谈吐${p.attributes['谈吐']+fdm().check}，威胁用武功${attrVal(p,'武功')+fdm().check}，引经据典用才学${p.attributes['才学']+fdm().check}）${rollMod(roll)>=0?'+':''}${rollMod(roll)}，总值≥need为成功，写入attempt并按成败作答。平常闲聊attempt为null。`}
 规则：
 - ${fdm().freeAct?`说话带着${npc.name}的身份、性格、心情的腔调——但本局言出法随，腔调归腔调，事情一律照主角说的办。`:`说话完全符合${npc.name}的身份、性格、心情与好感。好感低时冷淡敌意，好感高时亲近；可以拒绝、撒谎、反问、发脾气，甚至拂袖而去（endTalk为true）。`}对方是长辈、仇人、爱人，语气都要不同。
 - 描写${npc.name}的相貌衣着时须与portrait画像相符，不要另编。
@@ -3515,20 +3543,6 @@ function scoreOf(){
 "use strict";
 /* ================= 比武系统 ================= */
 let duel=null;
-const STANCES={
-  A:{name:'强攻',desc:'正面抢攻，内力-5',cost:5},
-  D:{name:'守势',desc:'稍守反击，回内力',cost:0},
-  F:{name:'险招',desc:'虚实莫测，大赢大输，内力-15',cost:15},
-  S:{name:'绝招',desc:'倾力一击，破守势，内力-40',cost:40},
-  R:{name:'脱身',desc:'伺机逃走，失败挨打',cost:0},
-};
-const TACTICS={
-  H:{name:'运功疗伤',desc:'退开调息回气血，门户大开',cost:15},
-  Y:{name:'服药',  desc:'吞服伤药，回气血更多',      cost:0},
-  X:{name:'暗器',  desc:'掷出暗器毒物伤敌，落人口实',cost:6},
-};
-const ACTIONS=Object.assign({},STANCES,TACTICS);
-function actionCost(k){ if(k==='S'&&artFor('S')) return Math.max(20,STANCES.S.cost-8); return ACTIONS[k].cost; }
 // 找一件能掷出去的暗器毒物
 function findAmmo(){
   const it=S.player.items||{};
@@ -3540,10 +3554,6 @@ function findAmmo(){
   }
   return null;
 }
-const HIT_TXT=['刀锋擦过肩头','一掌拍在胸口','肋下吃了一记','肩头被震得发麻','踉跄退了三步','嘴角渗出血来','被劲风扫中小腿','一招印在背心','半边身子发麻','闷哼一声跌了半步'];
-const BIG_TXT=['被打得口喷鲜血','整个人横飞出去','胸骨隐隐作响','眼前一黑几乎栽倒','兵器险些脱手'];
-const MISS_TXT=['一招落空','被轻轻荡开','被识破了虚招','被对方侧身避过','打在空处'];
-function dmgTxt(d){ return d>=25?pick(BIG_TXT):pick(HIT_TXT); }
 function oppProfile(n){
   const s=(n.personality||[]).join('');
   const agg=/暴躁|好胜|刚烈|狠|凶|鲁莽|冲动|傲|嗜杀|狂/.test(s);
@@ -3552,23 +3562,278 @@ function oppProfile(n){
   const coward=/胆小|怯|贪生|懦/.test(s);
   return {agg,def,trick,coward};
 }
-function playerArtName(kind){
-  const arts=S.player.arts||[];
-  if(arts.length) return pick(arts).name;
-  const w=(S.player.items['武器']||[])[0];
-  return w?`${w.name}·${pick(['横扫','直刺','斜劈','反撩'])}`:pick(['王八拳','乱打一通','野路子招式','抡圆了的一拳']);
+/* ================= 自动比武引擎 =================
+   照水浒群星录 Battle.runRound 的路子：先后按身法值排（带抖动），技能自己放，你只看。
+   引擎只算账，不碰 DOM：每一拍出手记成一条 beat（含这一拍之后双方的血、气、护体），
+   演出层照着 beat 一拍拍放，速战就是一口气跑完不放。
+   武功不设上限（言出法随能到上千），所以差距一律折到当世水位的百分尺上再比，
+   水位 100 以内跟旧制一个口径，功力上去之后三百对三百三也不至于一边倒。 */
+const AD={
+  base:12.5,        // 同等功力、倍率 1 时一下大约掉多少气血
+  gapK:65,          // 功力差多少点，伤害翻 e 倍
+  lo:0.5, hi:1.7,   // 功力差带来的倍率上下限
+  var:0.28,         // 单下伤害抖动
+  spdVar:0.12,      // 出手顺序抖动
+  critMul:1.5,
+  maxRounds:30,
+  warSwing:0.7,     // 门派战一对一的临场浮动，旧制是 rollMod 全额
+  qiRegen:5,
+  chaosResist:0.25,
+  speeds:{slow:1.6,normal:1,fast:0.3},
+  speedTxt:{slow:'缓',normal:'常',fast:'疾'},
+};
+const AD_POOL={
+  '刚猛':['开山掌','劈挂刀','伏虎拳','破甲枪','大力鹰爪','奔雷腿'],
+  '守御':['铁布衫','金钟罩','混元功','沾衣十八跌','玄龟护体'],
+  '诡变':['鬼影爪','迷踪手','透骨钉','摄魂指','分花拂柳手'],
+  '毒':  ['五毒手','化骨绵掌','蚀心指','赤蝎钩'],
+  '身法':['燕子三抄水','八步赶蝉','踏雪无痕','梯云纵'],
+  '绝学':['天罡掌','大周天剑','无相劫指','归元一气'],
+};
+function adHash(s){ let h=2166136261; for(const c of String(s)) { h^=c.charCodeAt(0); h=Math.imul(h,16777619); } return h>>>0; }
+function adRng(seed){ let a=seed>>>0; return ()=>{ a|=0; a=a+0x6D2B79F5|0; let t=Math.imul(a^a>>>15,1|a); t=t+Math.imul(t^t>>>7,61|t)^t; return ((t^t>>>14)>>>0)/4294967296; }; }
+function adScale(){ return Math.max(100,powerLevel())/100; }
+
+/* NPC 只有一个武功数字和一句绝技名。头一回交手时按绝技名、性格配两三门，存进 n.kit，以后次次一样。 */
+function npcKit(n){
+  if(Array.isArray(n.kit)&&n.kit.length) return n.kit;
+  const r=adRng(adHash(n.name||'无名'));
+  const pk=a=>a[Math.floor(r()*a.length)];
+  const pr=oppProfile(n), evil=n.alignment==='邪道';
+  const wn=num(n['武功'])/adScale();
+  const lv=v=>clamp(v+Math.round((r()-0.5)*10),5,98);
+  const main=clamp(10+wn*0.6);
+  const kit=[], has=st=>kit.some(k=>k.style===st);
+  const add=(name,style,l)=>{ if(!name||has(style)||kit.some(k=>k.name===name)) return; kit.push({name,style,level:lv(l)}); };
+  if(wn>=12){
+    const sig=String(n.signature||'').replace(/[「」《》【】]/g,'').trim();
+    if(sig) add(sig,guessStyle(sig+' '+(n.identity||'')),main);
+    const wants=[pr.agg&&'刚猛',pr.trick&&'诡变',pr.def&&'守御',pr.coward&&'身法'].filter(Boolean);
+    for(const w of wants) if(kit.length<3) add(pk(w==='诡变'&&evil?AD_POOL['毒']:AD_POOL[w]),w,main-8);
+    if(!has('刚猛')&&!has('诡变')) add(pk(evil?AD_POOL['毒']:AD_POOL['刚猛']),evil?'诡变':'刚猛',main-6);
+    if(wn>=30&&kit.length<2){ const w=pk(['守御','诡变','刚猛'].filter(x=>!has(x))); add(pk(w==='诡变'&&evil?AD_POOL['毒']:AD_POOL[w]),w,main-14); }
+    if(wn>=78&&!has('绝学')) add(pk(AD_POOL['绝学']),'绝学',main-10);
+    if(wn>=40&&kit.length<3&&r()<0.5) add(pk(AD_POOL['身法']),'身法',main-14);
+  }
+  n.kit=kit;
+  return kit;
 }
-function oppArtName(){ return duel.opp.signature||pick(['一招快攻','连环三击','劈山掌','鹰爪功','旋风腿']); }
+
+// 一门武学 → 一个技能。同路数只取最熟的那门。
+function adSkillsFrom(arts){
+  const best={};
+  for(const a of arts||[]){ if(!a||!ART_STYLES.includes(a.style)) continue; if(!best[a.style]||num(a.level)>num(best[a.style].level)) best[a.style]=a; }
+  const out=[], L=a=>clamp(num(a.level));
+  if(best['绝学']){ const l=L(best['绝学']); out.push({name:best['绝学'].name,style:'绝学',cat:'sure',cd:4,cur:1,qi:40,mult:1.8+l/125,pierce:1}); }
+  if(best['守御']){ const l=L(best['守御']); out.push({name:best['守御'].name,style:'守御',cat:'sure',cd:3,cur:0,qi:10,shield:12+l/4,heal:l>=50?5+Math.round(l/10):0}); }
+  if(best['刚猛']){ const l=L(best['刚猛']); out.push({name:best['刚猛'].name,style:'刚猛',cat:'active',rate:Math.min(0.6,0.35+l/400),qi:5,mult:1.3+l/200}); }
+  if(best['诡变']){
+    const a=best['诡变'], l=L(a), t=a.name+(a.desc||'');
+    const st=/穴|点|指|封/.test(t)?'stun':/毒|蛊|蚀|腐|蝎|蛇/.test(t)?'poison':'chaos';
+    out.push({name:a.name,style:'诡变',cat:'active',rate:Math.min(0.55,0.3+l/400),qi:8,mult:0.9,st,stChance:0.45+l/400});
+  }
+  return {skills:out, best};
+}
+
+function adUnit(side,o){
+  const s=adScale(), lvOf=st=>o.best[st]?clamp(num(o.best[st].level)):0;
+  const lvS=lvOf('身法'), lvG=lvOf('刚猛'), lvD=lvOf('守御'), lvT=lvOf('诡变');
+  return {
+    side, name:o.name, hp:clamp(o.hp,1,100), qi:clamp(o.qi),
+    wn:o.W/s,                                   // 折到百分尺上的功力
+    atkB:Math.min(12,Math.round(lvG/8)), defB:Math.min(12,Math.round(lvD/8)),
+    spd:o.W/s+lvS/3+(o.spdMod||0),
+    crit:Math.min(0.18,0.08+lvT/1000+(o.critMod||0)),
+    dodge:lvS?0.05+lvS/1000:0.03,
+    first:lvS>0, flee:lvS,
+    skills:o.skills, weapon:o.weapon||'',
+    st:{}, stRes:0, shield:0, shieldDur:0, med:!!o.med, medUsed:false, lame:!!o.lame,
+  };
+}
+
+// 开打前把双方都折成战斗单位，写进 duel.eng（纯数据，能进存档）
+function adBuild(d){
+  const p=S.player, o=d.opp;
+  const pk=adSkillsFrom(p.arts), ok=adSkillsFrom(npcKit(o));
+  const pr=d.profile;
+  const w=(p.items['武器']||[]).slice().sort((a,b)=>num(b.bonus)-num(a.bonus))[0];
+  const P=adUnit('p',{name:p.name,hp:d.pHp,qi:d.pQi,W:d.pW,best:pk.best,skills:pk.skills,weapon:w?w.name:'',
+    med:(p.items['医药']||[]).length>0, lame:hasScar('跛足'), spdMod:hasScar('跛足')?-((d.pW/adScale())*0.15):0});
+  const sig=String(o.signature||'').replace(/[「」《》【】]/g,'');
+  const O=adUnit('o',{name:o.name,hp:d.oHp,qi:d.oQi,W:d.oppW,best:ok.best,skills:ok.skills,weapon:sig,
+    spdMod:(/轻|灵|活|跳脱|机敏/.test((o.personality||[]).join(''))?4:0)-(pr.def?3:0),
+    critMod:pr.trick?0.03:pr.agg?0.02:0});
+  return {P,O,round:0,log:[],flee:false};
+}
+
+const adFoe=(E,u)=>u.side==='p'?E.O:E.P;
+const adWho=u=>u.side==='p'?'你':u.name;
+function adUsable(u,sk){ return u.qi>=(sk.qi||0) && (sk.cat!=='sure'||sk.cur===0); }
+// 冷却好的必中技先放；再按顺序给概率技掷骰，第一个中的放；都没中就普攻
+function adPick(u){
+  for(const s of u.skills) if(s.cat==='sure'&&adUsable(u,s)){
+    if(s.shield&&u.shieldDur>0) continue;             // 护体还在就不叠
+    return s;
+  }
+  for(const s of u.skills) if(s.cat==='active'&&adUsable(u,s)&&Math.random()<s.rate) return s;
+  return null;
+}
+function adDmg(E,a,t,mult,beat,opt){
+  opt=opt||{};
+  if(!opt.sure&&Math.random()<t.dodge){ beat.txt.push(`${adWho(t)}身形一晃避开了`); beat.miss=true; return 0; }
+  const gap=(a.wn+a.atkB-(a.st.poison?5:0))-(t.wn+t.defB);
+  let d=AD.base*mult*Math.min(AD.hi,Math.max(AD.lo,Math.exp(gap/AD.gapK)))*(1+(Math.random()*2-1)*AD.var);
+  let crit=false;
+  if(Math.random()<a.crit){ d*=AD.critMul; crit=true; }
+  d=Math.max(1,Math.round(d));
+  if(t.shield>0&&!opt.pierce){
+    const ab=Math.min(t.shield,d); t.shield-=ab; d-=ab;
+    const rf=Math.round(ab*0.2);
+    if(ab) beat.txt.push(`护体真气挡下${ab}`);
+    if(rf>0&&a.hp>0){ a.hp=Math.max(0,a.hp-rf); beat.hits.push({who:a.side,dmg:rf,rf:1}); beat.txt.push(`反震${adWho(a)}${rf}`); }
+    if(t.shield<=0){ t.shield=0; t.shieldDur=0; }
+  }else if(t.shield>0&&opt.pierce){ beat.txt.push('护体真气被一击震散'); t.shield=0; t.shieldDur=0; }
+  if(d>0){ t.hp=Math.max(0,t.hp-d); beat.hits.push({who:t.side,dmg:d,crit}); }
+  if(crit) beat.crit=true;
+  return d;
+}
+function adStatus(t,st,chance,beat){
+  if(Math.random()>=chance*(1-t.stRes)) return;
+  if(st==='poison'){ t.st.poison=3; beat.txt.push(`${adWho(t)}中了毒`); }
+  else { t.st[st]=1; t.stRes=Math.min(0.75,t.stRes+AD.chaosResist); beat.txt.push(st==='stun'?`${adWho(t)}被制住穴道`:`${adWho(t)}乱了方寸`); }
+}
+function adNormalName(u){
+  if(u.side==='p') return u.weapon?`${u.weapon}·${pick(['横扫','直刺','斜劈','反撩'])}`:pick(['王八拳','野路子招式','抡圆了的一拳']);
+  return pick(['一招快攻','连环三击','劈面一掌','扫堂腿','抢步直进']);
+}
+function adStTxt(u){ const t=[]; if(u.st.poison) t.push('中毒'); if(u.st.stun) t.push('受制'); if(u.st.chaos) t.push('心乱'); return t; }
+function adSnap(E,beat){ beat.after={pHp:E.P.hp,oHp:E.O.hp,pQi:E.P.qi,oQi:E.O.qi,pSh:E.P.shield,oSh:E.O.shield,pSt:adStTxt(E.P),oSt:adStTxt(E.O),
+  pCd:E.P.skills.map(s=>s.cur||0),oCd:E.O.skills.map(s=>s.cur||0)}; }
+
+// 一个人出一次手 = 一拍
+function adAct(E,u,d){
+  const t=adFoe(E,u), beat={who:u.side,txt:[],hits:[],skill:null};
+  const me=adWho(u);
+  // 中毒先发作
+  if(u.st.poison){ const pd=rnd(4,9); u.hp=Math.max(0,u.hp-pd); u.st.poison--; beat.hits.push({who:u.side,dmg:pd,dot:1}); beat.txt.push(`${me}毒性发作`); if(u.hp<=0){ adSnap(E,beat); return beat; } }
+  if(u.shieldDur>0&&--u.shieldDur===0&&u.shield>0){ u.shield=0; beat.txt.push(`${me}的护体真气散了`); }
+  // 你按了脱身
+  if(u.side==='p'&&E.flee){
+    E.flee=false;
+    const pv=u.wn+d20()+6+Math.min(12,Math.round(u.flee/8))+Math.min(6,E.round*1.5)+(u.hp<=30?5:0)-(u.lame?8:0), ov=t.wn+Math.min(12,Math.round(t.flee/8))+d20();
+    if(pv>ov){ beat.txt.push('你虚晃一招跃出圈外，头也不回地去了'); beat.end='escape'; adSnap(E,beat); return beat; }
+    beat.txt.push(`你转身欲走，却被${t.name}追上`); adDmg(E,t,u,1.2,beat,{sure:true}); adSnap(E,beat); return beat;
+  }
+  // 对手想溜
+  if(u.side==='o'&&u.hp<=30&&(d.profile.coward||d.profile.trick||d.opp.alignment==='邪道')&&!d.friendly&&Math.random()<0.25){
+    if(u.wn+Math.min(12,Math.round(u.flee/8))+d20()+6>t.wn+Math.min(12,Math.round(t.flee/8))+d20()){ beat.txt.push(`${u.name}虚晃一招，脚下生风转眼没了踪影`); beat.end='oppEscape'; adSnap(E,beat); return beat; }
+    beat.txt.push(`${u.name}想溜，被你一步赶上`); adDmg(E,t,u,1.2,beat,{sure:true}); adSnap(E,beat); return beat;
+  }
+  if(u.st.stun){ delete u.st.stun; beat.txt.push(`${me}穴道受制，动弹不得`); adSnap(E,beat); return beat; }
+  if(u.st.chaos){ delete u.st.chaos; beat.txt.push(`${me}心神大乱，一招打在空处`); adSnap(E,beat); return beat; }
+  // 自动吞药：气血头一回跌破 35
+  if(u.side==='p'&&u.med&&!u.medUsed&&u.hp<35){
+    const med=(S.player.items['医药']||[])[0];
+    u.medUsed=true;
+    if(med){ S.player.items['医药']=S.player.items['医药'].filter(x=>x!==med); const h=Math.min(100-u.hp,rnd(24,40)); u.hp+=h; beat.hits.push({who:'p',heal:h}); beat.txt.push(`你退开半步吞下【${med.name}】，伤处一阵温热`); beat.skill='服药'; adSnap(E,beat); return beat; }
+  }
+  const sk=adPick(u);
+  u.qi=clamp(u.qi-(sk?sk.qi:0));
+  if(sk){
+    beat.skill=sk.name;
+    if(sk.cat==='sure') sk.cur=sk.cd+1;               // 回合末统一减一，+1 才是真冷却 cd 回合
+    if(u.side==='p'){ d.artUse=d.artUse||{}; d.artUse[sk.name]=(d.artUse[sk.name]||0)+1; }
+    if(sk.shield){
+      u.shield=Math.round(sk.shield); u.shieldDur=3;
+      beat.txt.push(`${me}运起「${sk.name}」，护体真气流转周身`);
+      if(sk.heal){ const h=Math.min(100-u.hp,sk.heal); if(h>0){ u.hp+=h; beat.hits.push({who:u.side,heal:h}); } }
+    }else{
+      beat.txt.push(sk.style==='绝学'?`${me}倾力施出绝招「${sk.name}」`:`${me}使一招「${sk.name}」`);
+      const dm=adDmg(E,u,t,sk.mult,beat,{pierce:sk.pierce});
+      if(dm>0&&sk.st&&t.hp>0) adStatus(t,sk.st,sk.stChance,beat);
+    }
+  }else{
+    beat.txt.push(`${me}以「${adNormalName(u)}」${u.side==='p'?'抢攻':'直取要害'}`);
+    adDmg(E,u,t,1,beat);
+  }
+  adSnap(E,beat);
+  return beat;
+}
+
+// 开场：你若许用暗器，先掷一发
+function adPrelude(E,d){
+  if(!d.useDart) return null;
+  const am=findAmmo(); if(!am) return null;
+  const beat={who:'p',txt:[],hits:[],skill:'暗器'};
+  S.player.items[am.cat]=S.player.items[am.cat].filter(x=>x!==am.item);
+  let dm=rnd(14,28)+Math.round(E.P.wn/12);
+  if(Math.random()<0.2+E.O.dodge){ dm=Math.round(dm*0.35); beat.txt.push(`你手腕一抖，【${am.item.name}】破空而去，${E.O.name}侧身避过大半`); }
+  else beat.txt.push(`你手腕一抖，【${am.item.name}】破空而去，${E.O.name}猝不及防中了一记`);
+  E.O.hp=Math.max(0,E.O.hp-dm); beat.hits.push({who:'o',dmg:dm,dart:1});
+  if(am.poison){ E.O.st.poison=3; beat.txt.push('毒性一发，其面色转青'); }
+  if(d.opp.alignment==='正派') d.opp['好感度']=clamp(d.opp['好感度']-10);
+  S.player['恶名']=clamp(S.player['恶名']+2);
+  d.usedDart=true;
+  adSnap(E,beat);
+  return beat;
+}
+
+/* 跑一个回合，返回 {n, beats, end}。end 为 null 表示还没完。 */
+function adRound(d){
+  const E=d.eng, beats=[];
+  let end=null;
+  const pv={}; adSnap(E,pv); const prev=pv.after;
+  if(E.round===0){ const b=adPrelude(E,d); if(b){ beats.push(b); if(E.O.hp<=0) end='win'; } }
+  if(!end){
+    E.round++;
+    const jit=u=>u.spd*(1+(Math.random()*2-1)*AD.spdVar)+(E.round===1&&u.first?1e6:0);
+    const order=[E.P,E.O].map(u=>({u,k:jit(u)})).sort((a,b)=>b.k-a.k).map(x=>x.u);
+    // 身法差到一倍半以上，快的一方每两回合多抢一手
+    const fast=E.P.spd>=E.O.spd*1.5?E.P:E.O.spd>=E.P.spd*1.5?E.O:null;
+    if(fast&&E.round%2===0) order.splice(order.indexOf(fast)+1,0,fast);
+    for(const u of order){
+      if(u.hp<=0||adFoe(E,u).hp<=0) continue;
+      const again=beats.some(x=>x.who===u.side&&x.round===E.round);
+      const b=adAct(E,u,d); b.round=E.round; if(again) b.txt.unshift(`${adWho(u)}身法快，又抢一手`); beats.push(b);
+      if(b.end){ end=b.end; break; }
+      if(E.O.hp<=0){ end='win'; break; }
+      if(E.P.hp<=0){ end='lose'; break; }
+    }
+    for(const u of [E.P,E.O]){ u.qi=clamp(u.qi+AD.qiRegen); for(const s of u.skills) if(s.cur>0) s.cur--; }
+  }
+  if(!end){
+    // 对手认输
+    const o=E.O;
+    if(o.hp<=25&&!d.profile.agg&&d.opp.alignment!=='邪道'&&Math.random()<0.4) end='oppYield';
+    else if(d.friendly&&o.hp<=35&&Math.random()<0.5) end='oppYield';
+    else if(E.round>=AD.maxRounds) end='draw';
+  }
+  d.pHp=E.P.hp; d.oHp=E.O.hp; d.pQi=E.P.qi; d.oQi=E.O.qi; d.round=E.round;
+  // 给模型的实录：一回合一行
+  const him=d.opp.name;
+  const say=beats.map(b=>{
+    const hs=b.hits.map(h=>h.heal?`${h.who==='p'?'你':him}气血+${h.heal}`:`${h.who==='p'?'你':him}气血-${h.dmg}${h.crit?'（重击）':h.dot?'（毒）':h.rf?'（反震）':''}`);
+    return b.txt.join('，')+(hs.length?'，'+hs.join('，'):'');
+  });
+  const pD=beats.reduce((a,b)=>a+b.hits.filter(h=>h.who==='p'&&h.dmg).reduce((x,h)=>x+h.dmg,0),0);
+  const oD=beats.reduce((a,b)=>a+b.hits.filter(h=>h.who==='o'&&h.dmg).reduce((x,h)=>x+h.dmg,0),0);
+  const plain=`第${E.round}回合：${say.join('；')}。（你${E.P.hp}/${him}${E.O.hp}）`;
+  d.log.push({plain,pDmg:pD,oDmg:oD});
+  return {n:E.round,beats,end,plain,prev};
+}
 
 function startDuel(opp, o){
   o=o||{};
   const p=S.player;
   const oppW=clampW(opp['武功']+diff().opp);
+  duelStop();
   duel={
     opp, lethal:!!o.lethal, reason:o.reason||'', action:o.action||`与${opp.name}比武`, judge:o.judge||null, vendetta:o.vendetta||null, war:!!o.war,
     pHp:p.hp, oHp:o.oppHp||100, pQi:clamp(50+wuNorm(p.attributes['武功'])/2), oQi:clamp(50+wuNorm(oppW)/2),
-    oppW, pW:attrVal(p,'武功'), round:0, log:[], over:false, result:null, resultText:'', profile:oppProfile(opp), friendly:!!o.friendly
+    oppW, pW:attrVal(p,'武功'), round:0, log:[], over:false, result:null, resultText:'', profile:oppProfile(opp), friendly:!!o.friendly,
+    started:false, useDart:false
   };
+  duel.eng=adBuild(duel);
   $('duelTitle').textContent=(duel.friendly?'切磋':'比武')+' · '+opp.name;
   $('duelSub').textContent=(duel.reason||'')+(duel.lethal?'　⚠ 对方不会留手，此战可能致命':'　点到为止');
   $('duelLog').innerHTML=`<div class="r sys">${esc(opp.name)}${duel.oppW>duel.pW+15?'气度沉凝，显然远胜于你':duel.oppW<duel.pW-15?'看似不足为惧，但不可轻敌':'与你旗鼓相当，胜负难料'}。你的武功${duel.pW}（含兵器加成），对方约${duel.oppW}。</div>`;
@@ -3577,20 +3842,24 @@ function startDuel(opp, o){
   snapshotDuel();
 }
 // 比武进行中的状态写进存档，关页面也不丢
-function snapshotDuel(){
+function snapshotDuel(extraHtml){
   if(!S) return;
   if(!duel){ S.duelState=null; return; }
-  const d=Object.assign({},duel); d.oppName=duel.opp.name; delete d.opp; d.logHtml=$('duelLog').innerHTML;
-  S.duelState=d;
+  const d=Object.assign({},duel); d.oppName=duel.opp.name; delete d.opp; delete d.view;
+  d.logHtml=$('duelLog').innerHTML+(extraHtml||'');
+  S.duelState=JSON.parse(JSON.stringify(d));
 }
 function restoreDuel(){
   const st=S.duelState; if(!st) return;
   const opp=findNpc(st.oppName); if(!opp){ S.duelState=null; saveGame(); return; }
-  duel=Object.assign({},st,{opp}); delete duel.oppName; const lh=duel.logHtml; delete duel.logHtml;
+  duelStop();
+  duel=Object.assign({},st,{opp}); delete duel.oppName; const lh=duel.logHtml; delete duel.logHtml; duel.playing=false; duel.view=null;
+  // 旧版存档里打到一半的：按当时双方剩下的气血内力折成新引擎接着打
+  if(!duel.eng){ duel.pHp=clamp(duel.pHp,1,100); duel.eng=adBuild(duel); duel.eng.round=duel.round||0; duel.started=duel.round>0; }
   $('duelTitle').textContent=(duel.friendly?'切磋':'比武')+' · '+opp.name;
   $('duelSub').textContent=(duel.reason||'')+(duel.lethal?'　⚠ 对方不会留手，此战可能致命':'　点到为止');
   $('duelLog').innerHTML=lh||'';
-  const el=document.createElement('div'); el.className='r sys'; el.textContent='（接着上次未打完的比武）'; $('duelLog').appendChild(el);
+  if(duel.started&&!duel.over){ const el=document.createElement('div'); el.className='r sys'; el.textContent='（接着上次未打完的比武）'; $('duelLog').appendChild(el); }
   renderDuel(); $('duelMask').classList.add('on'); $('duelLog').scrollTop=$('duelLog').scrollHeight;
   if(duel.over){
     if(duel.dead) showDuelDeath();
@@ -3613,168 +3882,156 @@ function restoreConvo(){
   $('convoGift').style.display='none'; $('convoText').value='';
   $('convoMask').classList.add('on'); $('convoMsgs').scrollTop=$('convoMsgs').scrollHeight;
 }
-function renderDuel(){
-  const p=S.player, o=duel.opp;
-  const bar=(v,max,color,cls)=>`<div class="bar ${cls||''}"><i style="width:${clamp(v/max*100,0,100)}%;background:${color}"></i></div>`;
-  $('fP').innerHTML=`<div class="fhead">${avatarFace(p,'duelface',null,true)}<div><div class="fname">${esc(p.name)}</div><div class="fsub">${esc(titleOf(p))} · 武功${duel.pW}</div></div></div>
-    <div class="blab"><span>气血</span><span>${duel.pHp}/100</span></div>${bar(duel.pHp,100,duel.pHp<30?'#9c2f24':'#4a6b45')}
-    <div class="blab"><span>内力</span><span>${duel.pQi}</span></div>${bar(duel.pQi,100,'#4a6b8a','qi')}`;
-  $('fO').innerHTML=`<div class="fhead ro">${avatarFace(o,'duelface')}<div><div class="fname">${esc(o.name)}</div><div class="fsub">${esc(o.identity)} · 武功${duel.oppW}</div></div></div>
-    <div class="blab"><span>气血</span><span>${duel.oHp}/100</span></div>${bar(duel.oHp,100,duel.oHp<30?'#9c2f24':'#4a6b45')}
-    <div class="blab"><span>内力</span><span>${duel.oQi}</span></div>${bar(duel.oQi,100,'#4a6b8a','qi')}`;
+/* ---- 比武画面：照 beat 一拍一拍放 ---- */
+let duelTimer=null, duelTok=0;
+function duelStop(){ if(duelTimer){ clearTimeout(duelTimer); duelTimer=null; } duelTok++; }
+function duelSpeed(){ return (S&&S.duelSpeed&&AD.speeds[S.duelSpeed])?S.duelSpeed:'normal'; }
+const AD_STYLE_COLOR={'刚猛':'var(--accent)','守御':'var(--blue)','诡变':'var(--purple)','绝学':'var(--gold)','身法':'var(--ink-soft)'};
+
+function duelView(){
+  const E=duel.eng, v=duel.view;
+  if(v) return v;
+  return {pHp:E.P.hp,oHp:E.O.hp,pQi:E.P.qi,oQi:E.O.qi,pSh:E.P.shield,oSh:E.O.shield,pSt:adStTxt(E.P),oSt:adStTxt(E.O),pCd:E.P.skills.map(s=>s.cur||0),oCd:E.O.skills.map(s=>s.cur||0)};
+}
+function duelChips(u,cds,right){
+  const sk=u.skills.map((s,i)=>{
+    const cd=cds[i]||0, wait=s.cat==='sure'&&cd>0;
+    const tag=s.cat==='sure'?(wait?`${cd}`:'备'):s.cat==='active'?`${Math.round(s.rate*100)}%`:'';
+    return `<span class="dchip${wait?' wait':''}" style="--c:${AD_STYLE_COLOR[s.style]||'var(--ink)'}" title="${esc(s.style)}${s.cat==='sure'?'·必中·冷却'+s.cd:'·几率出手'}"><b>${esc(s.name)}</b><i>${tag}</i></span>`;
+  });
+  if(u.flee) sk.push(`<span class="dchip" style="--c:var(--ink-soft)" title="身法·首回合先手，更难被打中"><b>${esc((u.side==='p'?(adSkillsFrom(S.player.arts).best['身法']||{}).name:(npcKit(duel.opp).find(k=>k.style==='身法')||{}).name)||'身法')}</b><i>被动</i></span>`);
+  if(!sk.length) sk.push(`<span class="dchip none">${u.side==='p'?'无武学，只凭拳脚':'只凭拳脚'}</span>`);
+  return `<div class="dchips${right?' r':''}">${sk.join('')}</div>`;
+}
+function renderDuel(onlyFighters){
+  const p=S.player, o=duel.opp, E=duel.eng, v=duelView();
+  const bar=(val,max,color,cls,sh)=>`<div class="bar ${cls||''}"><i style="width:${clamp(val/max*100,0,100)}%;background:${color}"></i>${sh?`<b class="shl" style="width:${clamp(sh,0,100)}%"></b>`:''}</div>`;
+  const side=(u,who,face,name,sub,hp,qi,sh,cds,right,sts)=>`<div class="fhead${right?' ro':''}"><div class="dface" id="face_${who}">${face}<em class="dsk"></em></div><div><div class="fname">${esc(name)}${(sts||[]).map(t=>`<span class="sttag">${t}</span>`).join('')}</div><div class="fsub">${esc(sub)}</div></div></div>
+    <div class="blab"><span>气血${sh?` <span class="shtag">护体${sh}</span>`:''}</span><span>${hp}/100</span></div>${bar(hp,100,hp<30?'#9c2f24':'#4a6b45','',sh)}
+    <div class="blab"><span>内力</span><span>${qi}</span></div>${bar(qi,100,'#4a6b8a','qi')}
+    ${duelChips(u,cds,right)}`;
+  $('fP').innerHTML=side(E.P,'p',avatarFace(p,'duelface',null,true),p.name,`${titleOf(p)} · 武功${duel.pW}`,v.pHp,v.pQi,v.pSh,v.pCd,false,v.pSt);
+  $('fO').innerHTML=side(E.O,'o',avatarFace(o,'duelface'),o.name,`${o.identity||''} · 武功${duel.oppW}`,v.oHp,v.oQi,v.oSh,v.oCd,true,v.oSt);
+  if(duel.over||onlyFighters) return;
   const act=$('duelActions');
-  if(duel.over){ return; }
-  act.innerHTML=`<div class="stances">${Object.entries(STANCES).map(([k,s])=>{
-    const a=artFor(k), b=artBonus(k), c=actionCost(k);
-    const sub=a?`${a.name}·熟${a.level}${b>0?` (+${b})`:''}`:(b<0?`无${STYLE_OF_STANCE[k]}武学 (${b})`:s.desc);
-    return `<button class="stance s-${k}" data-k="${k}" ${duel.pQi<c?'disabled':''}><b>${s.name}</b><small>${esc(sub)}</small></button>`;
-  }).join('')}</div>
-  <div class="stances" style="margin-top:6px">${Object.entries(TACTICS).map(([k,t])=>{
-    let avail=true, note=t.desc;
-    if(k==='Y'){ const m=(S.player.items['医药']||[])[0]; avail=!!m; note=m?('用【'+m.name+'】'):'囊中无伤药'; }
-    if(k==='X'){ const a=findAmmo(); avail=!!a; note=a?('掷出【'+a.item.name+'】'+(a.poison?'（有毒）':'')):'无暗器毒物'; }
-    if(duel.pQi<t.cost) avail=false;
-    return `<button class="stance s-D" data-k="${k}" ${avail?'':'disabled'}><b>${t.name}</b><small>${esc(note)}</small></button>`;
-  }).join('')}</div>
-  <div style="text-align:center;margin-top:8px"><button class="cbtn alt" id="duelYield">认输</button></div>`;
-  act.querySelectorAll('.stance').forEach(b=>b.onclick=()=>duelRound(b.dataset.k));
-  $('duelYield').onclick=()=>endDuel('yield');
+  const spd=duelSpeed();
+  const speedRow=`<div class="dspeed">${Object.keys(AD.speeds).map(k=>`<button class="${k===spd?'on':''}" data-s="${k}">${AD.speedTxt[k]}</button>`).join('')}</div>`;
+  if(!duel.playing){
+    const am=!duel.started&&findAmmo();
+    act.innerHTML=`<div class="dctl">
+      ${am?`<label class="ddart"><input type="checkbox" id="duelDart" ${duel.useDart?'checked':''}> 开打先掷【${esc(am.item.name)}】${am.poison?'（有毒）':''}<small>会涨恶名${duel.opp.alignment==='正派'?'，对方更恨你':''}</small></label>`:''}
+      <div class="dbtns">${speedRow}<button class="mbtn primary" id="duelStart">${duel.started?'接着打':'开 打'}</button><button class="mbtn" id="duelSkip">速战</button></div>
+    </div>`;
+    if(am) $('duelDart').onchange=e=>{ duel.useDart=e.target.checked; };
+    $('duelStart').onclick=()=>duelBegin(false);
+    $('duelSkip').onclick=()=>duelBegin(true);
+  }else{
+    act.innerHTML=`<div class="dctl"><div class="dbtns">${speedRow}<button class="mbtn" id="duelSkip">速战</button>
+      <button class="mbtn" id="duelFlee" ${E.flee?'disabled':''}>${E.flee?'伺机脱身…':'脱身'}</button><button class="mbtn" id="duelYield">认输</button></div></div>`;
+    $('duelSkip').onclick=()=>duelFast();
+    $('duelFlee').onclick=()=>{ if(!duel||duel.over) return; E.flee=true; $('duelFlee').disabled=true; $('duelFlee').textContent='伺机脱身…'; };
+    $('duelYield').onclick=()=>{ if(!duel||duel.over) return; duelStop(); duelFlush(); if(duel.over) return; duel.playing=false; duel.view=null; renderDuel(); endDuel('yield'); };
+  }
+  act.querySelectorAll('.dspeed button').forEach(b=>b.onclick=()=>{
+    S.duelSpeed=b.dataset.s; saveGame();
+    act.querySelectorAll('.dspeed button').forEach(x=>x.classList.toggle('on',x===b));
+    // 换挡立刻见效：作废排队中的拍子，画面对齐当前战况，马上接着放
+    if(duel.playing&&duelTimer){ duelStop(); duelFlush(); duelNext(); }
+  });
 }
-function oppStance(){
-  const pr=duel.profile;
-  let w={A:.40,D:.32,F:.22,S:0,R:0};
-  if(pr.agg){w={A:.55,D:.15,F:.30,S:0,R:0};}
-  if(pr.def){w={A:.30,D:.48,F:.18,S:0,R:0};}
-  if(pr.trick){w={A:.28,D:.24,F:.44,S:0,R:0};}
-  if(duel.oQi>=40) w.S=pr.agg?.28:.18;
-  // 见你要倒了就抢攻收割
-  if(duel.pHp<=25){ w.A+=.30; if(duel.oQi>=40) w.S+=.20; w.D=Math.max(0,w.D-.15); }
-  // 自己撑不住了就先稳住
-  if(duel.oHp<=35){ w.D+=.20; w.F=Math.max(0,w.F-.10); }
-  // 内力见底，绝招险招都使不出来
-  if(duel.oQi<40) w.S=0;
-  if(duel.oQi<15) w.F=0;
-  if(duel.oQi<25) w.D+=.20;
-  if(duel.oHp<=30&&(pr.coward||pr.trick||duel.opp.alignment==='邪道')) w.R=.35;
-  const tot=Object.values(w).reduce((a,b)=>a+b,0);
-  let r=Math.random()*tot;
-  for(const k in w){ r-=w[k]; if(r<=0) return k; }
-  return 'A';
-}
-function power(base,stance,roll,bonus){ let v=base+roll+(bonus||0); if(stance==='S') v+=15; if(stance==='F') v+=roll-10; return v; }
-// 对手的路数加成：性格所好 +4，成名绝技（绝招）+4
-function oppBonus(stance){
-  const pr=duel.profile;
-  if(stance==='S') return 3;                                    // 成名绝技
-  if((pr.agg&&stance==='A')||(pr.def&&stance==='D')||(pr.trick&&stance==='F')) return 3;
-  return 0;
-}
-function duelRound(pk){
+function duelBegin(fast){
   if(!duel||duel.over) return;
-  const ok=oppStance();
-  const pr=d20(), or=d20();
-  const myArt=artFor(pk);
-  const P=power(duel.pW,pk,pr,artBonus(pk)), O=power(duel.oppW,ok,or,oppBonus(ok)-(duel.oPoison>0?5:0));
-  const d=P-O;
-  let pDmg=0,oDmg=0,parts=[],special=null;
-  const me=S.player.name, him=duel.opp.name;
-  const pArt=myArt?myArt.name:playerArtName(), oArt=oppArtName();
-  duel.pQi=clamp(duel.pQi-actionCost(pk)+5); duel.oQi=clamp(duel.oQi-STANCES[ok].cost+5);
-  // 用得上的武学越练越熟
-  if(myArt){ duel.artUse=duel.artUse||{}; duel.artUse[myArt.name]=(duel.artUse[myArt.name]||0)+1; }
-  const openP={A:`你使一招「${pArt}」抢攻`,D:`你沉腰坐马凝神守势`,F:`你身形一晃虚招迭出`,S:`你运足内力施出绝招「${pArt}」`,R:`你虚晃一招转身欲走`,
-    H:`你退开半步盘膝调息，真气游走周身`,Y:`你退开半步去摸伤药`,X:`你手腕一抖，暗器脱手`}[pk];
-  const openO={A:`${him}以「${oArt}」直取要害`,D:`${him}不慌不忙守住门户`,F:`${him}忽然变招诡异莫测`,S:`${him}怒喝一声倾力施出「${oArt}」`,R:`${him}一晃身便要溜走`}[ok];
-  parts.push(openP+'，'+openO+'。');
-  const atk=k=>k==='A'||k==='S';
-  if(TACTICS[pk]){
-    // 使手段的这一回合门户大开，对手若抢攻要吃亏
-    let heal=0;
-    if(pk==='H'){ heal=rnd(14,26)+Math.round(duel.pQi/10); parts.push('气血渐复。'); }
-    else if(pk==='Y'){
-      const med=(S.player.items['医药']||[])[0];
-      if(med){ S.player.items['医药']=S.player.items['医药'].filter(x=>x!==med); heal=rnd(24,40); parts.push(`你倒出【${med.name}】仰头吞下，伤处一阵温热。`); }
-      else parts.push('可你囊中并无伤药，白白空了一手。');
-    }
-    else if(pk==='X'){
-      const am=findAmmo();
-      if(am){
-        S.player.items[am.cat]=S.player.items[am.cat].filter(x=>x!==am.item);
-        oDmg=rnd(14,28)+Math.round(wuNorm(duel.pW)/12);
-        if(or>=17){ oDmg=Math.round(oDmg*0.35); parts.push(`【${am.item.name}】破空而去，${him}侧身避过大半。`); }
-        else parts.push(`【${am.item.name}】破空而去，${him}猝不及防中了一记。`);
-        if(am.poison){ duel.oPoison=(duel.oPoison||0)+3; parts.push('毒性一发，其面色转青，手上劲力也松了。'); }
-        if(duel.opp.alignment==='正派'){ duel.opp['好感度']=clamp(duel.opp['好感度']-10); }
-        S.player['恶名']=clamp(S.player['恶名']+2);
-        duel.usedDart=true;
-      } else parts.push('可你身上并无暗器毒物可用。');
-    }
-    if(heal){ duel.pHp=clamp(duel.pHp+heal,0,100); parts.push(`（气血 +${heal}）`); }
-    if(atk(ok)||ok==='F'){
-      const guard=duel.pW+pr-(pk==='Y'?6:10);      // 吞粒药丸比盘膝运功快得多
-      pDmg=clamp(Math.round(10+Math.max(0,O-guard)*0.6),6,38);
-      parts.push(`${him}岂容你从容——一招抢入，你${dmgTxt(pDmg)}。`);
-    } else if(pk==='H'){ const bonus=Math.round(heal*0.5); duel.pHp=clamp(duel.pHp+bonus,0,100); parts.push(`${him}并不上前，你从容调息，又多回了${bonus}。`); }
-    else { parts.push(`${him}并不上前，只冷冷看着。`); }
+  duel.started=true; duel.playing=true;
+  if(!duel.eng.round&&duel.useDart) duelSys('你暗扣一枚暗器在掌心。');
+  if(fast) return duelFast();
+  renderDuel(); duelNext();
+}
+// 一拍停多久：看这一拍值不值
+function beatMs(b,round){
+  let w=1;
+  if(b.skill) w+=0.55;
+  if(b.crit) w+=0.6;
+  if(b.hits.some(h=>h.heal)) w+=0.3;
+  if(b.end) w+=1;
+  const a=b.after;
+  if(a&&(a.pHp<30||a.oHp<30)) w+=0.4;
+  if(a&&(a.pHp<=0||a.oHp<=0)) w+=1.1;
+  const decay=round>=13?0.62:round>=7?0.8:1;
+  return Math.round(520*w*AD.speeds[duelSpeed()]*decay);
+}
+function roundHtml(n){ return `<div class="r" data-rn="${n}"><span class="rn">第${cnNum(n)}回合</span></div>`; }
+function beatHtml(b,him){
+  const tag=h=>h.dot?'毒':h.rf?'反震':h.crit?'重击':'';
+  const hs=b.hits.map(h=>h.heal?`<span class="heal">${h.who==='p'?'你':esc(him)} +${h.heal}</span>`:`<span class="dmg${h.crit?' crit':''}">${h.who==='p'?'你':esc(him)}${tag(h)?'·'+tag(h):''} -${h.dmg}</span>`).join('　');
+  return `<span class="bt">${esc(b.txt.join('，'))}。${hs?' '+hs:''}</span>`;
+}
+let duelQ=null;   // 本回合还没放完的拍子
+function duelNext(){
+  if(!duel||duel.over||!duel.playing) return;
+  const r=adRound(duel);
+  const tok=++duelTok;
+  // 算完就先存：回合的全部战报一次写进存档，关页面重开不会让这一回合重掷
+  const full=roundHtml(r.n).replace('</div>',r.beats.map(b=>beatHtml(b,duel.opp.name)).join('')+'</div>');
+  snapshotDuel(full); saveGame();
+  const row=document.createElement('div'); row.innerHTML=roundHtml(r.n); const rowEl=row.firstChild; $('duelLog').appendChild(rowEl);
+  duelQ={r,i:0,rowEl};
+  // 先把画面拨回这一回合开打前
+  duel.view=r.prev; renderDuel(true);
+  const step=()=>{
+    if(tok!==duelTok||!duel) return;
+    const q=duelQ;
+    if(q.i>=q.r.beats.length){ duelQ=null; duel.view=null; return duelRoundDone(q.r); }
+    const b=q.r.beats[q.i++];
+    duel.view=b.after; renderDuel(true); duelFx(b);
+    q.rowEl.insertAdjacentHTML('beforeend',beatHtml(b,duel.opp.name));
+    $('duelLog').scrollTop=$('duelLog').scrollHeight;
+    duelTimer=setTimeout(step,beatMs(b,q.r.n));
+  };
+  step();
+}
+// 快进/换挡时把这一回合剩下的拍子一次写完
+function duelFlush(){
+  const q=duelQ; if(!q) return;
+  while(q.i<q.r.beats.length) q.rowEl.insertAdjacentHTML('beforeend',beatHtml(q.r.beats[q.i++],duel.opp.name));
+  duelQ=null; duel.view=null; renderDuel();
+  if(q.r.end){ duelRoundDone(q.r,true); return true; }
+  return false;
+}
+function duelRoundDone(r,noNext){
+  snapshotDuel(); saveGame();
+  if(r.end) return duelFinish(r.end);
+  if(!noNext) duelTimer=setTimeout(duelNext,Math.round(260*AD.speeds[duelSpeed()]));
+}
+// 速战：不看演出，直接出结果
+function duelFast(){
+  if(!duel||duel.over) return;
+  duelStop();
+  duel.started=true; duel.playing=true;
+  if(duelFlush()) return;
+  let r=null, html='';
+  do{ r=adRound(duel); html+=roundHtml(r.n).replace('</div>',r.beats.map(b=>beatHtml(b,duel.opp.name)).join('')+'</div>'); }while(!r.end);
+  $('duelLog').insertAdjacentHTML('beforeend',html); $('duelLog').scrollTop=$('duelLog').scrollHeight;
+  duel.view=null;
+  duelFinish(r.end);
+}
+function duelFinish(end){
+  duelStop(); duel.playing=false; duel.view=null;
+  renderDuel();
+  endDuel(end);
+}
+// 出手的镶金边前倾，挨打的抖一下，数字往上飘
+function duelFx(b){
+  const me=$('face_'+b.who), foe=$('face_'+(b.who==='p'?'o':'p'));
+  if(me){ me.classList.add('act'); if(b.skill){ const s=me.querySelector('.dsk'); s.textContent=b.skill; s.classList.add('on'); } }
+  for(const h of b.hits){
+    const f=$('face_'+h.who); if(!f) continue;
+    if(h.dmg&&!h.dot&&f!==me) f.classList.add('hit');
+    const el=document.createElement('span');
+    el.className='dfloat'+(h.heal?' heal':'')+(h.crit?' crit':'');
+    el.textContent=h.heal?'+'+h.heal:(h.dot?'毒 ':h.rf?'震 ':'')+'-'+h.dmg;
+    f.appendChild(el);
   }
-  else if(pk==='R'||ok==='R'){
-    if(pk==='R'){
-      // 打得越久对方也越乏，命悬一线时更豁得出去；掷 20 必走脱
-      const escVal=duel.pW+pr+6+artBonus('R')+Math.min(6,duel.round*1.5)+(duel.pHp<=30?5:0)-(hasScar('跛足')?8:0);
-      const esc_=pr===20||escVal>duel.oppW+or;
-      if(esc_){ special='escape'; parts.push('对方追之不及，你已跃出圈外，头也不回地去了。'); }
-      else { pDmg=10+Math.round(Math.max(0,O-P)*0.5); parts.push(`却被${him}追上，背心挨了一记，${dmgTxt(pDmg)}。`); }
-    }else{
-      const esc_=duel.oppW+or+6>duel.pW+pr;
-      if(esc_){ special='oppEscape'; parts.push(`${him}脚下生风，转眼没了踪影。`); }
-      else { oDmg=10+Math.round(Math.max(0,P-O)*0.5); parts.push(`却被你一步赶上，后背结结实实挨了一下，${dmgTxt(oDmg)}。`); }
-    }
-  }else if(atk(pk)&&atk(ok)){
-    pDmg=clamp(12+Math.max(0,-d)*0.9,4,45); oDmg=clamp(12+Math.max(0,d)*0.9,4,45);
-    parts.push(d>=0?`两下硬碰硬，你占了上风：${him}${dmgTxt(oDmg)}，你自己也${dmgTxt(pDmg)}。`:`两下硬碰硬，你吃了亏：你${dmgTxt(pDmg)}，${him}只${dmgTxt(oDmg)}。`);
-  }else if(atk(pk)&&ok==='D'){
-    const bonus=pk==='S'?8:0;
-    if(d+bonus>0){ oDmg=Math.round((d+bonus)*(pk==='S'?0.9:0.6))+(pk==='S'?8:4); parts.push(pk==='S'?`守势在你绝招之下形同虚设，${him}${dmgTxt(oDmg)}。`:`你破开守势，${him}${dmgTxt(oDmg)}。`); }
-    else { pDmg=Math.round(-d*(pk==='S'?0.4:0.5))+(pk==='S'?3:4); duel.oQi=clamp(duel.oQi+8); parts.push(`${him}守得滴水不漏，借力反震，你${dmgTxt(pDmg)}。`); }
-  }else if(pk==='D'&&atk(ok)){
-    const bonus=ok==='S'?8:0;
-    if(-d+bonus>0){ pDmg=Math.round((-d+bonus)*(ok==='S'?0.9:0.6))+(ok==='S'?8:4); parts.push(ok==='S'?`你竭力招架仍被绝招震开，${dmgTxt(pDmg)}。`:`守势被破，你${dmgTxt(pDmg)}。`); }
-    else { oDmg=Math.round(d*(ok==='S'?0.4:0.5))+(ok==='S'?3:4); duel.pQi=clamp(duel.pQi+8); parts.push(`你稳稳接下，顺势反击，${him}${dmgTxt(oDmg)}。`); }
-  }else if(pk==='D'&&ok==='D'){
-    duel.pQi=clamp(duel.pQi+10); duel.oQi=clamp(duel.oQi+10);
-    parts.push('两人各自守住门户，目光相对，谁也不肯先动，各自调匀了气息。');
-  }else if(atk(pk)&&ok==='F'){
-    if(O>P){ pDmg=Math.round((O-P)*1.1)+12; parts.push(`${him}的奇招竟从你意想不到的角度攻来，你${dmgTxt(pDmg)}。`); }
-    else { oDmg=Math.round((P-O)*1.0)+10; parts.push(`${him}弄巧成拙，露出大破绽，被你一招打实，${dmgTxt(oDmg)}。`); }
-  }else if(pk==='F'&&atk(ok)){
-    if(P>O){ oDmg=Math.round((P-O)*1.1)+12; parts.push(`你的险招奏效，${him}${dmgTxt(oDmg)}。`); }
-    else { pDmg=Math.round((O-P)*1.0)+10; parts.push(`险招落空，你门户大开，${dmgTxt(pDmg)}。`); }
-  }else if(pk==='F'&&ok==='D'){
-    if(P>O-8){ oDmg=Math.round(Math.max(0,P-O+8)*0.7)+10; parts.push(`你虚实相生，骗过了${him}的守势，${him}${dmgTxt(oDmg)}。`); }
-    else { pDmg=6; parts.push(`${him}老辣得很，看破了你的虚招，你${pick(MISS_TXT)}，反吃了一记。`); }
-  }else if(pk==='D'&&ok==='F'){
-    if(O>P-8){ pDmg=Math.round(Math.max(0,O-P+8)*0.7)+10; parts.push(`${him}虚实相生，你守势被骗开，${dmgTxt(pDmg)}。`); }
-    else { oDmg=6; parts.push(`你目光如炬看破虚招，${him}${pick(MISS_TXT)}，反被你点了一下。`); }
-  }else if(pk==='F'&&ok==='F'){
-    pDmg=clamp(10+Math.max(0,-d)*0.8,3,40); oDmg=clamp(10+Math.max(0,d)*0.8,3,40);
-    parts.push(`两人都出了险招，招式在半空绞成一团，你${dmgTxt(pDmg)}，${him}${dmgTxt(oDmg)}。`);
-  }
-  if(duel.oPoison>0){ const pd=rnd(4,9); duel.oHp=clamp(duel.oHp-pd,0,100); duel.oPoison--; parts.push(`毒性又发，${him}气血再损${pd}。`); }
-  duel.pHp=clamp(duel.pHp-pDmg,0,100); duel.oHp=clamp(duel.oHp-oDmg,0,100);
-  duel.round++;
-  const plain=`第${duel.round}回合：你${ACTIONS[pk].name}${myArt?`·${myArt.name}`:''}(骰${pr}，力${P})，${him}${STANCES[ok].name}(骰${or}，力${O})。${parts.join('')}${pDmg?`你气血-${pDmg}`:''}${pDmg&&oDmg?'，':''}${oDmg?`${him}气血-${oDmg}`:''}。（你${duel.pHp}/${him}${duel.oHp}）`;
-  duel.log.push({plain,pk,ok,pr,or,pDmg,oDmg});
-  const el=document.createElement('div'); el.className='r';
-  el.innerHTML=`<span class="rn">第${cnNum(duel.round)}回合</span>${esc(parts.join(''))} ${pDmg?`<span class="dmg">你 -${pDmg}</span>`:''} ${oDmg?`<span class="dmg">${esc(him)} -${oDmg}</span>`:''}<span style="color:#a89a80;font-size:12px"> 〔骰 ${pr} : ${or}〕</span>`;
-  $('duelLog').appendChild(el); $('duelLog').scrollTop=$('duelLog').scrollHeight;
-  renderDuel(); snapshotDuel(); saveGame();
-  if(special==='escape') return endDuel('escape');
-  if(special==='oppEscape') return endDuel('oppEscape');
-  if(duel.pHp<=0) return endDuel('lose');
-  if(duel.oHp<=0) return endDuel('win');
-  // 对手认输
-  if(duel.oHp<=25&&!duel.profile.agg&&duel.opp.alignment!=='邪道'&&Math.random()<0.4) return endDuel('oppYield');
-  if(duel.friendly&&duel.oHp<=35&&Math.random()<0.5) return endDuel('oppYield');
+  if(b.miss&&foe){ const el=document.createElement('span'); el.className='dfloat miss'; el.textContent='闪'; foe.appendChild(el); }
 }
 function duelSys(t){ const el=document.createElement('div'); el.className='r sys'; el.textContent=t; $('duelLog').appendChild(el); $('duelLog').scrollTop=$('duelLog').scrollHeight; }
 // 比武结束后的「续写此战」面板（读档恢复时也用它）
@@ -3836,7 +4093,7 @@ function settleVendetta(kind){
     // 放他走：差得远的从此不敢再来，旗鼓相当的记着这笔账
     if(r<0.7){ v.heat=0; news(`${v.name}败在你手下，自知不是对手，这梁子算是撂下了`); ledger(`${v.name}服软，恩怨了结`); }
     else { v.heat=30; v.cool=rnd(10,18); news(`${v.name}败走，临去撂下一句狠话`); }
-  }else if(kind==='oppEscape'){
+  }else if(kind==='oppEscape'||kind==='draw'){
     v.heat=40; v.cool=rnd(6,10);
   }else if(kind==='lose'||kind==='yield'){
     v.heat=0; news(`${v.name}出了这口恶气，暂时不会再来找你`); ledger(`败在${v.name}手下，这桩仇他算是了了`);
@@ -3870,6 +4127,11 @@ function endDuel(kind){
     return showWinChoice();
   }
   if(kind==='oppYield'){ S.stats.duelWins++; duelSys(`${him}退开一步，拱手认输。`); return finish(`${him}不敌，主动认输，主角获胜。`); }
+  if(kind==='draw'){
+    const ahead=duel.pHp>=duel.oHp;
+    duelSys(`斗了${cnNum(AD.maxRounds)}回合不分胜负，两人各自收手。`);
+    return finish(`主角与${him}斗了${AD.maxRounds}回合不分胜负，双方罢手（主角${ahead?'略占上风':'略处下风'}）。`);
+  }
   if(kind==='oppEscape'){ duelSys(`${him}逃了。`); return finish(`${him}不敌，趁隙逃走，主角未能留下他。`); }
   if(kind==='escape'){ S.stats.escapes++; duelSys('你逃出了战圈。'); return finish(`主角不敌，成功脱身逃走，${him}未能追上。`); }
   if(kind==='yield'){
@@ -4000,17 +4262,39 @@ function warBlock(f){
 
 /* ---- 一对一：战力＋骰，输的人死伤 ---- */
 function warHarsh(mine){ return mine?Math.max(0.12,fdm().injury):Math.max(0.5,fdm().injury); }
+/* 先锋、中军的一对一也走自动比武引擎（速战，不放演出），跟主将阵、平时比武一个口径。
+   门人和敌派弟子没有武学清单，照 NPC 的办法按名字配招，存进各自的 kit。
+   带伤上阵：旧伤折成开打时的气血。 */
+function adQuick(a,b){
+  // 阵前临场发挥：各自武功上下浮动，保留旧制一半的骰子起伏，阵战才有以弱胜强
+  const mk=(side,x)=>{
+    const k=adSkillsFrom(npcKit(x)), W=Math.max(1,num(x['武功'])+Math.round(rollMod(d20())*AD.warSwing));
+    return adUnit(side,{name:x.name,hp:clamp(100-num(x.hurt)*0.6,30,100),qi:clamp(50+W/adScale()/2),W,best:k.best,skills:k.skills,weapon:''});
+  };
+  // 引擎里只有对手那一边会认输逃跑，谁站哪边掷硬币定，免得哪一方白占便宜
+  const sw=Math.random()<0.5; if(sw){ const t=a; a=b; b=t; }
+  const d={opp:b,profile:oppProfile(b),friendly:false,log:[],round:0};
+  d.eng={P:mk('p',a),O:mk('o',b),round:0,log:[],flee:false};
+  const used={p:{},o:{}};
+  let r; do{ r=adRound(d); for(const bt of r.beats) if(bt.skill&&bt.skill!=='服药') used[bt.who][bt.skill]=(used[bt.who][bt.skill]||0)+1; }while(!r.end);
+  const aWin=r.end==='win'||r.end==='oppYield'||r.end==='oppEscape'||(r.end==='draw'&&d.eng.P.hp>=d.eng.O.hp);
+  const use=used[aWin?'p':'o'];
+  if(sw) return {aWin:!aWin,end:r.end,rounds:d.round,hpLeft:aWin?d.eng.P.hp:d.eng.O.hp,loserHp:aWin?d.eng.O.hp:d.eng.P.hp,top:Object.keys(use).sort((x,y)=>use[y]-use[x])[0]||''};
+  return {aWin,end:r.end,rounds:d.round,hpLeft:aWin?d.eng.P.hp:d.eng.O.hp,loserHp:aWin?d.eng.O.hp:d.eng.P.hp,top:Object.keys(use).sort((x,y)=>use[y]-use[x])[0]||''};
+}
 function clash(a,b){
-  const av=num(a['武功'])+rollMod(d20())-Math.round(num(a.hurt)/4);
-  const bv=num(b['武功'])+rollMod(d20())-Math.round(num(b.hurt)/4);
-  const aWin=av>=bv, gap=Math.abs(av-bv);
+  const q=adQuick(a,b);
+  const aWin=q.aWin;
   const loser=aWin?b:a, winner=aWin?a:b;
-  const killP=Math.min(0.55,0.10+gap/280)*warHarsh(loser===a);
+  // 赢得越轻松，输的一方越可能交代在这里；对手认输或罢斗的不死人
+  const gap=Math.round(q.hpLeft*0.6);
+  const soft=q.end==='oppYield'||q.end==='draw'||q.end==='oppEscape';
+  const killP=soft?0:Math.min(0.55,0.10+gap/280)*warHarsh(loser===a);
   let dead=false;
   if(Math.random()<killP){ loser.alive=false; dead=true; }
   else loser.hurt=clamp(num(loser.hurt)+rnd(25,70));
-  if(Math.random()<0.35) winner.hurt=clamp(num(winner.hurt)+rnd(5,25));
-  return {aWin,dead,loser,winner,gap};
+  if(q.hpLeft<70) winner.hurt=clamp(num(winner.hurt)+Math.round((100-q.hpLeft)/3));
+  return {aWin,dead,loser,winner,gap,rounds:q.rounds,top:q.top,end:q.end};
 }
 function warSys(t,cls){
   if(!war) return;
@@ -4057,9 +4341,10 @@ function warRound(label, minePicked, foePicked){
     if(!b){ mw++; warSys(`${esc(a.name)}无人可敌，这一场算本派的。`,'good'); continue; }
     const r=clash(a,b);
     const win=r.aWin;
-    const loser=r.loser, txt=r.dead?'当场毙命':(num(loser.hurt)>=60?'重伤倒地':'负伤退下');
-    if(win){ mw++; warSys(`${esc(a.name)}(${a['武功']}) 胜 ${esc(b.name)}(${b['武功']})，${esc(b.name)}${txt}。`,'good'); }
-    else   { tw++; warSys(`${esc(a.name)}(${a['武功']}) 败于 ${esc(b.name)}(${b['武功']})，${esc(a.name)}${txt}。`,'bad'); }
+    const loser=r.loser, txt=r.dead?'当场毙命':r.end==='oppYield'?'拱手认输':r.end==='draw'?'力竭罢手':(num(loser.hurt)>=60?'重伤倒地':'负伤退下');
+    const how=`斗了${r.rounds<=10?'零一二三四五六七八九十'[r.rounds]:r.rounds<20?'十'+('零一二三四五六七八九'[r.rounds-10]||'').replace('零',''):r.rounds}回合${r.top?`，${esc(r.winner.name)}凭一路「${esc(r.top)}」`:''}`;
+    if(win){ mw++; warSys(`${esc(a.name)}(${a['武功']}) 胜 ${esc(b.name)}(${b['武功']})，${how}，${esc(b.name)}${txt}。`,'good'); }
+    else   { tw++; warSys(`${esc(a.name)}(${a['武功']}) 败于 ${esc(b.name)}(${b['武功']})，${how}，${esc(a.name)}${txt}。`,'bad'); }
     (r.dead?(loser.id?war.myDead:war.foeDead):(loser.id?war.myHurt:war.foeHurt)).push(loser.name);
   }
   if(mw>tw) war.me++; else if(tw>mw) war.them++;
@@ -4211,7 +4496,7 @@ ${judgeBlock(judge)}
 
 请把这一仗写成一段门派大战（400-650字）：
 - 按实录的顺序写，先锋、中军、主将三阵都要写到，阵亡和负伤的人要点名字，不许改写胜负、不许让死人活过来、不许让活人死。
-- 主将那一场按比武实录的回合铺陈，招式名用上（主角的武学：${(S.player.arts||[]).map(a=>a.name).join('、')||'无名野路子'}）。
+- 主将那一场按比武实录的回合铺陈（实录里「你」指主角），实录里「」中的招式名照原样用上；先锋、中军各场实录里写了凭哪一路招式取胜的，也要写到。
 - 再写这一仗之后的江湖：两派门人的反应、旁观者怎么说、${w.foe}那边接下来会怎么样。
 - 门派的数字（势力、威望、公帐、弟子）全部由引擎记账，你只管叙述，不要在任何字段里改动它们；factionUpdates 只在本派与${w.foe}之外的第三方门派要表态时才用。
 - 数值变化如实写入playerChanges（气血hp已由引擎结算，不要再写hp）与npcUpdates。
@@ -4910,7 +5195,8 @@ function showNpc(n){
   const rows=[
     ['所属势力',n.faction||'散人'],['立场',n.alignment],['与主角',n.relation],['心情',n.mood||'平静'],
     [love?'爱恋值':'好感度',(love?n['爱恋值']:n['好感度'])+' / 100'],
-    ['武功',n['武功']+' / 100'+(n.signature?'　绝技「'+n.signature+'」':'')],['谈吐',n['谈吐']+' / 100'],
+    ['武功',n['武功']+' / 100'+(n.signature?'　绝技「'+n.signature+'」':'')],
+    ['招式',(n.kit&&n.kit.length)?n.kit.map(k=>`${k.name}（${k.style}）`).join('、'):'未曾领教'],['谈吐',n['谈吐']+' / 100'],
     ['性格',(n.personality||[]).join('、')||'—'],
     ['相貌',[npcPortrait(n),n.appearance].filter(Boolean).join('；')||'—'],['备注',n.notes||'—']
   ];
