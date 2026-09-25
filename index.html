@@ -312,6 +312,12 @@ body{
 .field input,.field select{width:100%;background:rgba(255,252,240,.7);border:1px solid var(--paper-edge);border-radius:5px;font-family:inherit;font-size:15px;padding:9px 12px;color:var(--ink);outline:none}
 .field input:focus{border-color:var(--gold)}
 .field .note{font-size:12.5px;color:var(--ink-soft);margin-top:4px;line-height:1.6}
+.contact{margin-top:18px;padding:12px 14px;border:1px dashed var(--paper-edge);border-radius:6px;background:rgba(0,0,0,.03);font-size:13px;color:var(--ink-soft);line-height:1.7}
+.contact b{color:var(--ink);letter-spacing:1px}
+.contact .wx{display:inline-flex;align-items:center;gap:8px;margin-top:4px}
+.contact .wx code{font-family:ui-monospace,Menlo,monospace;font-size:14px;color:var(--accent);background:rgba(156,47,36,.07);padding:2px 8px;border-radius:4px;letter-spacing:1px}
+.contact .wx button{font:inherit;font-size:12px;padding:3px 10px;border:1px solid var(--paper-edge);border-radius:4px;background:transparent;color:var(--ink-soft);cursor:pointer}
+.contact .wx button:active{background:rgba(156,47,36,.08);border-color:var(--accent)}
 .mbtnrow{display:flex;gap:10px;margin-top:22px;flex-wrap:wrap}
 .seg{display:flex;gap:8px}
 .seg button{flex:1;padding:9px 0;border:1px solid var(--paper-edge);border-radius:5px;background:rgba(255,252,240,.6);font-family:inherit;font-size:15px;letter-spacing:3px;color:var(--ink-soft);cursor:pointer}
@@ -666,6 +672,10 @@ body{
         <option value="short">标准 —— 提示词更短，适合上下文小的模型</option>
       </select>
       <div class="note" id="cfgMemNote"></div>
+    </div>
+    <div class="contact">
+      <b>联系作者</b>　遇到 bug、有想法、想聊聊江湖，都欢迎加微信。
+      <div class="wx">微信号 <code id="wxId">lynchrrr</code><button type="button" id="wxCopy">复制</button></div>
     </div>
     <div class="mbtnrow">
       <button class="mbtn" id="cfgCancel">关闭</button>
@@ -6438,6 +6448,11 @@ document.addEventListener('keydown',e=>{
 $('settingsMask').onclick=e=>{ if(e.target===$('settingsMask')&&cfg.key) $('settingsMask').classList.remove('on'); };
 
 let toastTimer=null;
+document.getElementById('wxCopy').addEventListener('click',async()=>{
+  const id=document.getElementById('wxId').textContent;
+  try{ await navigator.clipboard.writeText(id); toast('已复制微信号 '+id); }
+  catch(e){ toast('复制失败，请手动抄一下：'+id); }
+});
 function toast(msg,cls){
   const t=$('toast');
   t.textContent=msg; t.style.display='block'; t.className=cls||'';
