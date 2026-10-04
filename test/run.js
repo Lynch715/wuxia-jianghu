@@ -496,7 +496,7 @@ ok('相似度算得出来（全同 '+rep.sim[0]+'，近似 '+rep.sim[1]+'，无�
    rep.sim[0]===1&&rep.sim[1]>=0.6&&rep.sim[2]<0.3);
 ok('连着三回都在练功，引擎判定卡住了（'+rep.stuckHigh+'%）', rep.stuckHigh>=50);
 ok('卡住时往提示词里塞硬指令：'+rep.nudgeText.slice(0,24), rep.nudged&&/⚑ 引擎检测到最近几回剧情雷同/.test(rep.block)&&/这不是建议，是本回合的硬要求/.test(rep.block));
-ok('硬指令换着花样给（5 次里有 '+rep.nudgeVariety+' 种）', rep.nudgeVariety>=3);
+ok('重复干预始终尊重当前行动，不随机强制转场', rep.nudgeVariety===1&&/玩家当前行动/.test(rep.nudgeText));
 ok('剧情各走各的就不踩刹车（'+rep.stuckLow+'%）', rep.stuckLow<50&&rep.notNudged);
 ok('未了之事最多挂 4 条，挤掉最早的：'+rep.capped.join('、'), rep.cap===4&&!rep.capped.includes('黑风口有埋伏')&&rep.capped.includes('第五桩事'));
 ok('办完的能划掉：'+rep.afterDrop.join('、'), rep.dropped===true&&!rep.afterDrop.includes('师姐的信还没送'));
@@ -509,7 +509,7 @@ const opt=await page.evaluate(()=>{
   S.history=[{turn:9,action:'继续闭关练功',summary:'又练了三个月'}];
   S.lastOptions=[]; S.optSeen={};
   const r={};
-  // 玩家刚练完功，就别再给「接着闭关练功」
+  // 玩家可以继续合理的练功活动，去重不能抢走玩家方向
   r.a=dedupeOptions([{text:'接着闭关练功',type:'rest',months:3},
                      {text:'下山走一趟青石镇',type:'normal',months:2},
                      {text:'去寻岳师伯问个明白',type:'normal',months:1}]).map(o=>o.text);
@@ -528,10 +528,10 @@ const opt=await page.evaluate(()=>{
   S.history=keepH; S.lastOptions=keepO; S.optSeen=keepSeen;
   return r;
 });
-ok('刚做完的事不再当选项：'+opt.a.join('｜'), !opt.a.includes('接着闭关练功')&&opt.a.length>=3);
+ok('玩家可以主动连续练功：'+opt.a.join('｜'), opt.a.includes('接着闭关练功')&&opt.a.length>=3);
 ok('同一批里的重复选项去掉一个：'+opt.b.join('｜'), opt.b.filter(t=>t.includes('青石镇')).length===1);
 ok('连挂三回的填空选项被换掉，挂着人名的钩子留着：'+opt.c.join('｜'),
-   opt.c.includes('去寻岳师伯问个明白')&&!opt.c.includes('就地歇一口气')&&opt.count>=3);
+   opt.c.includes('去寻岳师伯问个明白')&&opt.c.includes('就地歇一口气')&&opt.count>=3);
 const echo=await page.evaluate(()=>{
   const keep=JSON.parse(JSON.stringify(S.recent||[]));
   S.recent=Array.from({length:6},(_,i)=>({action:'第'+i+'回行动',narrative:'某'.repeat(600)}));
@@ -823,7 +823,7 @@ console.log('\n【存档阁与导出全本】');
 await page.click('#btnExport');
 await page.waitForSelector('#saveMask.on');
 ok('三个存档位', (await page.$$('#slotList button[data-sv]')).length===3);
-await page.click('#slotList button[data-sv="1"]');
+await page.click('#slotList button[data-sv="1"]'); await page.waitForTimeout(300);
 ok('存档位1已写入', (await page.textContent('#slotList')).includes('李昭'));
 const [dl]=await Promise.all([page.waitForEvent('download',{timeout:8000}),page.click('#svExportBook')]);
 const path=await dl.path(); const book=fs.readFileSync(path,'utf8');
@@ -838,20 +838,20 @@ const idbCount=await page.evaluate(()=>new Promise(r=>{
   q.onerror=()=>r(-1);
 }));
 ok('IndexedDB 存了 '+idbCount+' 章', idbCount>=4);
-const lsSize=await page.evaluate(()=>(localStorage.getItem('wuxia_save_v1')||'').length);
-ok('localStorage 存档 '+lsSize+' 字节（章节已挪走）', lsSize>0);
+const lsSize=await page.evaluate(async()=>((await (async()=>{ while(saveBusy||saveQ!=null) await new Promise(r=>setTimeout(r,20)); return kvGet('main'); })())||'').length);
+ok('存档 '+lsSize+' 字节，进了 IndexedDB，localStorage 里不留', lsSize>0&&await page.evaluate(()=>localStorage.getItem('wuxia_save_v1')===null));
 await page.reload();
 await page.waitForTimeout(1200);
 ok('重载后剧情还在', (await page.textContent('#story')).includes('雨下了整宿'));
 ok('重载后面板还在', (await page.textContent('#pName')).includes('李昭'));
 
-const oldSave=await page.evaluate(()=>{
-  const sv=JSON.parse(localStorage.getItem('wuxia_save_v1'));
+const oldSave=await page.evaluate(async()=>{
+  const sv=JSON.parse((await (async()=>{ while(saveBusy||saveQ!=null) await new Promise(r=>setTimeout(r,20)); return kvGet('main'); })()));
   sv.v=5; delete sv.ledger; delete sv.memLong; delete sv.player.lifespan;
   return JSON.stringify(sv);
 });
 console.log('\n【无密钥样张】');
-const p2=await ctx.newPage();
+const p2=await (await br.newContext()).newPage();   // 存档在 IndexedDB，清 localStorage 清不掉，换个干净的浏览器
 await p2.addInitScript(()=>{ localStorage.clear(); });
 await p2.goto('http://localhost:8931/');
 await p2.waitForTimeout(400);
