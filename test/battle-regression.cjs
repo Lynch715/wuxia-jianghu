@@ -1,0 +1,9 @@
+const fs=require('fs'),vm=require('vm'),assert=require('assert/strict');
+function simulate(file){
+ const src=[...fs.readFileSync(file,'utf8').matchAll(/<script>([\s\S]*?)<\/script>/g)].map(m=>m[1]).join('\n').split('/* ================= 界面事件 ================= */')[0];
+ let seed=24681357;const math=Object.create(Math);math.random=()=>{seed=(1664525*seed+1013904223)>>>0;return seed/4294967296};
+ const c=vm.createContext({console,Math:math,localStorage:{getItem:()=>null,setItem(){}},document:{getElementById:()=>({addEventListener(){}}),addEventListener(){}},window:{addEventListener(){}},setTimeout:()=>0,clearTimeout(){}});
+ vm.runInContext(src,c);
+ return JSON.parse(JSON.stringify(vm.runInContext(`(()=>{S=newStateShell();S.freedom='free';S.player={name:'试剑',gender:'男',age:22,attributes:{武功:60,谈吐:50,才学:50,颖悟:50},hp:100,money:100,status:[],items:{武器:[],医药:[],其他:[],毒药:[],秘籍:[]},arts:[{name:'伏虎拳',style:'刚猛',level:40},{name:'铁布衫',style:'守御',level:30}],侠名:0,恶名:0};const out={};for(const gap of [-30,-10,0,10,30]){let wins=0,rounds=0;for(let i=0;i<100;i++){const opp={name:'对手',identity:'镖师',alignment:'中立',personality:['豪爽'],武功:60+gap,signature:'裂石掌',好感度:40,alive:true};const d={opp,profile:oppProfile(opp),pHp:100,oHp:100,pQi:clamp(50+wuNorm(60)/2),oQi:clamp(50+wuNorm(60+gap)/2),pW:attrVal(S.player,'武功'),oppW:60+gap,log:[],friendly:false,round:0};d.eng=adBuild(d);let r;let count=0;do{r=adRound(d);if(++count>200)throw new Error('比武不收敛');}while(!r.end);if(r.end!=='lose'&&r.end!=='yield'&&r.end!=='draw')wins++;rounds+=d.round;}out[gap]={wins,rounds};}return out;})()`,c)));
+}
+const before=simulate(process.argv[2]||'/tmp/wuxia-before-world-fix.html'),after=simulate(require('path').join(__dirname,'../index.html'));assert.deepEqual(after,before);console.log('500 场固定随机种子的自动比武与修改前完全一致');console.log(after);
