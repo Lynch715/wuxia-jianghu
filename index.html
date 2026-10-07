@@ -3414,8 +3414,13 @@ async function llmJSON(prompt, onPartial, opt){
       ? '\n\n（注意：上次输出因过长被截断。请精简篇幅：剧情压缩到250字内，newNpcs最多1人，其余照常，务必输出完整合法的单个JSON对象）'
       : '\n\n（上次输出未通过校验：'+e.message+'。请修正上述问题并重写本回，输出完整合法JSON，保持玩家行动方向与引擎判定。）';
     raw = await callLLM(prompt+extra,onPartial,opt);
+    let e2;
     try{ const d=parseJSONLoose(raw);return opt&&opt.validate?opt.validate(d):d; }
-    catch(_){ throw new Error(lastFinish==='length'?'回复两次都被截断，请稍后重试或换用思考模式关闭的flash模型':'模型两次都未能输出合法格式，请重试'); }
+    catch(err){ e2=err; }
+    if(opt&&opt.salvage){ try{ return opt.salvage(raw,e2); }catch(_){} }
+    if(lastFinish==='length') throw new Error('回复两次都被截断，请稍后重试或换用思考模式关闭的flash模型');
+    const why=e2&&e2.hard?e2.message:(e2&&/JSON|Unexpected|token|position/i.test(e2.message)?'回复不是完整的 JSON':(e2&&e2.message)||'格式不对');
+    throw new Error('模型两次都没写对（'+why+'），请重试');
   }
 }
 
@@ -3428,65 +3433,116 @@ function hasTurnProgress(d){
     Object.values(ch.attributes||{}).some(num)||(ch.artsTrain||[]).some(t=>num(t.level)>0)||(ch.artsAdd||[]).length||
     num(ch.money)||num(ch.hp)||(d.scene&&S.scene&&d.scene.location&&d.scene.location!==S.scene.location));
 }
+// 回合校验：能由引擎纠正的小毛病就地改掉（记进 d._fixes），只有真错才退回重写。
+// 真错带 noSalvage 的，两次都不过时也不保底（剧情本身和引擎结果对不上）。
+function turnHardError(msg,noSalvage){ const e=new Error(msg); e.hard=true; if(noSalvage) e.noSalvage=true; return e; }
 function validateTurn(d,action,judge,state){
-  if(!d||typeof d!=='object'||Array.isArray(d))throw new Error('回合必须是对象');
-  if(typeof d.narrative!=='string'||!d.narrative.trim())throw new Error('缺少有效剧情narrative');
-  if(typeof d.summary!=='string'||!d.summary.trim())throw new Error('缺少回合摘要summary');
-  if(d.gameOver!=null&&typeof d.gameOver!=='boolean')throw new Error('gameOver必须为布尔值');
-  if(d.narrative.length>20000)throw new Error('单回剧情过长，请精简');
+  if(!d||typeof d!=='object'||Array.isArray(d))throw turnHardError('回复不是一个 JSON 对象');
+  if(d.narrative!=null&&typeof d.narrative!=='string')d.narrative=plain(d.narrative);
+  if(typeof d.narrative!=='string'||!d.narrative.trim())throw turnHardError('缺少剧情正文 narrative');
+  const fixes=[];const fix=t=>{ if(fixes.length<30)fixes.push(t); };
+  if(d.narrative.length>20000){d.narrative=d.narrative.slice(0,20000);fix('剧情过长已截断');}
+  if(d.summary!=null&&typeof d.summary!=='string')d.summary=plain(d.summary);
+  if(typeof d.summary!=='string'||!d.summary.trim()){d.summary=d.narrative.replace(/\s+/g,'').slice(0,30);fix('补了回合摘要');}
+  if(d.gameOver!=null&&typeof d.gameOver!=='boolean')d.gameOver=d.gameOver===true||d.gameOver==='true';
+  // 去掉危险字段与非有限数值
+  const clean=x=>{ if(!x||typeof x!=='object')return; for(const key of Object.keys(x)){ if(['__proto__','prototype','constructor'].includes(key)){delete x[key];continue;} const v=x[key]; if(typeof v==='number'&&!Number.isFinite(v)){x[key]=null;continue;} clean(v);} };
+  clean(d);
   const arrays=['npcUpdates','newNpcs','questUpdates','newQuests','rankingUpdates','rankingAdd','factionUpdates','newVendettas','options','taughtNpc','worldUpdates','newWorldEvents','resolvedInfo','npcEvents','rumors'];
-  for(const k of arrays){if(d[k]==null)d[k]=[];if(!Array.isArray(d[k]))throw new Error(k+'必须为数组');}
-  for(const k of ['playerChanges','scene','check','duel'])if(d[k]!=null&&(typeof d[k]!=='object'||Array.isArray(d[k])))throw new Error(k+'必须为对象');
+  for(const k of arrays){ if(d[k]==null){d[k]=[];continue;} if(!Array.isArray(d[k])){ d[k]=(typeof d[k]==='object'||typeof d[k]==='string')?[d[k]]:[]; fix(k+'改成数组'); } }
+  for(const k of ['playerChanges','scene','check','duel'])if(d[k]!=null&&(typeof d[k]!=='object'||Array.isArray(d[k]))){d[k]=null;fix(k+'格式不对，已作废');}
   const ch=d.playerChanges||(d.playerChanges={});
-  for(const k of ['attributes','fame','skills','itemsAdd'])if(ch[k]!=null&&(typeof ch[k]!=='object'||Array.isArray(ch[k])))throw new Error('playerChanges.'+k+'必须为对象');
-  for(const k of ['artsAdd','artsTrain','personalityAdd','statusAdd','statusRemove','itemsRemove'])if(ch[k]!=null&&!Array.isArray(ch[k]))throw new Error('playerChanges.'+k+'必须为数组');
-  const safe=(x,path)=>{
-    if(typeof x==='number'&&!Number.isFinite(x))throw new Error(path+'含无效数值');
-    if(x&&typeof x==='object')for(const key of Object.keys(x)){if(['__proto__','prototype','constructor'].includes(key))throw new Error('非法字段');safe(x[key],path+'.'+key);}
-  };safe(d,'回合');
-  const numeric=(obj,keys)=>{for(const k of keys)if(obj[k]!=null&&(typeof obj[k]!=='number'||!Number.isFinite(obj[k])))throw new Error(k+'必须为有限数字');};
-  numeric(ch,['age','lifespan','hp','money','contrib']);numeric(ch.attributes||{},['武功','颖悟','谈吐','才学']);numeric(ch.fame||{},['侠名','恶名']);
-  if(d.newNpcs.length>2||d.newWorldEvents.length>1)throw new Error('每回最多2名新人、1件新事件');
-  const names=new Set((state.npcs||[]).map(n=>n.name));
-  for(const n of d.newNpcs){if(!n||typeof n.name!=='string'||!n.name.trim())throw new Error('新人缺少姓名');names.add(n.name);}
-  for(const k of ['npcUpdates','questUpdates','newQuests','rankingUpdates','rankingAdd','factionUpdates','newVendettas','taughtNpc','worldUpdates','newWorldEvents','options'])for(const x of d[k])if(!x||typeof x!=='object'||Array.isArray(x))throw new Error(k+'条目必须为对象');
-  for(const u of d.npcUpdates){if(!names.has(u.name))throw new Error('npcUpdates引用未知人物：'+plain(u.name));numeric(u,['武功','好感度','爱恋值','age']);}
-  for(const q of d.questUpdates)numeric(q,['progress']);
-  for(const a of ch.artsTrain||[]){if(!a||typeof a!=='object')throw new Error('artsTrain条目无效');numeric(a,['level']);}
-  for(const cat in ch.itemsAdd||{})if(!Array.isArray(ch.itemsAdd[cat]))throw new Error('itemsAdd每类必须为数组');
-  if(d.scene){
-    for(const k of ['unresolved','present'])if(d.scene[k]!=null&&(!Array.isArray(d.scene[k])||d.scene[k].some(t=>typeof t!=='string')))throw new Error('scene.'+k+'必须为文字数组');
-    if(judge.destination&&d.scene.location!==judge.destination)throw new Error('行程结束地点必须为'+judge.destination);
-    if(d.scene.location!=null&&typeof d.scene.location!=='string')throw new Error('scene.location必须为文字');
-    for(const n of d.scene.present||[])if(!names.has(n))throw new Error('在场人物不存在：'+n);
+  for(const k of ['attributes','fame','skills','itemsAdd'])if(ch[k]!=null&&(typeof ch[k]!=='object'||Array.isArray(ch[k]))){delete ch[k];fix('playerChanges.'+k+'格式不对，已作废');}
+  for(const k of ['artsAdd','artsTrain','personalityAdd','statusAdd','statusRemove','itemsRemove'])if(ch[k]!=null&&!Array.isArray(ch[k])){ ch[k]=typeof ch[k]==='object'||typeof ch[k]==='string'?[ch[k]]:[]; fix('playerChanges.'+k+'改成数组'); }
+  // 数字：「+5」「5」这类字串转成数，转不了就丢
+  const numeric=(obj,keys)=>{ if(!obj)return; for(const k of keys){ const v=obj[k]; if(v==null||(typeof v==='number'&&Number.isFinite(v)))continue; const n=typeof v==='string'?Number(v.replace(/[+\s]/g,'')):NaN; if(Number.isFinite(n))obj[k]=n; else {delete obj[k];fix(k+'不是数字，已丢弃');} } };
+  numeric(ch,['age','lifespan','hp','money','contrib']);numeric(ch.attributes,['武功','颖悟','谈吐','才学']);numeric(ch.fame,['侠名','恶名']);
+  const isObj=x=>x&&typeof x==='object'&&!Array.isArray(x);
+  for(const k of ['npcUpdates','questUpdates','newQuests','rankingUpdates','rankingAdd','factionUpdates','newVendettas','taughtNpc','worldUpdates','newWorldEvents','options','newNpcs']){
+    const before=d[k].length; d[k]=d[k].filter(isObj); if(d[k].length<before)fix(k+'里有坏条目，已丢弃');
   }
-  if(judge.destination&&(!d.scene||d.scene.location!==judge.destination))throw new Error('行程结束地点必须为'+judge.destination);
-  if(d.duel&&!names.has(d.duel.opponent))throw new Error('比武对手不存在');
-  for(const o of d.options){if(typeof o.text!=='string'||!o.text.trim())throw new Error('选项缺少文字');numeric(o,['days','months']);if(o.target&&!names.has(o.target))throw new Error('选项人物不存在');}
-  for(const u of d.worldUpdates){if(state.world.threads.some(e=>e.id===u.id&&e.stage==='结束'))throw new Error('事件已结束，不能重开或重复播报：'+u.id);if(!state.world.threads.some(e=>e.id===u.id))throw new Error('事件ID不存在：'+plain(u.id));if(u.stage&&!EVENT_STAGES.includes(u.stage))throw new Error('事件阶段无效');if(u.stage==='结束'&&!plain(u.result))throw new Error('结束事件必须有结果');}
-  for(const u of d.newWorldEvents){if(!plain(u.title)||!plain(u.cause))throw new Error('新事件必须有标题与具体起因');const live=state.world.threads.find(e=>e.stage!=='结束'&&sameMatter(e.title,u.title));if(live)throw new Error('已有事件不能重复新建，请用worldUpdates更新'+live.id);const old=state.world.threads.find(e=>e.id===u.recurrenceOf&&e.stage==='结束'&&sameMatter(e.title,u.title));if(state.world.closedTitles.some(t=>sameMatter(t,u.title))&&(!old||sameMatter(u.cause,old.cause)||plain(u.cause)===old.result))throw new Error('旧事件已经结束，不能重播；复发必须引用旧ID和新的具体原因');}
+  // 人名：认得的照用，写走样的（多一字少一字）认回来，实在不认得的丢掉
+  const known=(state.npcs||[]).map(n=>n.name).filter(Boolean);
+  d.newNpcs=d.newNpcs.filter(n=>{ if(typeof n.name==='string'&&n.name.trim())return true; fix('新人缺姓名，已丢弃'); return false; });
+  if(d.newNpcs.length>2){d.newNpcs=d.newNpcs.slice(0,2);fix('新人超过两名，只留前两名');}
+  const names=new Set(known.concat(d.newNpcs.map(n=>n.name)));
+  const resolve=nm=>{ nm=String(nm||'').trim(); if(!nm)return null; if(names.has(nm))return nm;
+    const hit=[...names].filter(x=>x.length>=2&&nm.length>=2&&(nm.includes(x)||x.includes(nm)));
+    return hit.length===1?hit[0]:null; };
+  d.npcUpdates=d.npcUpdates.filter(u=>{ const r=resolve(u.name); if(!r){fix('不认得的人物「'+plain(u.name)+'」的更新已丢弃');return false;} if(r!==u.name){fix('人名「'+u.name+'」认作「'+r+'」');u.name=r;} numeric(u,['武功','好感度','爱恋值','age']); return true; });
+  for(const q of d.questUpdates)numeric(q,['progress']);
+  if(ch.artsTrain){ ch.artsTrain=ch.artsTrain.filter(isObj); for(const a of ch.artsTrain)numeric(a,['level']); }
+  if(ch.itemsAdd)for(const cat in ch.itemsAdd)if(!Array.isArray(ch.itemsAdd[cat])){ ch.itemsAdd[cat]=ch.itemsAdd[cat]==null?[]:[ch.itemsAdd[cat]]; fix('itemsAdd.'+cat+'改成数组'); }
+  // 场景
+  if(d.scene){
+    for(const k of ['unresolved','present'])if(d.scene[k]!=null){ if(!Array.isArray(d.scene[k]))d.scene[k]=[d.scene[k]]; d.scene[k]=d.scene[k].map(t=>typeof t==='string'?t:plain(t)).filter(Boolean); }
+    if(d.scene.location!=null&&typeof d.scene.location!=='string')d.scene.location=plain(d.scene.location)||null;
+    if(d.scene.present){ const out=[]; for(const n of d.scene.present){ const r=resolve(n); if(r){ if(!out.includes(r))out.push(r); } else fix('在场名单里不认得的「'+n+'」已去掉'); } d.scene.present=out; }
+  }
+  // 行程：到哪由引擎定，模型写走样了直接改回来
+  if(judge.destination){
+    if(!d.scene)d.scene={};
+    if(d.scene.location!==judge.destination){ fix('行程终点「'+(d.scene.location||'未写')+'」改为「'+judge.destination+'」'); d.scene.location=judge.destination; }
+  }
+  if(d.duel){ const r=resolve(d.duel.opponent); if(!r){fix('比武对手「'+plain(d.duel.opponent)+'」不存在，比武作废');d.duel=null;} else d.duel.opponent=r; }
+  d.options=d.options.filter(o=>{ if(typeof o.text!=='string'||!o.text.trim()){fix('有个选项没文字，已丢弃');return false;}
+    numeric(o,['days','months']);
+    if(o.target){ const r=resolve(o.target); if(r)o.target=r; else { fix('选项指向的「'+plain(o.target)+'」不存在，已去掉指向'); o.target=null; if(o.type==='talk')o.type='normal'; } }
+    if(o.duel&&isObj(o.duel)&&o.duel.opponent){ const r=resolve(o.duel.opponent); if(r)o.duel.opponent=r; else { o.duel=null; if(o.type==='duel')o.type='normal'; fix('选项里的比武对手不存在，改成普通选项'); } }
+    return true; });
+  // 江湖事件
+  const threads=(state.world&&state.world.threads)||[];
+  d.worldUpdates=d.worldUpdates.filter(u=>{ const t=threads.find(e=>e.id===u.id);
+    if(!t){fix('事件编号「'+plain(u.id)+'」不存在，更新已丢弃');return false;}
+    if(t.stage==='结束'){fix('事件「'+t.title+'」已结束，更新已丢弃');return false;}
+    if(u.stage&&!EVENT_STAGES.includes(u.stage)){fix('事件阶段「'+u.stage+'」无效，已忽略');delete u.stage;}
+    if(u.stage==='结束'&&!plain(u.result)){fix('事件「'+t.title+'」要结束却没写结果，先不结束');delete u.stage;}
+    return true; });
+  d.newWorldEvents=d.newWorldEvents.filter(u=>{
+    if(!plain(u.title)||!plain(u.cause)){fix('新事件缺标题或起因，已丢弃');return false;}
+    const live=threads.find(e=>e.stage!=='结束'&&sameMatter(e.title,u.title));
+    if(live){fix('新事件「'+plain(u.title)+'」和进行中的事件重复，已丢弃');return false;}
+    const old=threads.find(e=>e.id===u.recurrenceOf&&e.stage==='结束'&&sameMatter(e.title,u.title));
+    if(state.world&&(state.world.closedTitles||[]).some(t=>sameMatter(t,u.title))&&(!old||sameMatter(u.cause,old.cause)||plain(u.cause)===old.result)){fix('新事件「'+plain(u.title)+'」是旧事重播，已丢弃');return false;}
+    return true; });
+  if(d.newWorldEvents.length>1){d.newWorldEvents=d.newWorldEvents.slice(0,1);fix('新事件超过一件，只留第一件');}
   const owner=S;S=state;
   try{
     if(d.gameOver){
       const asked=/收尾|收官|结束这一?局|终局|完结|立传|了此残生|自尽|自刎|了结此生/.test(action||'');
       const sd=fdm().storyDeath;
-      if(!asked&&!(sd>=1||sd>0&&state.player.hp<30))throw new Error('本局不允许剧情直接写死主角，请把正文改写为获救或重伤未死，gameOver填false');
+      if(!asked&&!(sd>=1||sd>0&&state.player.hp<30))throw turnHardError('本局不允许剧情直接写死主角，请把正文改写为获救或重伤未死，gameOver填false',true);
     }
     if(judge.check){
-      if(d.check&&typeof d.check.success==='boolean'&&d.check.success!==judge.check.success)throw new Error('叙事判定与引擎结果矛盾，请按引擎成败重写');
+      if(d.check&&typeof d.check.success==='boolean'&&d.check.success!==judge.check.success)throw turnHardError('叙事判定与引擎结果矛盾，请按引擎成败重写',true);
       d.check=Object.assign({},judge.check);
     }else if(d.check&&!judge.duel&&!judge.convo&&!fdm().freeAct){
-      if(!['武功','颖悟','谈吐','才学'].includes(d.check.attr))throw new Error('判定属性无效');
-      numeric(d.check,['need']);const need=num(d.check.need);if(need<0||need>100)throw new Error('判定难度需在0-100');
-      const total=attrVal(state.player,d.check.attr)+fdm().check+rollMod(judge.fate);
-      const success=total>=need;
-      if(d.check.success!==success)throw new Error('成败计算不正确：总值'+total+'，难度'+need+'，应当'+(success?'成功':'失败'));
-      d.check.total=total;d.check.success=success;
+      numeric(d.check,['need']);const need=num(d.check.need);
+      if(!['武功','颖悟','谈吐','才学'].includes(d.check.attr)||d.check.need==null||need<0||need>100){fix('模型自拟的判定无效，已作废');d.check=null;}
+      else{
+        const total=attrVal(state.player,d.check.attr)+fdm().check+rollMod(judge.fate);
+        const success=total>=need;
+        if(typeof d.check.success==='boolean'&&d.check.success!==success)throw turnHardError('成败计算不正确：总值'+total+'，难度'+need+'，应当'+(success?'成功':'失败')+'，请按此重写',true);
+        d.check.total=total;d.check.success=success;
+      }
     }else if(fdm().freeAct)d.check=null;
     const last=state.recent&&state.recent[state.recent.length-1];
-    if(last&&d.narrative===last.narrative&&!hasTurnProgress(d))throw new Error('剧情原样重复，请沿玩家当前行动写新进展');
+    if(last&&d.narrative===last.narrative&&!hasTurnProgress(d))throw turnHardError('剧情原样重复，请沿玩家当前行动写新进展',true);
   }finally{S=owner;}
+  if(fixes.length){ console.info('[回合校正]',fixes.join('；')); Object.defineProperty(d,'_fixes',{value:fixes,enumerable:false}); }
   return d;
+}
+// 两次都没写对时的保底：只留剧情正文，数值一概不结算，选项由引擎补
+function salvageTurn(raw,err,action,judge,state){
+  if(err&&err.noSalvage)throw err;
+  let text=null;
+  try{ const p=parseJSONLoose(raw); if(p&&typeof p.narrative==='string')text=p.narrative; }catch(_){}
+  if(!text)text=extractPartialField(raw||'','narrative');
+  if(!text||text.replace(/\s/g,'').length<20)throw err;
+  const d={narrative:text,summary:'',playerChanges:{},options:[],gameOver:false};
+  const out=validateTurn(d,action,judge,state);
+  Object.defineProperty(out,'_salvaged',{value:true,enumerable:false});
+  return out;
 }
 function forecastTurn(state,judge,action){
   const owner=S;const staged=JSON.parse(JSON.stringify(state));staged.pending=null;S=staged;
@@ -6587,10 +6643,11 @@ async function runTurn(action, judge, extra){
     finally{S=owner;}
     const consumedNews=(pending.forecast.state.engineNews||[]).slice();
     const valid=raw=>validateTurn(raw,action,judge,pending.forecast.state);
+    const salvage=(raw,err)=>salvageTurn(raw,err,action,judge,pending.forecast.state);
     const d=fixNames(await llmJSON(prompt,raw=>{
       if(S!==owner||request!==turnRequest)return;
       const t=extractPartialField(raw,'narrative');if(t)updateChapterNarrative(t);
-    },{validate:valid,signal:controller&&controller.signal}));
+    },{validate:valid,salvage,signal:controller&&controller.signal}));
     if(S!==owner||request!==turnRequest){if(request===turnRequest)setBusy(false);return;}
     const next=settleTurnOnce(owner,d,action,judge,id,pending.forecast);
     next.engineNews=(next.engineNews||[]).filter(x=>!consumedNews.includes(x));
@@ -6600,6 +6657,7 @@ async function runTurn(action, judge, extra){
     saveGame();
     updateChapterNarrative(d.narrative);
     finishChapter(d,judge,extra.duelData);S.lastTurn=null;saveGame();
+    if(d._salvaged) toast('这一回模型没写全，只留下了剧情；数值按引擎判定结算，选项由引擎补上');
     renderPanel();
     checkAchievements();
     if(d.newNpcs&&d.newNpcs.length) setDot('people',true);
