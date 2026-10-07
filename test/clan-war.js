@@ -5,7 +5,7 @@ const html=fs.readFileSync(require('path').join(__dirname,'..','index.html'));
 const srv=http.createServer((q,r)=>{r.writeHead(200,{'Content-Type':'text/html; charset=utf-8'});r.end(html);});
 const fails=[],oks=[];
 const ok=(n,c)=>{(c?oks:fails).push(n);console.log((c?'  ✓ ':'  ✗ ')+n);};
-const E=s=>'(()=>{'+s+'})()';
+const E=s=>'(async()=>{'+s+'})()';
 (async()=>{
 srv.listen(8944);
 const exe=process.env.PW_CHROME||undefined;
@@ -169,7 +169,7 @@ console.log('\n【关了页面再回来】');
 const rs=await page.evaluate(E(`${boot()}
   startWar('华山派'); warVanguard();
   saveGame();
-  const raw=JSON.parse(localStorage.getItem('wuxia_save_v1'));
+  const raw=JSON.parse((await (async()=>{ while(saveBusy||saveQ!=null) await new Promise(r=>setTimeout(r,20)); return kvGet('main'); })()));
   const back=migrate(raw);
   return {v:back.v, hasWar:!!back.war, stage:back.war&&back.war.stage, me:back.war&&back.war.me,
     foeN:back.war&&back.war.foeSide.length};`));

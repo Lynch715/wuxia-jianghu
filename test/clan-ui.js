@@ -6,7 +6,7 @@ const html=fs.readFileSync(require('path').join(__dirname,'..','index.html'));
 const srv=http.createServer((q,r)=>{r.writeHead(200,{'Content-Type':'text/html; charset=utf-8'});r.end(html);});
 const fails=[],oks=[];
 const ok=(n,c)=>{(c?oks:fails).push(n);console.log((c?'  ✓ ':'  ✗ ')+n);};
-const E=s=>'(()=>{'+s+'})()';
+const E=s=>'(async()=>{'+s+'})()';
 (async()=>{
 srv.listen(8942);
 const exe=process.env.PW_CHROME||undefined;
@@ -107,7 +107,7 @@ ok('逐出后少一个人（'+beforeN+'→'+afterN+'），花名册里有「来�
 
 console.log('\n【存档往返】');
 const rt=await page.evaluate(E(`saveGame();
-  const raw=localStorage.getItem('wuxia_save_v1');
+  const raw=(await (async()=>{ while(saveBusy||saveQ!=null) await new Promise(r=>setTimeout(r,20)); return kvGet('main'); })());
   const back=migrate(JSON.parse(raw));
   return {v:back.v, sv:SAVE_VERSION, name:back.clan&&back.clan.name, n:(back.clan.disciples||[]).length,
     job:(back.clan.disciples[0]||{}).job, treasury:back.clan.treasury};`));

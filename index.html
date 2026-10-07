@@ -33,7 +33,7 @@ body{
   background-image:radial-gradient(ellipse at 30% 10%,rgba(140,100,50,.10),transparent 55%),radial-gradient(ellipse at 80% 90%,rgba(120,40,30,.08),transparent 50%);
   color:var(--ink);
   font-family:"Kaiti SC","STKaiti","KaiTi","Noto Serif SC","Songti SC",serif;
-  font-size:16px;
+  font-size:calc(16px*var(--fs,1));
   overflow:hidden;
 }
 /* ============ 布局 ============ */
@@ -43,13 +43,13 @@ body{
   border-bottom:1px solid #3a2f22;
   color:#d9c9a3;
 }
-#topbar h1{font-size:22px;letter-spacing:6px;font-weight:700;color:#e8d7ae;text-shadow:0 0 12px rgba(200,160,80,.25)}
-#topbar .seal{display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;background:var(--accent);color:#f5e9d0;border-radius:6px;font-size:15px;letter-spacing:0;line-height:1.05;text-align:center;box-shadow:inset 0 0 6px rgba(0,0,0,.4)}
+#topbar h1{font-size:calc(22px*var(--fs,1));letter-spacing:6px;font-weight:700;color:#e8d7ae;text-shadow:0 0 12px rgba(200,160,80,.25)}
+#topbar .seal{display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;background:var(--accent);color:#f5e9d0;border-radius:6px;font-size:calc(15px*var(--fs,1));letter-spacing:0;line-height:1.05;text-align:center;box-shadow:inset 0 0 6px rgba(0,0,0,.4)}
 #topbar .grow{flex:1}
-#gameDate{font-size:14px;color:#bfa876;letter-spacing:2px}
+#gameDate{font-size:calc(14px*var(--fs,1));color:#bfa876;letter-spacing:2px}
 .tbtn{
   background:#33291d;border:1px solid #55462f;color:#d9c9a3;padding:6px 14px;border-radius:4px;
-  font-family:inherit;font-size:14px;cursor:pointer;letter-spacing:2px;transition:.15s;
+  font-family:inherit;font-size:calc(14px*var(--fs,1));cursor:pointer;letter-spacing:2px;transition:.15s;
 }
 .tbtn:hover{background:#463826;border-color:#7a6540;color:#f0e2bd}
 #layout{display:flex;height:calc(100% - 56px)}
@@ -63,7 +63,7 @@ body{
 #tabs{display:flex;border-bottom:2px solid var(--paper-edge)}
 #tabs button{
   flex:1;padding:10px 0;background:transparent;border:none;border-right:1px solid var(--paper-edge);
-  font-family:inherit;font-size:15px;letter-spacing:3px;color:var(--ink-soft);cursor:pointer;position:relative;
+  font-family:inherit;font-size:calc(15px*var(--fs,1));letter-spacing:3px;color:var(--ink-soft);cursor:pointer;position:relative;
 }
 #tabs button:last-child{border-right:none}
 #tabs button.on{color:var(--accent);font-weight:700;background:rgba(156,47,36,.07);box-shadow:inset 0 -3px 0 var(--accent)}
@@ -72,163 +72,163 @@ body{
 .tabpane{flex:1;overflow-y:auto;padding:16px 18px;display:none}
 .tabpane.on{display:block}
 .card{background:rgba(255,252,240,.55);border:1px solid var(--paper-edge);border-radius:6px;padding:12px 14px;margin-bottom:12px}
-.card h3{font-size:15px;color:var(--accent);letter-spacing:3px;margin-bottom:8px;border-bottom:1px dashed var(--paper-edge);padding-bottom:5px;display:flex;justify-content:space-between;align-items:center}
-.card h3 small{font-size:12px;color:var(--ink-soft);letter-spacing:0;font-weight:400}
-#pName{font-size:26px;font-weight:700;letter-spacing:3px}
-#pBiaozi{font-size:14px;color:var(--ink-soft);margin-left:8px}
-#pMeta{font-size:14px;color:var(--ink-soft);margin-top:4px;letter-spacing:1px}
-.titlebadge{display:inline-block;background:linear-gradient(90deg,#8a6d2f,#b8963f);color:#fff8e6;border-radius:4px;padding:2px 10px;font-size:13px;letter-spacing:2px;margin-top:6px;box-shadow:0 1px 4px rgba(0,0,0,.3)}
+.card h3{font-size:calc(15px*var(--fs,1));color:var(--accent);letter-spacing:3px;margin-bottom:8px;border-bottom:1px dashed var(--paper-edge);padding-bottom:5px;display:flex;justify-content:space-between;align-items:center}
+.card h3 small{font-size:calc(12px*var(--fs,1));color:var(--ink-soft);letter-spacing:0;font-weight:400}
+#pName{font-size:calc(26px*var(--fs,1));font-weight:700;letter-spacing:3px}
+#pBiaozi{font-size:calc(14px*var(--fs,1));color:var(--ink-soft);margin-left:8px}
+#pMeta{font-size:calc(14px*var(--fs,1));color:var(--ink-soft);margin-top:4px;letter-spacing:1px}
+.titlebadge{display:inline-block;background:linear-gradient(90deg,#8a6d2f,#b8963f);color:#fff8e6;border-radius:4px;padding:2px 10px;font-size:calc(13px*var(--fs,1));letter-spacing:2px;margin-top:6px;box-shadow:0 1px 4px rgba(0,0,0,.3)}
 .titlebadge.evil{background:linear-gradient(90deg,#5a3a6a,#7a3a4a)}
-.trait{display:inline-block;background:rgba(156,47,36,.10);color:var(--accent);border:1px solid rgba(156,47,36,.3);border-radius:12px;padding:1px 10px;font-size:13px;margin:3px 4px 0 0}
-.statusfx{display:inline-block;background:rgba(90,60,120,.12);color:#6a4a8a;border:1px solid rgba(90,60,120,.3);border-radius:12px;padding:1px 10px;font-size:13px;margin:3px 4px 0 0}
-#pLooks,#pStory{font-size:14.5px;line-height:1.8;color:var(--ink);text-align:justify}
+.trait{display:inline-block;background:rgba(156,47,36,.10);color:var(--accent);border:1px solid rgba(156,47,36,.3);border-radius:12px;padding:1px 10px;font-size:calc(13px*var(--fs,1));margin:3px 4px 0 0}
+.statusfx{display:inline-block;background:rgba(90,60,120,.12);color:#6a4a8a;border:1px solid rgba(90,60,120,.3);border-radius:12px;padding:1px 10px;font-size:calc(13px*var(--fs,1));margin:3px 4px 0 0}
+#pLooks,#pStory{font-size:calc(14.5px*var(--fs,1));line-height:1.8;color:var(--ink);text-align:justify}
 .attr{margin-bottom:9px}
-.attr .lab{display:flex;justify-content:space-between;font-size:14px;margin-bottom:3px}
+.attr .lab{display:flex;justify-content:space-between;font-size:calc(14px*var(--fs,1));margin-bottom:3px}
 .attr .lab b{letter-spacing:2px}
 .attr .lab span{color:var(--ink-soft);font-variant-numeric:tabular-nums}
 .bar{height:9px;background:rgba(0,0,0,.12);border-radius:5px;overflow:hidden}
 .bar i{display:block;height:100%;border-radius:5px;transition:width .8s cubic-bezier(.2,.8,.3,1)}
-.delta{font-size:12px;margin-left:5px;font-weight:700}
+.delta{font-size:calc(12px*var(--fs,1));margin-left:5px;font-weight:700}
 .delta.up{color:var(--green)} .delta.dn{color:var(--accent)}
-#pMoney{font-size:18px;color:var(--gold);font-weight:700}
-.item{border-bottom:1px dashed var(--paper-edge);padding:7px 0;font-size:14px}
+#pMoney{font-size:calc(18px*var(--fs,1));color:var(--gold);font-weight:700}
+.item{border-bottom:1px dashed var(--paper-edge);padding:7px 0;font-size:calc(14px*var(--fs,1))}
 .item:last-child{border-bottom:none}
 .item b{color:var(--ink)}
-.item .idesc{color:var(--ink-soft);font-size:13px;line-height:1.6;margin-top:2px}
-.itag{font-size:12px;color:#fff;border-radius:3px;padding:0 6px;margin-right:6px}
-.empty{color:var(--ink-soft);font-size:13.5px;font-style:italic;padding:4px 0}
+.item .idesc{color:var(--ink-soft);font-size:calc(13px*var(--fs,1));line-height:1.6;margin-top:2px}
+.itag{font-size:calc(12px*var(--fs,1));color:#fff;border-radius:3px;padding:0 6px;margin-right:6px}
+.empty{color:var(--ink-soft);font-size:calc(13.5px*var(--fs,1));font-style:italic;padding:4px 0}
 .titlebadge.mode{background:transparent;border:1px dashed var(--paper-edge);color:var(--ink-soft);font-weight:400}
-.skillrow{display:flex;align-items:center;gap:8px;margin-bottom:7px;font-size:14px}
+.skillrow{display:flex;align-items:center;gap:8px;margin-bottom:7px;font-size:calc(14px*var(--fs,1))}
 .skillrow .sname{width:74px;letter-spacing:1px}
 .skillrow .bar{flex:1}
-.skillrow .sv{width:40px;text-align:right;color:var(--ink-soft);font-size:13px;white-space:nowrap}
-.sdesc{margin:-3px 0 10px 82px;font-size:12.5px;color:var(--ink-soft);line-height:1.6}
+.skillrow .sv{width:40px;text-align:right;color:var(--ink-soft);font-size:calc(13px*var(--fs,1));white-space:nowrap}
+.sdesc{margin:-3px 0 10px 82px;font-size:calc(12.5px*var(--fs,1));color:var(--ink-soft);line-height:1.6}
 .sdesc:last-child{margin-bottom:2px}
-.artrow{padding:6px 0;border-bottom:1px dashed var(--paper-edge);font-size:14px}
+.artrow{padding:6px 0;border-bottom:1px dashed var(--paper-edge);font-size:calc(14px*var(--fs,1))}
 .artrow:last-child{border-bottom:none}
 .artrow b{color:var(--accent)}
-.artrow .idesc{color:var(--ink-soft);font-size:13px;line-height:1.6}
+.artrow .idesc{color:var(--ink-soft);font-size:calc(13px*var(--fs,1));line-height:1.6}
 /* 人脉 */
-.peoplefoot{margin-top:10px;padding-top:8px;border-top:1px dashed var(--paper-edge);font-size:12.5px;color:var(--ink-soft);letter-spacing:.5px}
+.peoplefoot{margin-top:10px;padding-top:8px;border-top:1px dashed var(--paper-edge);font-size:calc(12.5px*var(--fs,1));color:var(--ink-soft);letter-spacing:.5px}
 .npc{display:flex;align-items:center;gap:10px;padding:8px 6px;border-bottom:1px dashed var(--paper-edge);cursor:pointer;transition:.15s;border-radius:4px}
 .npc:hover{background:rgba(156,47,36,.06)}
 .avatar{border-radius:50%;background-repeat:no-repeat;background-position:center;flex-shrink:0}
 .avatar.av{color:transparent!important;font-size:0!important}
 .avatar.dead{filter:grayscale(1);opacity:.55}
-.npc .avatar{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:700;color:#f5e9d0;flex-shrink:0}
+.npc .avatar{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:calc(17px*var(--fs,1));font-weight:700;color:#f5e9d0;flex-shrink:0}
 .phead{display:flex;align-items:center;gap:12px}
-.phead .avatar{width:60px;height:60px;display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:700;color:#f5e9d0}
+.phead .avatar{width:60px;height:60px;display:flex;align-items:center;justify-content:center;font-size:calc(26px*var(--fs,1));font-weight:700;color:#f5e9d0}
 .npchead{display:flex;align-items:center;gap:12px;margin:2px 0 10px}
-.npchead .avatar{width:64px;height:64px;display:flex;align-items:center;justify-content:center;font-size:27px;font-weight:700;color:#f5e9d0}
-.npchead .nh{font-size:13px;color:var(--ink-soft);line-height:1.7;min-width:0}
+.npchead .avatar{width:64px;height:64px;display:flex;align-items:center;justify-content:center;font-size:calc(27px*var(--fs,1));font-weight:700;color:#f5e9d0}
+.npchead .nh{font-size:calc(13px*var(--fs,1));color:var(--ink-soft);line-height:1.7;min-width:0}
 .avswap{position:relative;cursor:pointer;flex-shrink:0}
-.avswap .avtag{position:absolute;left:50%;bottom:-7px;transform:translateX(-50%);white-space:nowrap;font-size:10.5px;line-height:1;padding:3px 6px;border-radius:8px;background:var(--paper-dark);color:var(--ink-soft);border:1px solid var(--paper-edge)}
+.avswap .avtag{position:absolute;left:50%;bottom:-7px;transform:translateX(-50%);white-space:nowrap;font-size:calc(10.5px*var(--fs,1));line-height:1;padding:3px 6px;border-radius:8px;background:var(--paper-dark);color:var(--ink-soft);border:1px solid var(--paper-edge)}
 .avswap:hover .avtag{color:var(--accent);border-color:var(--accent)}
 #avMask{z-index:60}
 #avMask .modal{max-width:460px}
 #avMask .avpick{max-height:none;overflow:visible;grid-template-columns:repeat(6,1fr)}
-#avMask .avsec{font-size:12.5px;color:var(--ink-soft);margin:12px 0 2px}
-#avMask details summary{font-size:12.5px;color:var(--ink-soft);margin:12px 0 2px;cursor:pointer}
+#avMask .avsec{font-size:calc(12.5px*var(--fs,1));color:var(--ink-soft);margin:12px 0 2px}
+#avMask details summary{font-size:calc(12.5px*var(--fs,1));color:var(--ink-soft);margin:12px 0 2px;cursor:pointer}
 #avMask .avbody{max-height:56vh;overflow-y:auto}
-#avMask .avnow{font-size:12.5px;color:var(--ink-soft);margin-top:8px;min-height:1.6em}
+#avMask .avnow{font-size:calc(12.5px*var(--fs,1));color:var(--ink-soft);margin-top:8px;min-height:1.6em}
 .stickyrow{position:sticky;bottom:-28px;margin:12px -32px -28px;padding:12px 32px 16px;
   background:linear-gradient(to top,var(--paper-dark) 62%,rgba(227,213,181,0));border-radius:0 0 10px 10px}
 @media (max-width:900px){ .stickyrow{margin:12px -18px -20px;padding:10px 18px 14px} }
 .fhead{display:flex;align-items:center;gap:9px;margin-bottom:6px}
 .fhead.ro{flex-direction:row-reverse}
 .fhead>div{min-width:0}
-.duelface{width:44px;height:44px;display:flex;align-items:center;justify-content:center;font-size:19px;font-weight:700;color:#f5e9d0}
-@media (max-width:900px){ .duelface{width:38px;height:38px;font-size:17px} }
+.duelface{width:44px;height:44px;display:flex;align-items:center;justify-content:center;font-size:calc(19px*var(--fs,1));font-weight:700;color:#f5e9d0}
+@media (max-width:900px){ .duelface{width:38px;height:38px;font-size:calc(17px*var(--fs,1))} }
 .avpick{display:grid;grid-template-columns:repeat(6,1fr);gap:7px;max-height:188px;overflow-y:auto;padding:7px;background:rgba(0,0,0,.05);border-radius:6px;margin-top:4px}
 .avpick .cell{width:100%;aspect-ratio:1;border-radius:50%;cursor:pointer;border:2px solid transparent;background-repeat:no-repeat;background-position:center}
 .avpick .cell.sel{border-color:var(--accent);box-shadow:0 0 0 2px rgba(156,47,36,.28)}
-.avpick .auto{display:flex;align-items:center;justify-content:center;font-size:11px;line-height:1.2;text-align:center;color:var(--ink-soft);background:var(--paper-dark);border:2px dashed var(--paper-edge)}
+.avpick .auto{display:flex;align-items:center;justify-content:center;font-size:calc(11px*var(--fs,1));line-height:1.2;text-align:center;color:var(--ink-soft);background:var(--paper-dark);border:2px dashed var(--paper-edge)}
 .npc .ninfo{flex:1;min-width:0}
-.npc .nname{font-size:15.5px;font-weight:700}
-.npc .nrel{font-size:12.5px;color:var(--ink-soft)}
-.npc .nfav{text-align:right;font-size:13px;font-variant-numeric:tabular-nums}
-.npc .nfav .favnum{font-size:16px;font-weight:700}
+.npc .nname{font-size:calc(15.5px*var(--fs,1));font-weight:700}
+.npc .nrel{font-size:calc(12.5px*var(--fs,1));color:var(--ink-soft)}
+.npc .nfav{text-align:right;font-size:calc(13px*var(--fs,1));font-variant-numeric:tabular-nums}
+.npc .nfav .favnum{font-size:calc(16px*var(--fs,1));font-weight:700}
 .dead{filter:grayscale(1);opacity:.55}
 #graphWrap{background:rgba(255,252,240,.5);border:1px solid var(--paper-edge);border-radius:6px;margin-bottom:12px}
 #graphWrap svg{display:block;width:100%}
 /* 江湖页签 */
 .quest{padding:8px 0;border-bottom:1px dashed var(--paper-edge)}
 .quest:last-child{border-bottom:none}
-.quest .qt{display:flex;justify-content:space-between;font-size:14.5px;font-weight:700}
-.quest .qt small{font-weight:400;color:var(--ink-soft);font-size:12.5px}
-.quest .qd{font-size:13px;color:var(--ink-soft);line-height:1.6;margin:2px 0 5px}
+.quest .qt{display:flex;justify-content:space-between;font-size:calc(14.5px*var(--fs,1));font-weight:700}
+.quest .qt small{font-weight:400;color:var(--ink-soft);font-size:calc(12.5px*var(--fs,1))}
+.quest .qd{font-size:calc(13px*var(--fs,1));color:var(--ink-soft);line-height:1.6;margin:2px 0 5px}
 .quest.done .qt{color:var(--green)}
 .quest.fail .qt{color:var(--ink-soft);text-decoration:line-through}
 .quest.hot .qt{color:#9c2f24}
-.statusfx small{font-weight:400;opacity:.75;font-size:11px}
+.statusfx small{font-weight:400;opacity:.75;font-size:calc(11px*var(--fs,1))}
 .statusfx.ail{background:rgba(90,110,140,.14);border-color:rgba(70,90,120,.35);color:#3f5570}
 .statusfx.scar{background:rgba(156,47,36,.12);border-color:rgba(156,47,36,.35);color:#8a2f24}
-.rank{display:flex;align-items:center;gap:8px;padding:5px 4px;border-bottom:1px dashed var(--paper-edge);font-size:14px}
+.rank{display:flex;align-items:center;gap:8px;padding:5px 4px;border-bottom:1px dashed var(--paper-edge);font-size:calc(14px*var(--fs,1))}
 .rank:last-child{border-bottom:none}
 .rank .rn{width:26px;text-align:center;font-weight:700;color:var(--gold);font-variant-numeric:tabular-nums}
 .rank .rname{flex:1;min-width:0}
-.rank .rname small{display:block;color:var(--ink-soft);font-size:12px}
+.rank .rname small{display:block;color:var(--ink-soft);font-size:calc(12px*var(--fs,1))}
 .rank .rv{color:var(--accent);font-weight:700;font-variant-numeric:tabular-nums}
 .rank .mbtn{flex:0 0 auto;letter-spacing:1px}
 .rank.me{background:rgba(156,47,36,.10);border-radius:4px}
 .rank.deadr{opacity:.5;text-decoration:line-through}
-.faction{margin-bottom:8px;font-size:14px}
+.faction{margin-bottom:8px;font-size:calc(14px*var(--fs,1))}
 .faction .fl{display:flex;justify-content:space-between}
 .faction .fl small{color:var(--ink-soft)}
 /* 宗门页签 */
-.clanline{display:flex;justify-content:space-between;font-size:13.5px;padding:4px 0;border-bottom:1px dashed var(--paper-edge)}
+.clanline{display:flex;justify-content:space-between;font-size:calc(13.5px*var(--fs,1));padding:4px 0;border-bottom:1px dashed var(--paper-edge)}
 .clanline:last-of-type{border-bottom:none}
 .clanline b{font-weight:700;color:var(--ink)}
 .csort{display:flex;gap:3px;flex-wrap:wrap;align-items:center;margin-bottom:8px}
-.csort button{flex:0 0 auto;padding:3px 7px;font-family:inherit;font-size:12px;letter-spacing:0;border:1px solid var(--paper-edge);border-radius:11px;background:rgba(255,252,240,.6);color:var(--ink-soft);cursor:pointer}
+.csort button{flex:0 0 auto;padding:3px 7px;font-family:inherit;font-size:calc(12px*var(--fs,1));letter-spacing:0;border:1px solid var(--paper-edge);border-radius:11px;background:rgba(255,252,240,.6);color:var(--ink-soft);cursor:pointer}
 .csort button.on{border-color:var(--accent);background:rgba(156,47,36,.10);color:var(--accent);font-weight:700}
 .csort button.auto{margin-left:auto;border-color:var(--gold);color:var(--gold)}
 .disc{padding:6px 4px;border-bottom:1px dashed var(--paper-edge);cursor:pointer}
 .disc:last-of-type{border-bottom:none}
 .disc:hover{background:rgba(156,47,36,.05);border-radius:4px}
 .disc.hurt{opacity:.62}
-.disc .dl{display:flex;justify-content:space-between;align-items:baseline;gap:8px;font-size:14.5px}
+.disc .dl{display:flex;justify-content:space-between;align-items:baseline;gap:8px;font-size:calc(14.5px*var(--fs,1))}
 .disc .dn{flex:1;min-width:0;font-weight:700}
-.disc .dn small{display:block;font-weight:400;color:var(--ink-soft);font-size:11.5px;letter-spacing:0}
+.disc .dn small{display:block;font-weight:400;color:var(--ink-soft);font-size:calc(11.5px*var(--fs,1));letter-spacing:0}
 .disc .dv{color:var(--accent);font-weight:700;font-variant-numeric:tabular-nums}
-.disc .dv small{color:var(--ink-soft);font-weight:400;font-size:11px}
-.disc .dmeta{display:flex;justify-content:space-between;font-size:11.5px;color:var(--ink-soft);margin-top:2px}
-.lrow{display:flex;align-items:center;gap:8px;padding:7px 2px;border-bottom:1px dashed var(--paper-edge);font-size:14.5px}
+.disc .dv small{color:var(--ink-soft);font-weight:400;font-size:calc(11px*var(--fs,1))}
+.disc .dmeta{display:flex;justify-content:space-between;font-size:calc(11.5px*var(--fs,1));color:var(--ink-soft);margin-top:2px}
+.lrow{display:flex;align-items:center;gap:8px;padding:7px 2px;border-bottom:1px dashed var(--paper-edge);font-size:calc(14.5px*var(--fs,1))}
 .lrow:last-of-type{border-bottom:none}
 .lrow .ln{flex:1;min-width:0;font-weight:700}
-.lrow .ln small{display:block;font-weight:400;color:var(--ink-soft);font-size:11.5px;letter-spacing:0}
-.lrow .lo{color:var(--ink-soft);font-size:12px;font-variant-numeric:tabular-nums}
-.lrow .lv{flex:0 0 auto;width:44px;text-align:center;border-radius:11px;padding:2px 0;font-size:12.5px}
+.lrow .ln small{display:block;font-weight:400;color:var(--ink-soft);font-size:calc(11.5px*var(--fs,1));letter-spacing:0}
+.lrow .lo{color:var(--ink-soft);font-size:calc(12px*var(--fs,1));font-variant-numeric:tabular-nums}
+.lrow .lv{flex:0 0 auto;width:44px;text-align:center;border-radius:11px;padding:2px 0;font-size:calc(12.5px*var(--fs,1))}
 .lrow.yes .lv{background:rgba(74,107,69,.16);color:#3f6b3a;border:1px solid rgba(74,107,69,.45)}
 .lrow.no .lv{background:rgba(156,47,36,.10);color:#9c2f24;border:1px solid rgba(156,47,36,.4)}
-#unifyBody .nrow{display:flex;justify-content:space-between;border-bottom:1px dashed var(--paper-edge);padding:7px 2px;font-size:14px}
+#unifyBody .nrow{display:flex;justify-content:space-between;border-bottom:1px dashed var(--paper-edge);padding:7px 2px;font-size:calc(14px*var(--fs,1))}
 #unifyBody .nrow b{color:var(--ink-soft);font-weight:400;letter-spacing:2px;flex-shrink:0;margin-right:16px}
 #unifyBody .nrow span{text-align:right;line-height:1.7}
-.foe{margin-bottom:9px;font-size:14px}
+.foe{margin-bottom:9px;font-size:calc(14px*var(--fs,1))}
 .foe .fl{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
-.foe .fl small{color:var(--ink-soft);font-size:11.5px}
-.foe .fmeta{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:12px;color:var(--ink-soft);margin-top:3px}
-.foe .fmeta .mbtn{flex:0 0 auto;padding:3px 9px;font-size:12px;letter-spacing:1px;max-width:62%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-#warLog{background:rgba(0,0,0,.05);border:1px solid var(--paper-edge);border-radius:6px;padding:10px 14px;max-height:46vh;overflow-y:auto;font-size:14px;line-height:1.85}
+.foe .fl small{color:var(--ink-soft);font-size:calc(11.5px*var(--fs,1))}
+.foe .fmeta{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:calc(12px*var(--fs,1));color:var(--ink-soft);margin-top:3px}
+.foe .fmeta .mbtn{flex:0 0 auto;padding:3px 9px;font-size:calc(12px*var(--fs,1));letter-spacing:1px;max-width:62%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#warLog{background:rgba(0,0,0,.05);border:1px solid var(--paper-edge);border-radius:6px;padding:10px 14px;max-height:46vh;overflow-y:auto;font-size:calc(14px*var(--fs,1));line-height:1.85}
 #warLog .r{border-bottom:1px dashed var(--paper-edge);padding:4px 0}
 #warLog .r:last-child{border-bottom:none}
 #warLog .hd{color:var(--accent);font-weight:700;letter-spacing:2px;border-bottom:none;padding-top:8px}
 #warLog .good{color:#3f6b3a} #warLog .bad{color:#9c2f24}
 #warLog .sum{color:var(--gold);font-weight:700}
-#warLog .sys{color:var(--ink-soft);font-size:13px}
-.cand{display:flex;align-items:center;gap:7px;padding:5px 2px;border-bottom:1px dashed var(--paper-edge);font-size:14px}
+#warLog .sys{color:var(--ink-soft);font-size:calc(13px*var(--fs,1))}
+.cand{display:flex;align-items:center;gap:7px;padding:5px 2px;border-bottom:1px dashed var(--paper-edge);font-size:calc(14px*var(--fs,1))}
 .cand:last-of-type{border-bottom:none}
 .cand .cn{flex:1;min-width:0;font-weight:700}
-.cand .cn small{display:block;font-weight:400;color:var(--ink-soft);font-size:11.5px;letter-spacing:0}
+.cand .cn small{display:block;font-weight:400;color:var(--ink-soft);font-size:calc(11.5px*var(--fs,1));letter-spacing:0}
 .cand .co{color:var(--gold);font-weight:700;font-variant-numeric:tabular-nums;flex:0 0 auto}
 .seg.wrap{flex-wrap:wrap}
-.seg.wrap button{flex:1 1 30%;font-size:14px;letter-spacing:1px;padding:7px 0}
-#discModal .nrow{display:flex;justify-content:space-between;border-bottom:1px dashed var(--paper-edge);padding:7px 2px;font-size:14.5px}
+.seg.wrap button{flex:1 1 30%;font-size:calc(14px*var(--fs,1));letter-spacing:1px;padding:7px 0}
+#discModal .nrow{display:flex;justify-content:space-between;border-bottom:1px dashed var(--paper-edge);padding:7px 2px;font-size:calc(14.5px*var(--fs,1))}
 #discModal .nrow b{color:var(--ink-soft);font-weight:400;letter-spacing:2px;flex-shrink:0;margin-right:16px}
 #discModal .nrow span{text-align:right;line-height:1.7}
-.ach{display:inline-block;border-radius:12px;padding:2px 10px;font-size:12.5px;margin:3px 4px 0 0;border:1px solid var(--paper-edge);color:#a89a80;background:rgba(0,0,0,.03)}
+.ach{display:inline-block;border-radius:12px;padding:2px 10px;font-size:calc(12.5px*var(--fs,1));margin:3px 4px 0 0;border:1px solid var(--paper-edge);color:#a89a80;background:rgba(0,0,0,.03)}
 .ach.on{background:rgba(138,109,47,.15);color:var(--gold);border-color:var(--gold);font-weight:700}
-.hall{font-size:13.5px;padding:6px 0;border-bottom:1px dashed var(--paper-edge);line-height:1.6}
+.hall{font-size:calc(13.5px*var(--fs,1));padding:6px 0;border-bottom:1px dashed var(--paper-edge);line-height:1.6}
 .hall:last-child{border-bottom:none}
 .hall b{color:var(--accent)}
 /* ============ 主区域 ============ */
@@ -243,54 +243,54 @@ body{
   animation:fadein .6s ease;
 }
 @keyframes fadein{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
-.chapter .chapmark{position:absolute;top:-1px;left:26px;background:var(--accent);color:#f5e9d0;padding:3px 12px 6px;font-size:13px;letter-spacing:2px;border-radius:0 0 6px 6px;box-shadow:0 2px 6px rgba(0,0,0,.3)}
-.chapter .chaptime{position:absolute;top:8px;right:18px;font-size:13px;color:var(--ink-soft);letter-spacing:1px}
-.chapter .action-echo{margin:14px 0 8px;padding:8px 14px;border-left:3px solid var(--gold);background:rgba(138,109,47,.08);color:var(--ink-soft);font-size:14.5px;border-radius:0 4px 4px 0}
+.chapter .chapmark{position:absolute;top:-1px;left:26px;background:var(--accent);color:#f5e9d0;padding:3px 12px 6px;font-size:calc(13px*var(--fs,1));letter-spacing:2px;border-radius:0 0 6px 6px;box-shadow:0 2px 6px rgba(0,0,0,.3)}
+.chapter .chaptime{position:absolute;top:8px;right:18px;font-size:calc(13px*var(--fs,1));color:var(--ink-soft);letter-spacing:1px}
+.chapter .action-echo{margin:14px 0 8px;padding:8px 14px;border-left:3px solid var(--gold);background:rgba(138,109,47,.08);color:var(--ink-soft);font-size:calc(14.5px*var(--fs,1));border-radius:0 4px 4px 0}
 .dicebar{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0 4px}
-.die{display:inline-flex;align-items:center;gap:5px;font-size:12.5px;padding:2px 9px;border-radius:12px;border:1px solid var(--paper-edge);background:rgba(255,252,240,.6);color:var(--ink-soft);letter-spacing:.5px}
-.die b{font-family:Georgia,serif;font-size:13.5px}
+.die{display:inline-flex;align-items:center;gap:5px;font-size:calc(12.5px*var(--fs,1));padding:2px 9px;border-radius:12px;border:1px solid var(--paper-edge);background:rgba(255,252,240,.6);color:var(--ink-soft);letter-spacing:.5px}
+.die b{font-family:Georgia,serif;font-size:calc(13.5px*var(--fs,1))}
 .die.good{border-color:var(--green);color:var(--green)}
 .die.bad{border-color:var(--accent);color:var(--accent)}
 .die.great{border-color:var(--gold);color:var(--gold);background:rgba(138,109,47,.12);font-weight:700}
 .die.world{border-color:var(--blue);color:var(--blue)}
 .ntext{margin-top:10px}
-.ntext p{line-height:2.0;font-size:16.5px;text-align:justify;text-indent:2em;margin-bottom:8px}
+.ntext p{line-height:2.0;font-size:calc(16.5px*var(--fs,1));text-align:justify;text-indent:2em;margin-bottom:8px}
 .ntext q{color:var(--accent);quotes:"「" "」";font-weight:600}
 @media (max-width:900px){.ntext p{text-align:left}}
 .subblock{margin-top:14px;border-top:1px dashed var(--paper-edge);padding-top:10px}
-.subblock h4{font-size:14px;color:var(--gold);letter-spacing:2px;margin-bottom:6px}
-.subblock li{list-style:none;font-size:14.5px;line-height:1.9;color:var(--ink-soft);padding-left:1.2em;text-indent:-1.2em}
-.subblock li::before{content:"❖ ";color:var(--gold);font-size:12px}
-.rumorblock li::before{content:"📜 ";font-size:13px}
+.subblock h4{font-size:calc(14px*var(--fs,1));color:var(--gold);letter-spacing:2px;margin-bottom:6px}
+.subblock li{list-style:none;font-size:calc(14.5px*var(--fs,1));line-height:1.9;color:var(--ink-soft);padding-left:1.2em;text-indent:-1.2em}
+.subblock li::before{content:"❖ ";color:var(--gold);font-size:calc(12px*var(--fs,1))}
+.rumorblock li::before{content:"📜 ";font-size:calc(13px*var(--fs,1))}
 .changeblock li::before{content:"✦ ";color:var(--accent-soft)}
-.questblock li::before{content:"🎯 ";font-size:13px}
-.duelblock{margin-top:12px;background:rgba(0,0,0,.05);border:1px dashed var(--paper-edge);border-radius:6px;padding:10px 14px;font-size:13.5px;color:var(--ink-soft);line-height:1.8}
-.duelblock h4{font-size:14px;color:var(--accent);letter-spacing:2px;margin-bottom:4px}
+.questblock li::before{content:"🎯 ";font-size:calc(13px*var(--fs,1))}
+.duelblock{margin-top:12px;background:rgba(0,0,0,.05);border:1px dashed var(--paper-edge);border-radius:6px;padding:10px 14px;font-size:calc(13.5px*var(--fs,1));color:var(--ink-soft);line-height:1.8}
+.duelblock h4{font-size:calc(14px*var(--fs,1));color:var(--accent);letter-spacing:2px;margin-bottom:4px}
 .endingblock{border:2px solid var(--accent);border-radius:8px;padding:14px 18px;margin-top:16px;background:rgba(156,47,36,.06)}
-.endingblock h4{color:var(--accent);letter-spacing:4px;font-size:17px;margin-bottom:8px;text-align:center}
-.epitaph{text-align:center;font-size:15px;color:var(--ink-soft);margin-top:10px;letter-spacing:2px}
-.scoreline{text-align:center;font-size:14px;color:var(--gold);margin-top:8px;letter-spacing:1px}
+.endingblock h4{color:var(--accent);letter-spacing:4px;font-size:calc(17px*var(--fs,1));margin-bottom:8px;text-align:center}
+.epitaph{text-align:center;font-size:calc(15px*var(--fs,1));color:var(--ink-soft);margin-top:10px;letter-spacing:2px}
+.scoreline{text-align:center;font-size:calc(14px*var(--fs,1));color:var(--gold);margin-top:8px;letter-spacing:1px}
 /* 选项 */
 #choices{padding:6px 8% 3px;display:flex;flex-direction:column;gap:4px;max-height:28vh;overflow-y:auto}
 .opt{
   text-align:left;background:linear-gradient(170deg,#efe5cf,#e0d0ac);border:1px solid #b8a478;border-radius:5px;
-  padding:5px 10px;font-family:inherit;font-size:13px;color:var(--ink);cursor:pointer;transition:.15s;
+  padding:5px 10px;font-family:inherit;font-size:calc(13px*var(--fs,1));color:var(--ink);cursor:pointer;transition:.15s;
   box-shadow:0 1px 5px rgba(0,0,0,.3);line-height:1.45;
 }
 .opt:hover{transform:translateX(6px);border-color:var(--accent);box-shadow:0 3px 12px rgba(0,0,0,.4)}
-.opt .num{display:inline-block;background:var(--accent);color:#f5e9d0;width:16px;height:16px;border-radius:50%;text-align:center;line-height:16px;font-size:10px;margin-right:6px}
-.opt .hint{display:block;font-size:11px;color:var(--ink-soft);margin-top:1px;padding-left:22px}
-.opt .tag{display:inline-block;font-size:10.5px;padding:0 6px;border-radius:3px;margin-left:6px;color:#fff;vertical-align:1px;letter-spacing:.5px}
+.opt .num{display:inline-block;background:var(--accent);color:#f5e9d0;width:16px;height:16px;border-radius:50%;text-align:center;line-height:16px;font-size:calc(10px*var(--fs,1));margin-right:6px}
+.opt .hint{display:block;font-size:calc(11px*var(--fs,1));color:var(--ink-soft);margin-top:1px;padding-left:22px}
+.opt .tag{display:inline-block;font-size:calc(10.5px*var(--fs,1));padding:0 6px;border-radius:3px;margin-left:6px;color:#fff;vertical-align:1px;letter-spacing:.5px}
 .tag.check{background:var(--blue)} .tag.duel{background:var(--accent)} .tag.talk{background:var(--green)} .tag.rest{background:#7a6a50}
 .opt:disabled{opacity:.5;cursor:default;transform:none}
 #inputbar{display:flex;gap:10px;padding:12px 8% 18px}
-#freeInput{flex:1;border:1px solid #55462f;border-radius:6px;color:#e8dcc0;font-family:inherit;font-size:15.5px;padding:11px 15px;outline:none;background:#241d16}
+#freeInput{flex:1;border:1px solid #55462f;border-radius:6px;color:#e8dcc0;font-family:inherit;font-size:calc(15.5px*var(--fs,1));padding:11px 15px;outline:none;background:#241d16}
 #freeInput:focus{border-color:#8a6d2f;box-shadow:0 0 0 2px rgba(138,109,47,.25)}
 #freeInput::placeholder{color:#7a6a50}
-#sendBtn{background:var(--accent);color:#f5e9d0;border:none;border-radius:6px;padding:0 26px;font-family:inherit;font-size:16px;letter-spacing:4px;cursor:pointer;transition:.15s}
+#sendBtn{background:var(--accent);color:#f5e9d0;border:none;border-radius:6px;padding:0 26px;font-family:inherit;font-size:calc(16px*var(--fs,1));letter-spacing:4px;cursor:pointer;transition:.15s}
 #sendBtn:hover{background:#b13a2d}
 #sendBtn:disabled{background:#5a463c;cursor:default}
-#loading{display:none;align-items:center;gap:12px;padding:8px 8%;color:#bfa876;font-size:14px;letter-spacing:2px}
+#loading{display:none;align-items:center;gap:12px;padding:8px 8%;color:#bfa876;font-size:calc(14px*var(--fs,1));letter-spacing:2px}
 #loading.on{display:flex}
 .inkball{width:10px;height:10px;border-radius:50%;background:#bfa876;animation:pulse 1s infinite alternate}
 .inkball:nth-child(2){animation-delay:.25s}.inkball:nth-child(3){animation-delay:.5s}
@@ -305,55 +305,58 @@ body{
   padding:28px 32px;
 }
 .modal.wide{width:min(720px,94vw)}
-.modal h2{font-size:20px;letter-spacing:5px;color:var(--accent);text-align:center;margin-bottom:6px}
-.modal .sub{text-align:center;font-size:13.5px;color:var(--ink-soft);margin-bottom:20px}
+.modal h2{font-size:calc(20px*var(--fs,1));letter-spacing:5px;color:var(--accent);text-align:center;margin-bottom:6px}
+.modal .sub{text-align:center;font-size:calc(13.5px*var(--fs,1));color:var(--ink-soft);margin-bottom:20px}
 .field{margin-bottom:14px}
-.field label{display:block;font-size:14px;letter-spacing:2px;color:var(--ink-soft);margin-bottom:5px}
-.field input,.field select{width:100%;background:rgba(255,252,240,.7);border:1px solid var(--paper-edge);border-radius:5px;font-family:inherit;font-size:15px;padding:9px 12px;color:var(--ink);outline:none}
+.field label{display:block;font-size:calc(14px*var(--fs,1));letter-spacing:2px;color:var(--ink-soft);margin-bottom:5px}
+.field input,.field select{width:100%;background:rgba(255,252,240,.7);border:1px solid var(--paper-edge);border-radius:5px;font-family:inherit;font-size:calc(15px*var(--fs,1));padding:9px 12px;color:var(--ink);outline:none}
 .field input:focus{border-color:var(--gold)}
-.field .note{font-size:12.5px;color:var(--ink-soft);margin-top:4px;line-height:1.6}
-.contact{margin-top:18px;padding:12px 14px;border:1px dashed var(--paper-edge);border-radius:6px;background:rgba(0,0,0,.03);font-size:13px;color:var(--ink-soft);line-height:1.7}
+.field .note{font-size:calc(12.5px*var(--fs,1));color:var(--ink-soft);margin-top:4px;line-height:1.6}
+.contact{margin-top:18px;padding:12px 14px;border:1px dashed var(--paper-edge);border-radius:6px;background:rgba(0,0,0,.03);font-size:calc(13px*var(--fs,1));color:var(--ink-soft);line-height:1.7}
 .contact b{color:var(--ink);letter-spacing:1px}
 .contact .wx{display:inline-flex;align-items:center;gap:8px;margin-top:4px}
-.contact .wx code{font-family:ui-monospace,Menlo,monospace;font-size:14px;color:var(--accent);background:rgba(156,47,36,.07);padding:2px 8px;border-radius:4px;letter-spacing:1px}
-.contact .wx button{font:inherit;font-size:12px;padding:3px 10px;border:1px solid var(--paper-edge);border-radius:4px;background:transparent;color:var(--ink-soft);cursor:pointer}
+.contact .wx code{font-family:ui-monospace,Menlo,monospace;font-size:calc(14px*var(--fs,1));color:var(--accent);background:rgba(156,47,36,.07);padding:2px 8px;border-radius:4px;letter-spacing:1px}
+.contact .wx button{font:inherit;font-size:calc(12px*var(--fs,1));padding:3px 10px;border:1px solid var(--paper-edge);border-radius:4px;background:transparent;color:var(--ink-soft);cursor:pointer}
 .contact .wx button:active{background:rgba(156,47,36,.08);border-color:var(--accent)}
 .mbtnrow{display:flex;gap:10px;margin-top:22px;flex-wrap:wrap}
 .seg{display:flex;gap:8px}
-.seg button{flex:1;padding:9px 0;border:1px solid var(--paper-edge);border-radius:5px;background:rgba(255,252,240,.6);font-family:inherit;font-size:15px;letter-spacing:3px;color:var(--ink-soft);cursor:pointer}
+.seg button{flex:1;padding:9px 0;border:1px solid var(--paper-edge);border-radius:5px;background:rgba(255,252,240,.6);font-family:inherit;font-size:calc(15px*var(--fs,1));letter-spacing:3px;color:var(--ink-soft);cursor:pointer}
 .seg button.sel{border-color:var(--accent);background:rgba(156,47,36,.10);color:var(--accent);font-weight:700}
 #bgGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;padding:2px}
-.bgopt{border:1px solid var(--paper-edge);border-radius:6px;padding:7px 5px;text-align:center;cursor:pointer;font-size:13.5px;background:rgba(255,252,240,.55);letter-spacing:1px}
-.bgopt small{display:block;color:var(--ink-soft);font-size:10.5px;margin-top:3px;line-height:1.4;letter-spacing:0}
+.bgopt{border:1px solid var(--paper-edge);border-radius:6px;padding:7px 5px;text-align:center;cursor:pointer;font-size:calc(13.5px*var(--fs,1));background:rgba(255,252,240,.55);letter-spacing:1px}
+.bgopt small{display:block;color:var(--ink-soft);font-size:calc(10.5px*var(--fs,1));margin-top:3px;line-height:1.4;letter-spacing:0}
 .bgopt.sel{border-color:var(--accent);background:rgba(156,47,36,.10);color:var(--accent);font-weight:700}
 .bgopt.sel small{color:var(--accent-soft)}
 @media (max-width:520px){#bgGrid{grid-template-columns:repeat(2,1fr)}}
-.mbtn{flex:1;padding:11px 0;border-radius:6px;font-family:inherit;font-size:16px;letter-spacing:4px;cursor:pointer;transition:.15s;border:1px solid var(--paper-edge);background:rgba(255,252,240,.6);color:var(--ink-soft)}
+#styleGrid{display:grid;grid-template-columns:repeat(5,1fr);gap:7px;padding:2px}
+@media (max-width:900px){#styleGrid{grid-template-columns:repeat(2,1fr)}}
+#crStyleNote{margin-top:7px;padding:7px 11px;border-left:3px solid var(--gold);background:rgba(138,109,47,.07);border-radius:0 4px 4px 0;font-size:calc(13px*var(--fs,1));line-height:1.75;color:var(--ink-soft)}
+.mbtn{flex:1;padding:11px 0;border-radius:6px;font-family:inherit;font-size:calc(16px*var(--fs,1));letter-spacing:4px;cursor:pointer;transition:.15s;border:1px solid var(--paper-edge);background:rgba(255,252,240,.6);color:var(--ink-soft)}
 .mbtn.primary{background:var(--accent);border-color:var(--accent);color:#f5e9d0}
 .mbtn.primary:hover{background:#b13a2d}
 .mbtn.gold{background:var(--gold);border-color:var(--gold);color:#fff8e6}
 .mbtn:hover{border-color:var(--gold)}
 .mbtn:disabled{opacity:.45;cursor:default}
-#npcModal .nrow{display:flex;justify-content:space-between;border-bottom:1px dashed var(--paper-edge);padding:7px 2px;font-size:14.5px}
+#npcModal .nrow{display:flex;justify-content:space-between;border-bottom:1px dashed var(--paper-edge);padding:7px 2px;font-size:calc(14.5px*var(--fs,1))}
 #npcModal .nrow b{color:var(--ink-soft);font-weight:400;letter-spacing:2px;flex-shrink:0;margin-right:16px}
 #npcModal .nrow span{text-align:right;line-height:1.7}
-#npcModal .secret{background:rgba(90,60,120,.10);border:1px dashed #6a4a8a;border-radius:6px;padding:8px 12px;margin-top:10px;font-size:13.5px;color:#4a2a6a;line-height:1.7}
+#npcModal .secret{background:rgba(90,60,120,.10);border:1px dashed #6a4a8a;border-radius:6px;padding:8px 12px;margin-top:10px;font-size:calc(13.5px*var(--fs,1));color:#4a2a6a;line-height:1.7}
 /* 比武 */
 #duelModal{padding:22px 26px}
 .duelhead{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;margin-bottom:12px}
 .fighter{flex:1;min-width:0}
-.fighter .fname{font-size:18px;font-weight:700;letter-spacing:2px}
-.fighter .fsub{font-size:12.5px;color:var(--ink-soft);margin-bottom:6px}
+.fighter .fname{font-size:calc(18px*var(--fs,1));font-weight:700;letter-spacing:2px}
+.fighter .fsub{font-size:calc(12.5px*var(--fs,1));color:var(--ink-soft);margin-bottom:6px}
 .fighter.right{text-align:right}
 .fighter .bar{height:12px;margin-bottom:4px}
 .fighter .bar.qi{height:7px}
-.fighter .blab{display:flex;justify-content:space-between;font-size:12px;color:var(--ink-soft)}
+.fighter .blab{display:flex;justify-content:space-between;font-size:calc(12px*var(--fs,1));color:var(--ink-soft)}
 .fighter.right .blab{flex-direction:row-reverse}
-.vs{font-size:26px;color:var(--accent);font-weight:700;align-self:center;font-family:Georgia,serif}
-#duelLog{background:rgba(0,0,0,.05);border:1px solid var(--paper-edge);border-radius:6px;padding:10px 14px;height:200px;overflow-y:auto;font-size:14px;line-height:1.8}
+.vs{font-size:calc(26px*var(--fs,1));color:var(--accent);font-weight:700;align-self:center;font-family:Georgia,serif}
+#duelLog{background:rgba(0,0,0,.05);border:1px solid var(--paper-edge);border-radius:6px;padding:10px 14px;height:200px;overflow-y:auto;font-size:calc(14px*var(--fs,1));line-height:1.8}
 #duelLog .r{border-bottom:1px dashed var(--paper-edge);padding:5px 0}
 #duelLog .r:last-child{border-bottom:none}
-#duelLog .r .rn{color:var(--gold);font-size:12.5px;margin-right:6px}
+#duelLog .r .rn{color:var(--gold);font-size:calc(12.5px*var(--fs,1));margin-right:6px}
 #duelLog .dmg{color:var(--accent);font-weight:700} #duelLog .heal{color:var(--green);font-weight:700}
 #duelLog .sys{color:var(--blue);font-style:italic}
 /* 自动比武 */
@@ -361,81 +364,81 @@ body{
 .dface.act{box-shadow:0 0 0 3px var(--gold),0 0 12px rgba(184,146,60,.55);transform:translateY(-3px) scale(1.07)}
 .dface.hit{animation:dhit .32s}
 @keyframes dhit{0%,100%{transform:none}20%{transform:translateX(-5px)}45%{transform:translateX(5px)}70%{transform:translateX(-3px)}}
-.dface .dsk{position:absolute;bottom:100%;left:50%;transform:translate(-50%,4px);white-space:nowrap;font-style:normal;font-size:12.5px;font-weight:700;letter-spacing:1px;color:#fff;background:var(--accent);padding:1px 7px;border-radius:4px;opacity:0;pointer-events:none;transition:.15s;z-index:3}
+.dface .dsk{position:absolute;bottom:100%;left:50%;transform:translate(-50%,4px);white-space:nowrap;font-style:normal;font-size:calc(12.5px*var(--fs,1));font-weight:700;letter-spacing:1px;color:#fff;background:var(--accent);padding:1px 7px;border-radius:4px;opacity:0;pointer-events:none;transition:.15s;z-index:3}
 .dface .dsk.on{opacity:1;transform:translate(-50%,-2px)}
 .fhead.ro .dface .dsk{left:auto;right:-4px;transform:translate(0,4px)} .fhead.ro .dface .dsk.on{transform:translate(0,-2px)}
 .fhead:not(.ro) .dface .dsk{left:-4px;transform:translate(0,4px)} .fhead:not(.ro) .dface .dsk.on{transform:translate(0,-2px)}
-.dfloat{position:absolute;left:50%;top:10%;transform:translateX(-50%);font-weight:800;font-size:17px;color:var(--accent);text-shadow:0 1px 0 #fff8,0 0 3px #fff;pointer-events:none;animation:dfl .9s ease-out forwards;z-index:4}
-.dfloat.crit{font-size:23px;color:#b0170c}
-.dfloat.heal{color:var(--green)} .dfloat.miss{color:var(--ink-soft);font-size:15px}
+.dfloat{position:absolute;left:50%;top:10%;transform:translateX(-50%);font-weight:800;font-size:calc(17px*var(--fs,1));color:var(--accent);text-shadow:0 1px 0 #fff8,0 0 3px #fff;pointer-events:none;animation:dfl .9s ease-out forwards;z-index:4}
+.dfloat.crit{font-size:calc(23px*var(--fs,1));color:#b0170c}
+.dfloat.heal{color:var(--green)} .dfloat.miss{color:var(--ink-soft);font-size:calc(15px*var(--fs,1))}
 @keyframes dfl{0%{opacity:0;top:20%}15%{opacity:1}100%{opacity:0;top:-45%}}
 .fighter .bar{position:relative}
 .fighter .bar .shl{position:absolute;left:0;top:0;height:4px;background:var(--gold);border-radius:2px;opacity:.95}
 .fighter.right .bar .shl{left:auto;right:0}
-.shtag{color:var(--gold);font-size:11.5px}
-.sttag{display:inline-block;margin-left:5px;font-size:11px;font-weight:400;letter-spacing:0;color:#fff;background:#7a4a8a;border-radius:3px;padding:0 4px;vertical-align:3px}
+.shtag{color:var(--gold);font-size:calc(11.5px*var(--fs,1))}
+.sttag{display:inline-block;margin-left:5px;font-size:calc(11px*var(--fs,1));font-weight:400;letter-spacing:0;color:#fff;background:#7a4a8a;border-radius:3px;padding:0 4px;vertical-align:3px}
 .dbtns .mbtn{white-space:nowrap;min-width:64px}
-@media (max-width:520px){ .duelhead .vs{font-size:18px} .dbtns .mbtn{min-width:0;padding-left:12px;padding-right:12px} }
+@media (max-width:520px){ .duelhead .vs{font-size:calc(18px*var(--fs,1))} .dbtns .mbtn{min-width:0;padding-left:12px;padding-right:12px} }
 .dchips{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px}
 .dchips.r{justify-content:flex-end}
-.dchip{display:inline-flex;align-items:center;gap:3px;border:1px solid var(--c);border-radius:4px;padding:0 5px;font-size:11.5px;line-height:1.7;background:rgba(255,252,240,.6)}
+.dchip{display:inline-flex;align-items:center;gap:3px;border:1px solid var(--c);border-radius:4px;padding:0 5px;font-size:calc(11.5px*var(--fs,1));line-height:1.7;background:rgba(255,252,240,.6)}
 .dchip b{color:var(--c);font-weight:700}
-.dchip i{font-style:normal;color:var(--ink-soft);font-size:10.5px}
+.dchip i{font-style:normal;color:var(--ink-soft);font-size:calc(10.5px*var(--fs,1))}
 .dchip.wait{opacity:.45}
 .dchip.none{border-style:dashed;border-color:var(--paper-edge);color:var(--ink-soft)}
 .dctl{margin-top:12px;display:flex;flex-direction:column;gap:8px;align-items:center}
 .dbtns{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;align-items:center}
 .dspeed{display:inline-flex;border:1px solid var(--paper-edge);border-radius:6px;overflow:hidden}
-.dspeed button{border:0;background:rgba(255,252,240,.6);font-family:inherit;font-size:14px;padding:6px 12px;cursor:pointer;color:var(--ink-soft)}
+.dspeed button{border:0;background:rgba(255,252,240,.6);font-family:inherit;font-size:calc(14px*var(--fs,1));padding:6px 12px;cursor:pointer;color:var(--ink-soft)}
 .dspeed button.on{background:var(--accent);color:#fff}
-.ddart{font-size:13.5px;color:var(--ink);display:flex;align-items:center;gap:6px;flex-wrap:wrap;justify-content:center}
-.ddart small{color:var(--ink-soft);font-size:11.5px}
+.ddart{font-size:calc(13.5px*var(--fs,1));color:var(--ink);display:flex;align-items:center;gap:6px;flex-wrap:wrap;justify-content:center}
+.ddart small{color:var(--ink-soft);font-size:calc(11.5px*var(--fs,1))}
 #duelLog .bt{display:block;padding-left:1em}
 #duelLog .dmg.crit{color:#b0170c}
 .duelend{margin-top:12px;text-align:center}
-.duelend .verdict{font-size:20px;letter-spacing:5px;color:var(--accent);font-weight:700;margin-bottom:6px}
-.duelend p{font-size:14px;color:var(--ink-soft);margin-bottom:8px}
+.duelend .verdict{font-size:calc(20px*var(--fs,1));letter-spacing:5px;color:var(--accent);font-weight:700;margin-bottom:6px}
+.duelend p{font-size:calc(14px*var(--fs,1));color:var(--ink-soft);margin-bottom:8px}
 /* 对话 */
 #convoModal{padding:20px 22px;display:flex;flex-direction:column;max-height:88vh}
 #convoHead{display:flex;align-items:center;gap:12px;margin-bottom:10px}
-#convoHead .avatar{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:19px;font-weight:700;color:#f5e9d0;flex-shrink:0}
+#convoHead .avatar{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:calc(19px*var(--fs,1));font-weight:700;color:#f5e9d0;flex-shrink:0}
 #convoHead .cinfo{flex:1;min-width:0}
-#convoHead .cname{font-size:18px;font-weight:700;letter-spacing:2px}
-#convoHead .cmood{font-size:12.5px;color:var(--ink-soft)}
-#convoHead .cfav{text-align:right;font-size:12px;color:var(--ink-soft)}
-#convoHead .cfav b{font-size:18px;display:block}
+#convoHead .cname{font-size:calc(18px*var(--fs,1));font-weight:700;letter-spacing:2px}
+#convoHead .cmood{font-size:calc(12.5px*var(--fs,1));color:var(--ink-soft)}
+#convoHead .cfav{text-align:right;font-size:calc(12px*var(--fs,1));color:var(--ink-soft)}
+#convoHead .cfav b{font-size:calc(18px*var(--fs,1));display:block}
 #convoMsgs{flex:1;overflow-y:auto;min-height:260px;max-height:58vh;padding:6px 2px;display:flex;flex-direction:column;gap:9px}
-.bub{max-width:84%;padding:8px 13px;border-radius:10px;font-size:14.5px;line-height:1.75;position:relative}
+.bub{max-width:84%;padding:8px 13px;border-radius:10px;font-size:calc(14.5px*var(--fs,1));line-height:1.75;position:relative}
 .bub.me{align-self:flex-end;background:rgba(156,47,36,.12);border:1px solid rgba(156,47,36,.3);border-bottom-right-radius:3px}
 .bub.them{align-self:flex-start;background:rgba(255,252,240,.8);border:1px solid var(--paper-edge);border-bottom-left-radius:3px}
-.bub.sys{align-self:center;background:transparent;color:var(--ink-soft);font-size:12.5px;font-style:italic;padding:2px 8px}
-.bub .thought{display:block;margin-top:6px;padding-top:5px;border-top:1px dashed var(--paper-edge);font-size:12.5px;color:#6a4a8a;font-style:italic}
+.bub.sys{align-self:center;background:transparent;color:var(--ink-soft);font-size:calc(12.5px*var(--fs,1));font-style:italic;padding:2px 8px}
+.bub .thought{display:block;margin-top:6px;padding-top:5px;border-top:1px dashed var(--paper-edge);font-size:calc(12.5px*var(--fs,1));color:#6a4a8a;font-style:italic}
 .bub .thought.locked{color:#a89a80}
-.bub .chk{display:inline-block;margin-top:5px;font-size:12px;padding:1px 8px;border-radius:10px;border:1px solid var(--paper-edge);color:var(--ink-soft)}
+.bub .chk{display:inline-block;margin-top:5px;font-size:calc(12px*var(--fs,1));padding:1px 8px;border-radius:10px;border:1px solid var(--paper-edge);color:var(--ink-soft)}
 .bub .chk.ok{border-color:var(--green);color:var(--green)} .bub .chk.no{border-color:var(--accent);color:var(--accent)}
 #convoInput{display:flex;gap:8px;margin-top:10px;flex-wrap:nowrap}
 #convoInput .cbtn{flex:0 0 auto;white-space:nowrap}
-#convoText{flex:1;background:rgba(255,252,240,.8);border:1px solid var(--paper-edge);border-radius:6px;font-family:inherit;font-size:15px;padding:9px 12px;color:var(--ink);outline:none}
+#convoText{flex:1;background:rgba(255,252,240,.8);border:1px solid var(--paper-edge);border-radius:6px;font-family:inherit;font-size:calc(15px*var(--fs,1));padding:9px 12px;color:var(--ink);outline:none}
 #convoText:focus{border-color:var(--gold)}
-.cbtn{background:var(--accent);color:#f5e9d0;border:none;border-radius:6px;padding:0 16px;font-family:inherit;font-size:14.5px;letter-spacing:2px;cursor:pointer}
+.cbtn{background:var(--accent);color:#f5e9d0;border:none;border-radius:6px;padding:0 16px;font-family:inherit;font-size:calc(14.5px*var(--fs,1));letter-spacing:2px;cursor:pointer}
 .cbtn.alt{background:rgba(255,252,240,.7);color:var(--ink-soft);border:1px solid var(--paper-edge)}
 .cbtn:disabled{opacity:.5;cursor:default}
 .giftlist{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
-.giftlist button{border:1px solid var(--gold);background:rgba(138,109,47,.1);color:var(--gold);border-radius:12px;padding:2px 10px;font-family:inherit;font-size:13px;cursor:pointer}
-#toast{position:fixed;top:70px;left:50%;transform:translateX(-50%);z-index:99;background:#3a1f1a;color:#f0d9c0;border:1px solid #8a4a3a;border-radius:6px;padding:10px 22px;font-size:14.5px;letter-spacing:1px;display:none;box-shadow:var(--shadow);max-width:80vw}
+.giftlist button{border:1px solid var(--gold);background:rgba(138,109,47,.1);color:var(--gold);border-radius:12px;padding:2px 10px;font-family:inherit;font-size:calc(13px*var(--fs,1));cursor:pointer}
+#toast{position:fixed;top:70px;left:50%;transform:translateX(-50%);z-index:99;background:#3a1f1a;color:#f0d9c0;border:1px solid #8a4a3a;border-radius:6px;padding:10px 22px;font-size:calc(14.5px*var(--fs,1));letter-spacing:1px;display:none;box-shadow:var(--shadow);max-width:80vw}
 #toast.ach{background:#3a2f14;border-color:#b8963f;color:#f5e6b8}
 #panelToggle{display:none}
 #sideMask{display:none;position:fixed;inset:0;top:56px;background:rgba(10,7,5,.55);z-index:39;backdrop-filter:blur(2px)}
 /* ============ 手机适配 ============ */
 @supports (height:100dvh){body{height:100dvh}#layout{height:calc(100dvh - 56px)}}
 @media (max-width:900px){
-  body{font-size:15px}
+  body{font-size:calc(15px*var(--fs,1))}
   #topbar{height:52px;padding:0 10px;gap:8px;overflow-x:auto;overflow-y:hidden;scrollbar-width:none}
   #topbar::-webkit-scrollbar{display:none}
-  #topbar h1{font-size:17px;letter-spacing:2px;white-space:nowrap}
-  #topbar .seal{width:28px;height:28px;font-size:12px;flex-shrink:0}
+  #topbar h1{font-size:calc(17px*var(--fs,1));letter-spacing:2px;white-space:nowrap}
+  #topbar .seal{width:28px;height:28px;font-size:calc(12px*var(--fs,1));flex-shrink:0}
   #gameDate{display:none}
-  .tbtn{padding:5px 10px;font-size:13px;letter-spacing:1px;white-space:nowrap;flex-shrink:0}
+  .tbtn{padding:5px 10px;font-size:calc(13px*var(--fs,1));letter-spacing:1px;white-space:nowrap;flex-shrink:0}
   #panelToggle{display:inline-block;background:var(--accent);border-color:var(--accent);color:#f5e9d0}
   #layout{height:calc(100% - 52px)}
   @supports (height:100dvh){ #layout{height:calc(100dvh - 52px)} }
@@ -444,35 +447,35 @@ body{
   #sideMask.on{display:block}
   #sideMask{top:52px}
   .tabpane{padding:12px 13px;-webkit-overflow-scrolling:touch}
-  #tabs button{padding:12px 0;font-size:14px;letter-spacing:2px}
-  #tabs button[data-tab]{font-size:13px;letter-spacing:1px}
-  .csort button{font-size:11.5px;padding:3px 7px}
+  #tabs button{padding:12px 0;font-size:calc(14px*var(--fs,1));letter-spacing:2px}
+  #tabs button[data-tab]{font-size:calc(13px*var(--fs,1));letter-spacing:1px}
+  .csort button{font-size:calc(11.5px*var(--fs,1));padding:3px 7px}
   #story{padding:14px 3.5%;-webkit-overflow-scrolling:touch}
   .chapter{padding:20px 16px 16px;margin-bottom:14px;border-radius:7px}
-  .chapter .chapmark{left:14px;font-size:12px;padding:2px 9px 4px}
-  .chapter .chaptime{font-size:11.5px;right:12px}
-  .ntext p{font-size:15.5px;line-height:1.95;margin-bottom:7px}
-  .subblock li{font-size:13.5px}
+  .chapter .chapmark{left:14px;font-size:calc(12px*var(--fs,1));padding:2px 9px 4px}
+  .chapter .chaptime{font-size:calc(11.5px*var(--fs,1));right:12px}
+  .ntext p{font-size:calc(15.5px*var(--fs,1));line-height:1.95;margin-bottom:7px}
+  .subblock li{font-size:calc(13.5px*var(--fs,1))}
   #choices{padding:5px 3.5% 2px;max-height:26vh;gap:4px;-webkit-overflow-scrolling:touch}
-  .opt{padding:6px 9px;font-size:12.5px;border-radius:6px}
+  .opt{padding:6px 9px;font-size:calc(12.5px*var(--fs,1));border-radius:6px}
   .opt:hover{transform:none}
   .opt:active{transform:scale(.985);border-color:var(--accent)}
-  .opt .hint{font-size:10.5px}
-  #loading{padding:6px 3.5%;font-size:13px}
+  .opt .hint{font-size:calc(10.5px*var(--fs,1))}
+  #loading{padding:6px 3.5%;font-size:calc(13px*var(--fs,1))}
   #inputbar{padding:10px 3.5% calc(12px + env(safe-area-inset-bottom));gap:8px;background:linear-gradient(180deg,transparent,rgba(23,19,16,.9) 40%)}
-  #freeInput{font-size:16px;padding:12px 14px}
-  #sendBtn{padding:0 18px;font-size:15px;letter-spacing:2px}
+  #freeInput{font-size:calc(16px*var(--fs,1));padding:12px 14px}
+  #sendBtn{padding:0 18px;font-size:calc(15px*var(--fs,1));letter-spacing:2px}
   .modal{width:94vw;padding:20px 18px;max-height:84vh}
   .modal.wide{width:96vw}
   #convoModal{max-height:92vh;padding:16px 14px}
   #convoMsgs{min-height:44vh;max-height:64vh}
-  .modal h2{font-size:18px;letter-spacing:3px}
-  #npcModal .nrow{font-size:14px}
+  .modal h2{font-size:calc(18px*var(--fs,1));letter-spacing:3px}
+  #npcModal .nrow{font-size:calc(14px*var(--fs,1))}
   .npc:hover{background:transparent}
   .npc:active{background:rgba(156,47,36,.08)}
   #duelModal{padding:16px 14px}
   #duelLog{height:160px}
-  #convoText{font-size:16px}
+  #convoText{font-size:calc(16px*var(--fs,1))}
   #convoInput{flex-wrap:wrap}
   #convoText{flex:1 0 100%}
   #convoInput .cbtn{flex:1;padding:9px 0;letter-spacing:1px}
@@ -481,6 +484,20 @@ body{
 @media (max-width:380px){.chapter{padding:18px 12px 14px}}
 .ntext{font-size:var(--reading-size,16px)}
 #createMask .mbtnrow{position:sticky;bottom:0;background:var(--paper);padding-top:10px}
+
+/* ============ 电脑端：字体与字号（手机端不受影响） ============ */
+@media (min-width:901px){
+  :root{--fs:var(--pc-fs,1)}
+  html.pcfont body{font-family:var(--pc-font)}
+  html.pcfont :is(button,input,select,textarea){font-family:inherit}
+  .mobonly{display:none!important}
+}
+@media (max-width:900px){ .pconly{display:none!important} }
+.pcrange{display:flex;align-items:center;gap:10px}
+.pcrange input[type=range]{flex:1;padding:0;background:none;border:none;accent-color:var(--accent)}
+.pcrange b{min-width:48px;text-align:right;font-variant-numeric:tabular-nums;color:var(--accent)}
+.pcrange .mbtn{flex:0 0 auto;padding:4px 10px;font-size:calc(12.5px*var(--fs,1));letter-spacing:1px}
+#pcFontPreview{margin-top:6px;padding:8px 12px;border:1px dashed var(--paper-edge);border-radius:5px;line-height:1.9;color:var(--ink)}
 </style>
 </head>
 <body>
@@ -595,16 +612,21 @@ body{
       <div id="bgGrid"></div>
     </div>
     <div class="field">
+      <label>文风 <small style="color:var(--ink-soft);font-weight:400">—— 剧情用谁的笔法来写，开局后也能在设置里改</small></label>
+      <div id="styleGrid"></div>
+      <div id="crStyleNote"></div>
+    </div>
+    <div class="field">
       <label>自由度 <small style="color:var(--ink-soft);font-weight:400">—— 这个世界跟你较不较真</small></label>
       <div class="seg" id="crFree">
-        <button data-v="free">随心所欲<small style="display:block;font-size:10px;letter-spacing:0">言出法随·说啥是啥</small></button><button data-v="mid" class="sel">江湖传奇<small style="display:block;font-size:10px;letter-spacing:0">有规矩也有奇遇</small></button><button data-v="strict">写实江湖<small style="display:block;font-size:10px;letter-spacing:0">处处较真·寸步难行</small></button>
+        <button data-v="free">随心所欲<small style="display:block;font-size:calc(10px*var(--fs,1));letter-spacing:0">言出法随·说啥是啥</small></button><button data-v="mid" class="sel">江湖传奇<small style="display:block;font-size:calc(10px*var(--fs,1));letter-spacing:0">有规矩也有奇遇</small></button><button data-v="strict">写实江湖<small style="display:block;font-size:calc(10px*var(--fs,1));letter-spacing:0">处处较真·寸步难行</small></button>
       </div>
       <div class="note" id="crFreeNote"></div>
     </div>
     <div class="field">
       <label>江湖凶险 <small style="color:var(--ink-soft);font-weight:400">—— 敌手强弱与判定门槛</small></label>
       <div class="seg" id="crDiff">
-        <button data-v="easy">逍遥<small style="display:block;font-size:10px;letter-spacing:0">判定宽松·敌手较弱</small></button><button data-v="normal" class="sel">江湖<small style="display:block;font-size:10px;letter-spacing:0">标准</small></button><button data-v="hard">修罗<small style="display:block;font-size:10px;letter-spacing:0">判定严苛·敌手凶狠</small></button>
+        <button data-v="easy">逍遥<small style="display:block;font-size:calc(10px*var(--fs,1));letter-spacing:0">判定宽松·敌手较弱</small></button><button data-v="normal" class="sel">江湖<small style="display:block;font-size:calc(10px*var(--fs,1));letter-spacing:0">标准</small></button><button data-v="hard">修罗<small style="display:block;font-size:calc(10px*var(--fs,1));letter-spacing:0">判定严苛·敌手凶狠</small></button>
       </div>
     </div>
     <div class="mbtnrow">
@@ -651,10 +673,28 @@ body{
       <input id="cfgModel" placeholder="deepseek-v4-flash">
       <div class="note">推荐 deepseek-v4-flash（快且便宜）；追求更强剧情可填 deepseek-v4-pro（较慢较贵）。旧模型名 deepseek-chat / deepseek-reasoner 已停用</div>
     </div>
-    <div class="field">
+    <div class="field mobonly">
       <label for="cfgFont">阅读字号</label>
       <select id="cfgFont"><option value="16">标准</option><option value="18">较大</option><option value="20">大字</option></select>
       <div class="note">也可以双指放大页面。</div>
+    </div>
+    <div class="field pconly">
+      <label for="pcFont">字体（电脑端）</label>
+      <select id="pcFont"></select>
+      <div class="pcrange" style="margin-top:6px">
+        <input id="pcFontCustom" placeholder="或直接填本机字体名，如 霞鹜文楷 / LXGW WenKai" style="flex:1">
+        <button type="button" class="mbtn" id="pcFontScan">读取本机全部字体</button>
+      </div>
+      <div id="pcFontPreview">「酒逢知己千杯少，话不投机半句多。」江湖路远，少侠保重。</div>
+      <div class="note" id="pcFontNote">列表里只放本机装了的字体。「读取本机全部字体」需 Chrome / Edge，会弹一次授权。</div>
+    </div>
+    <div class="field pconly">
+      <label for="pcSize">字号（电脑端，整页文字一起缩放）</label>
+      <div class="pcrange">
+        <input type="range" id="pcSize" min="80" max="160" step="5" value="100">
+        <b id="pcSizeVal">100%</b>
+        <button type="button" class="mbtn" id="pcReset">恢复默认</button>
+      </div>
     </div>
     <div class="field">
       <label>思考模式（仅 DeepSeek V4 生效）</label>
@@ -671,6 +711,11 @@ body{
         <option value="strict">写实江湖 —— 处处较真，寸步难行</option>
       </select>
       <div class="note" id="cfgFreeNote"></div>
+    </div>
+    <div class="field" id="cfgStyleWrap">
+      <label for="cfgStyle">本局文风（可随时改，下一回合起生效）</label>
+      <select id="cfgStyle"></select>
+      <div class="note" id="cfgStyleNote"></div>
     </div>
     <div class="field" id="cfgMemWrap">
       <label>记忆长度（本局，随时可改）</label>
@@ -1487,7 +1532,7 @@ function stripStrict(t,free){
 }
 function fillRules(t){
   const f=fdm();
-  return stripStrict(t,!!f.freeAct).replace(/\{\{CHOSEN\}\}/g,f.chosen).replace(/\{\{LOVE\}\}/g,f.loveGate).replace(/\{\{SECRET\}\}/g,f.secretGate);
+  return stripStrict(t,!!f.freeAct).replace(/\{\{STYLE\}\}/g,()=>curStyle().line).replace(/\{\{CHOSEN\}\}/g,f.chosen).replace(/\{\{LOVE\}\}/g,f.loveGate).replace(/\{\{SECRET\}\}/g,f.secretGate);
 }
 const TONE_NOTE='（上面【本局自由度】一段是本局的口径；它与前面通则说法不一时，以本局口径为准。）';
 function worldRules(){ return fillRules(WORLD_RULES)+'\n'+fdm().tone+'\n'+TONE_NOTE; }
@@ -2668,7 +2713,7 @@ function pickWorldEvent(action){
 const WORLD_RULES = `你是一个武侠文字游戏引擎。世界观为最通俗的武侠江湖，朝堂官府、捕快衙役都可以有，但戏的重心在江湖；有门派、家族、隐世高人、武功秘籍、比武、恩怨情仇、拜师收徒、绝世神兵、蛊毒。
 铁律：
 ⟦严⟧- 严禁出现科幻、魔幻、玄幻、量子、机甲、时空穿梭内容；不得出现不符合古代背景的称谓、事物和剧情；不要有太多阴谋暗线。⟦/严⟧
-- 文风：参考金庸小说的笔法——通俗流畅的白话，叙事干净利落，一看就懂；不要文言腔，不要辞藻堆砌，不要长句套长句。对话生动自然、符合人物身份脾气。称呼用江湖叫法（少侠、姑娘、掌门、师兄、前辈、阁下等），武功、招式、门派、兵器用武侠风格的名字。人物言行须符合其年龄、身份和性格。除JSON键名和引擎规定的固定取值（如 type 的 normal/check/duel/talk/rest）外一律使用中文。
+- 文风：{{STYLE}}对话生动自然、符合人物身份脾气。称呼用江湖叫法（少侠、姑娘、掌门、师兄、前辈、阁下等），武功、招式、门派、兵器用武侠风格的名字。人物言行须符合其年龄、身份和性格。除JSON键名和引擎规定的固定取值（如 type 的 normal/check/duel/talk/rest）外一律使用中文。
 - 对话：所有人物对话一律用「」包裹，严禁用其他引号；对话自然融入叙述即可，写清楚是谁说的。
 - 缩骨功属于武功功法，不属于技能。
 - 姓名铁律：主角与所有已登场人物的姓名以面板为准，任何时候都不可改写、换姓、换名或另起称呼。写自称（「某」「在下」）时，姓氏必须与面板一致。
@@ -2748,6 +2793,136 @@ const STYLE_SYSTEM = `你是一个武侠文字游戏的叙事引擎，笔法学�
 「我说过，别管这桩闲事。」
 
 叙述一律用中文；除JSON键名和引擎规定的固定取值（如 type 的 normal/check/duel/talk/rest）外不得出现英文。`;
+
+/* ================= 文风 ================= */
+// 文风只管怎么写；金庸档的文案与改版前一字不差，老存档没有 style 字段也按金庸走
+const STYLE_COMMON=`文风只决定怎么写；世界观铁律与本局自由度口径照旧，与之冲突时以铁律和口径为准。
+对话一律用「」包裹，写清是谁说的。叙述一律用中文；除JSON键名和引擎规定的固定取值（如 type 的 normal/check/duel/talk/rest）外不得出现英文。`;
+const WRITING_STYLES={
+  jinyong:{label:'金庸',tag:'白话干净，侠之大者',
+    line:'参考金庸小说的笔法——通俗流畅的白话，叙事干净利落，一看就懂；不要文言腔，不要辞藻堆砌，不要长句套长句。',
+    preview:'天刚蒙蒙亮，客栈门板还没卸。沈砚把刀往桌上一搁，要了两个馍。跑堂的看了看那刀，又看了看他袖口的血，手一抖，茶泼了半碗。',
+    bio:null},
+  gulong:{label:'古龙',tag:'短句如刀，话里有话',
+    line:'文风学古龙——短句短段，对白见机锋，留白多。',
+    rule:'笔法学古龙：短句短段，一句一段很常见。叙述冷静，留白多，不替人物解释心思。对白占大头，话里有话，常用反问和答非所问。景物只给一两笔，用来烘托气氛。打斗不写招式来回，只写出手前的对峙和出手后的结果，胜负在一瞬之间。偶尔插一句讲人生、寂寞、朋友或酒的短论，一回合最多一句。主角从容，带点浪子的懒散。',
+    sample:`雨停了。
+客栈里只有一盏灯。灯下只有一个人，一壶酒。
+门开的时候，他没有回头。
+「你知道我是谁？」
+「知道。」
+「那你也该知道我为什么来。」
+他终于抬起头，看了看来人手里的剑。剑很新，人也很年轻。
+「你来得太早了。」他说，「再过十年，你或许杀得了我。」
+年轻人的手握紧了剑柄。
+握剑的手若在发抖，剑就一定不会快。
+他又给自己倒了一杯酒。`,
+    bio:'用几行短句写完这一生，一句一行，留白，末了落一句冷话'},
+  liangyusheng:{label:'梁羽生',tag:'名士风流，诗词入书',
+    line:'文风学梁羽生——文辞典雅，名士风度，关键处嵌自拟诗词。',
+    rule:'笔法学梁羽生：文辞典雅，叙述偏书面但不艰涩，可以用四字句、对仗句，不要堆砌。景物带古典诗意。关键处或回合开头可以嵌一两句自拟诗词，五言、七言、词句都行，必须自己写，不得引用前人原句，意思要贴着眼前的情境。人物有名士风度，正邪分明，侠骨柔情并重。招式名雅致，可取诗词意象。对白文雅得体，长辈和读书人说话可略带文言。',
+    sample:`「风雨孤灯夜，青锋旧恨长。」
+是夜山雨初歇，檐下滴水声声，客栈中只余三两行客。窗边一位青衫书生正低吟这两句，忽听门外马嘶，一个虬髯大汉大步而入，目光如电，在堂中一扫，便定在书生身上。
+「柳慕白，你父当年在雁门关上一掌断我兄长三根肋骨，这笔账，今日该还了。」
+书生缓缓放下茶盏，拱手道：「冤冤相报，何时方了？阁下若定要动手，柳某奉陪，只是莫毁了店家的桌椅。」
+大汉冷笑一声，铁杖往地上一顿，青砖登时裂开一道细纹。`,
+    bio:'章回小说的收束，先用一首自拟的诗起头（不得引用前人原句），再叙生平，叙中带议，文辞典雅'},
+  wenruian:{label:'温瑞安',tag:'诗化跳跃，杀气逼人',
+    line:'文风学温瑞安——句法诗化跳跃，意象锋利，杀局层层翻转。',
+    rule:'笔法学温瑞安：句法诗化而跳跃，长句和极短句急剧交错，可以一字成句、一词成段，可以重复一个词加重语气。意象奇诡锋利，刀光、血、雪、月、杀气都写成具体的形状和声音。镜头快切，几个人物的视角来回跳。杀局一层翻一层，看似完了，又起变数。人物登场要有声势，名号响亮。底色悲凉，英雄多半寂寞。奇句点到为止，叙事仍要让人看得懂。',
+    sample:`雨。
+雨在檐下织成一道帘。
+帘后有人。
+杀气是从门缝里渗进来的，比雨还冷。掌柜的算盘停了，跑堂的脚步停了，连灯花也不跳了。
+门开。
+进来的是个瘦子，瘦得像一把刀。
+刀没出鞘，整间客栈的人却都觉得脖子一凉。
+「唐七。」瘦子说，「你欠我一条命。」
+角落里那人笑了，笑得很淡，淡得像一缕快散的烟。
+「我欠的不止一条。」他说，「你排第几？」`,
+    bio:'诗化的短章，几个跳跃的片段拼出这一生，以寂寞作结'},
+  huangyi:{label:'黄易',tag:'武道玄思，谋略争霸',
+    line:'文风学黄易——叙事从容，重心理与气机，格局宏大。',
+    rule:'笔法学黄易：叙事从容，篇幅可以舒展。重人物心理，写主角在紧要关头的盘算、直觉和心境起伏。武打写气机感应和心理博弈：对手未动，先知其意；一招一式背后是精神的较量，胜负常常在心境露出破绽的那一刻。偶尔可以有对武道、天地、人心的玄思，但只是写法，不能写出飞升、破碎虚空、超凡入圣这类结果。情感描写细腻含蓄，男女之间多写眼神和心意。格局要大，常把一场小冲突放进时局和各方势力的棋盘里。',
+    sample:`秦烈踏进客栈的一刻，便感到一股森寒的气机锁住了自己。
+那气机来自角落，来自那个背对着他、似在独酌的灰衣人。秦烈不动声色，在门边一张桌子坐下，心里已转过七八个念头：对方守株待兔，必是算准了他今夜要走这条官道。消息是从哪里漏出去的？帮里出了内鬼，还是……
+灰衣人缓缓转身，目光与他一触即分。
+「秦兄的心乱了。」他淡淡道，「心一乱，刀便慢了半分。」
+秦烈心头一震，随即收摄心神，让呼吸一点点沉下去，沉到连自己也几乎听不见。`,
+    bio:'从容的史评口吻，写此人一生求的是什么道、在时局里站在哪里，略带玄思'},
+  wangdulu:{label:'王度庐',tag:'侠骨柔情，悲凉宿命',
+    line:'文风学王度庐——平实沉郁，人情世故写得细，侠骨柔情带悲凉。',
+    rule:'笔法学王度庐：平实沉郁，不炫技，不夸张。人情世故和市井风物写得细，茶馆、车马、天气、衣食住行都有烟火气。情与义常常两难，人物有说不出口的苦衷，宿命和悲剧感贯穿始终，好事也常带一点凉。武打简洁，几招见分晓，不写花哨。对话朴素，带北方口语（「您」「咱」「得嘞」之类可以用，别过头）。叙述节制，情绪压着写。',
+    sample:`天擦黑的时候，北风刮得紧，客栈里炉子烧得正旺。掌柜的正给几个赶车的盛面，门帘一掀，进来个穿灰棉袍的汉子，帽檐上全是雪。
+他没要酒，也没要面，就站在炉子边上烤手，眼睛却一直瞧着里间那个喝闷酒的人。
+喝酒的人叫孟三，在这镇上住了七年，谁也不知道他从前是干什么的。
+「三哥，」灰袍汉子开口了，声音不大，「我找了您七年。」
+孟三把酒盅放下，叹了口气：「我知道你会来。你嫂子……她还好？」
+汉子没答话，手慢慢摸向了腰间。`,
+    bio:'平实地叙述，带惋惜，写他放不下的人和事，结尾留一点凉意'},
+  xuhaofeng:{label:'徐皓峰',tag:'冷硬克制，武行规矩',
+    line:'文风学徐皓峰——冷硬克制，重武行规矩，一招见生死。',
+    rule:'笔法学徐皓峰：冷硬克制。叙述极简，句子短而硬，不解释人物心理，只写他做了什么、说了什么。重武行规矩：门户、辈分、拜帖、递话，规矩比命重，行话可以用。动作写得具体真实，步子怎么走、劲从哪儿发、兵器离身多远都要写到；一招见生死，不写来回几十合。对白简省，话常常只说一半，留白给读者。叙述可以跳，前因不必先交代，事后补一句即可。',
+    sample:`客栈掌柜认得来人腰里的刀鞘。鞘口包铜，磨得发亮，是八卦门的老刀。
+来人坐下，要了一碗白水，不喝。
+里间出来个中年人，袖口挽着，手上有茧。他在对面坐下，两人隔一张桌。
+「二十年前，我师父死在你师父手里。」
+「比武，签了生死状。」
+「生死状上没写，比完了还要断我师父两根手指头。」
+中年人不说话了。
+来人起身，往后撤了半步，脚跟落在门槛里侧。出了门槛动手，不算坏店家的生意。
+中年人也起身，跟了出去。`,
+    bio:'冷硬简短，像武行里老人的口述，记他守了什么规矩、坏了什么规矩'},
+  cangyue:{label:'沧月',tag:'唯美伤感，宿命虐恋',
+    line:'文风学沧月——唯美伤感，意象精致，情深多宿命。',
+    rule:'笔法学沧月：唯美而伤感。意象精致，雪、月、红衣、白衣、长剑、灯火、落花，画面感要强。情感浓烈，人物之间多宿命、错过和离别，爱恨常交缠在一起。女性人物要写得出彩，有风骨，有心事。句子可以偏长、偏抒情，可以用比喻，但每段都要有实事推进，不能只剩抒情。打斗写得像一幅画：剑光、衣袂、血色和雪色。',
+    sample:`那一夜雪落得很静。客栈檐下的红灯笼被风吹得一晃一晃，像谁欲说还休的心事。
+她推门进来的时候满身风雪，一袭红衣艳得刺眼，堂中的人都静了下来。
+窗边的白衣人没有回头，握着酒杯的手指却微微一紧。
+「三年了。」她的声音很轻，轻得像雪落在剑刃上，「你说过会回来接我。」
+「我说过很多话。」
+「那这一句呢？」她拔剑，剑尖指着他的背心，「你说若负了我，便死在我剑下。」
+灯火摇曳。他终于转过身来，眼里有她看不懂的东西。`,
+    bio:'抒情的追忆体，像有人在雪夜里回想此人，写他爱过的、负过的、失去的'},
+  wangwen:{label:'网文',tag:'节奏飞快，爽点拉满',
+    line:'文风走网文路数——节奏飞快，爽点和钩子密，口语化。',
+    rule:'笔法走网文路数：节奏快，开门见山，不铺垫。每回合至少给一个爽点或钩子：打脸、扮猪吃虎、反转、众人震惊。旁观者的反应要写出来，倒吸凉气、目瞪口呆、窃窃私语都行。情绪外露，主角的内心独白和吐槽可以写，口语化，可以带点幽默。段落短，多分段，回合结尾留一个悬念。严禁写系统面板、等级数字、经验值、「叮」之类的提示；主角实力怎么变以引擎给的数值为准，不得自己夸大。',
+    sample:`「就你？也配坐这张桌子？」
+赵虎一脚踹翻长凳，满堂食客顿时没了声。
+林凡慢悠悠夹了一筷子花生米，头都没抬。
+啧，又来一个。这年头寻仇的都不先打听打听？
+「小子，三年前你废了我弟弟，今天老子要你十倍奉还！」赵虎一掌拍下，桌面应声裂成两半。
+旁边有人倒吸一口凉气：「铁掌赵虎！听说他一掌能拍碎石碑！」
+林凡终于放下筷子，抬眼看他。
+「你弟弟当年，」他笑了笑，「也是这么说的。」
+下一刻，赵虎只觉眼前一花——`,
+    bio:'大结局式回顾，盘点他的高光时刻和名场面，口语化，节奏轻快'},
+  pingshu:{label:'评书',tag:'说书人开讲，列位看官',
+    line:'文风用评书口吻——说书人开讲，开脸、卖关子、插科打诨。',
+    rule:'笔法用评书口吻：用说书人的口吻讲，说书人可以跳出来跟听众搭话，比如「话说」「列位」「书中暗表」「您猜怎么着」「这正是」。重要人物出场先「开脸」，夸一段相貌、穿戴和气势，可以用顺口的赞词。叙述夸张生动，节奏有起伏，紧要处故意卖关子。偶尔插科打诨，但不油滑。回合结尾可以用「欲知后事如何，且听下回分解」一类的话收住，不必每回都用。人物对白照样用「」，说书人自己的话写在叙述里。',
+    sample:`话说这一日天降大雨，悦来客栈里坐满了避雨的客人。正这么热闹着，就听门口「咣当」一声，进来一位。列位，您瞧这位：身高八尺开外，膀大腰圆，面似锅底，一部钢髯根根见肉，手里提着一对镔铁短戟，往门口这么一站，好嘛，跟半截黑塔差不多！
+此人是谁？书中暗表，这位便是太行山的「黑煞神」雷豹，专为他哥哥报仇来的。
+雷豹把眼一瞪：「姓周的，你给我滚出来！」
+您猜怎么着？角落里还真有人慢慢站起来了。这一站，可就引出一场大祸来！`,
+    bio:'说书人收书，开头用「这正是」引一首自拟的诗，再把一生概说一遍，最后用一首定场诗收尾（诗都要自拟）'},
+};
+const STYLE_IDS=Object.keys(WRITING_STYLES);
+let startStyle=null;   // 开局那几次调用时 S 还没建好，先按捏人选的文风走
+function styleId(st){ const v=st?st.style:(startStyle||(S&&S.style)); return WRITING_STYLES[v]?v:'jinyong'; }
+function stylePreview(id){ const w=WRITING_STYLES[id]||WRITING_STYLES.jinyong; const t=String(w.preview||w.sample||'').replace(/\n+/g,'　'); return t.length>90?t.slice(0,90)+'……':t; }
+function curStyle(){ return WRITING_STYLES[styleId()]; }
+function styleSystem(){
+  const id=styleId();
+  if(id==='jinyong') return STYLE_SYSTEM;
+  const w=WRITING_STYLES[id];
+  return `你是一个武侠文字游戏的叙事引擎。${w.rule}
+
+下面是文风范例，只学笔法与节奏，不要抄内容：
+
+${w.sample}
+
+${STYLE_COMMON}`;
+}
 
 const JSON_RULE = `你必须只输出一个合法的JSON对象，不要输出任何其他文字，不要用markdown代码块包裹。所有字符串内的换行用\\n表示。`;
 
@@ -3120,7 +3295,7 @@ async function foldHistoryInner(){
   if(!take.length)return;
   const from=take[0].turn, to=take[take.length-1].turn;
   try{
-    const d=await llmJSON(volumePrompt(take,from,to),null,{maxTokens:800,temperature:0.6});
+    const d=await llmJSON(volumePrompt(take,from,to),null,{maxTokens:800,temperature:0.6,plainStyle:true});
     if(S!==owner||S.runId!==runId||!take.every((h,i)=>S.history[i]===h))return;
     if(d&&d.text){
       S.volumes=S.volumes||[];
@@ -3138,7 +3313,7 @@ function bioPrompt(cause){
   return `${fillRules(WORLD_RULES.split('属性规则')[0])}
 主角${p.name}的江湖路到此为止。结局：${cause}
 ${stateBlocks()}
-请以金庸后记般的白话写一篇《${p.name}传》（300-500字），据前情提要与人物关系总结此人一生，点评其功过、性情与遗憾，写到身边人的下场。末尾给一句墓志铭（20字内）与一句总评（15字内）。
+${curStyle().bio?`请写一篇《${p.name}传》（300-500字），写法：${curStyle().bio}。`:`请以金庸后记般的白话写一篇《${p.name}传》（300-500字），`}据前情提要与人物关系总结此人一生，点评其功过、性情与遗憾，写到身边人的下场。末尾给一句墓志铭（20字内）与一句总评（15字内）。
 ${JSON_RULE}
 输出：{"biography":"","epitaph":"","verdict":""}`;
 }
@@ -3149,7 +3324,7 @@ async function callLLM(prompt, onPartial, opt){
   opt=opt||{};lastFinish=null;
   if(!cfg.key){openSettings();throw new Error('请先在设置中填写密钥');}
   const url=cfg.base.replace(/\/+$/,'')+'/chat/completions';
-  const body={model:cfg.model||'deepseek-v4-flash',messages:opt.noSystem?[{role:'user',content:prompt}]:[{role:'system',content:STYLE_SYSTEM},{role:'user',content:prompt}],temperature:opt.temperature!=null?opt.temperature:0.85,max_tokens:opt.maxTokens||7000,stream:true,response_format:{type:'json_object'}};
+  const body={model:cfg.model||'deepseek-v4-flash',messages:opt.noSystem?[{role:'user',content:prompt}]:[{role:'system',content:opt.plainStyle?STYLE_SYSTEM:styleSystem()},{role:'user',content:prompt}],temperature:opt.temperature!=null?opt.temperature:0.85,max_tokens:opt.maxTokens||7000,stream:true,response_format:{type:'json_object'}};
   if(/deepseek/i.test(body.model))body.thinking={type:cfg.think?'enabled':'disabled'};
   const ac=typeof AbortController!=='undefined'?new AbortController():null;
   const ms=opt.timeout||90000;let timer=null,total=null;
@@ -3413,6 +3588,7 @@ function applyInit(d, opts){
   S = newStateShell();
   S.difficulty=(opts&&opts.difficulty)||'normal';
   S.freedom=(opts&&opts.freedom)||'mid';
+  S.style=WRITING_STYLES[opts&&opts.style]?opts.style:'jinyong';
   if(keepWorld) S.world=keepWorld;
   const p = d.player;
   p.biaozi = p.biaozi||null;
@@ -5248,7 +5424,7 @@ $('convoGiftBtn').onclick=()=>{
   if(box.style.display!=='none'){ box.style.display='none'; return; }
   const all=[]; for(const cat in S.player.items) for(const it of S.player.items[cat]) all.push(it);
   if(!all.length){ toast('行囊空空，无物可赠'); return; }
-  box.innerHTML='<span style="font-size:12.5px;color:var(--ink-soft);align-self:center">选一件相赠：</span>'+all.map((it,i)=>`<button data-i="${i}">${esc(it.name)}</button>`).join('')+(S.player.money>=50?`<button data-m="1">银子五十两</button>`:'');
+  box.innerHTML='<span style="font-size:calc(12.5px*var(--fs,1));color:var(--ink-soft);align-self:center">选一件相赠：</span>'+all.map((it,i)=>`<button data-i="${i}">${esc(it.name)}</button>`).join('')+(S.player.money>=50?`<button data-m="1">银子五十两</button>`:'');
   box.querySelectorAll('button').forEach(b=>b.onclick=()=>{
     if(b.dataset.m){ convoSend($('convoText').value||'一点心意，请收下。',{name:'五十两银子',desc:'白银五十两',virtual:true}); return; }
     convoSend($('convoText').value||'这个送你。',all[+b.dataset.i]);
@@ -5297,17 +5473,17 @@ function renderPanel(){
     const realm=k==='武功'?`<small style="color:#8a7a60;font-weight:400">　${realmOf(attrVal(p,'武功'))}</small>`:'';
     ah+=`<div class="attr"><div class="lab"><b>${k}${k==='颖悟'?'<small style="color:#8a7a60;font-weight:400">（先天）</small>':''}${extra}${realm}</b><span>${v}${deltaTag(lastDeltas[k])}</span></div><div class="bar"><i style="width:${fill}%;background:${barColor(k)}"></i></div></div>`;
   }
-  if(WCAP()>100) ah+=`<div style="font-size:12px;color:var(--ink-soft);margin-top:2px">当世水位 ${lvNow}（武功条以此为满格）　上限 ${WCAP()}</div>`;
+  if(WCAP()>100) ah+=`<div style="font-size:calc(12px*var(--fs,1));color:var(--ink-soft);margin-top:2px">当世水位 ${lvNow}（武功条以此为满格）　上限 ${WCAP()}</div>`;
   $('pAttrs').innerHTML=ah;
   const md=lastDeltas['家财'];
   const per=upkeepPerMonth();
   const canLast=per>0?Math.floor(p.money/per):99;
   $('pMoney').innerHTML=`${p.money.toLocaleString('zh-CN')} 两白银 ${md?`<span class="delta ${md>0?'up':'dn'}">${md>0?'▲':'▼'}${Math.abs(md).toLocaleString('zh-CN')}</span>`:''}`
-    +`<div style="font-size:12px;color:${canLast<2?'#9c2f24':'var(--ink-soft)'};margin-top:3px">月耗约 ${per} 两 · ${canLast>=99?'尚可支撑':(canLast<1?'已经断炊':'还够撑 '+canLast+' 个月')}</div>`;
+    +`<div style="font-size:calc(12px*var(--fs,1));color:${canLast<2?'#9c2f24':'var(--ink-soft)'};margin-top:3px">月耗约 ${per} 两 · ${canLast>=99?'尚可支撑':(canLast<1?'已经断炊':'还够撑 '+canLast+' 个月')}</div>`;
   $('pArts').innerHTML=(p.arts&&p.arts.length)?p.arts.map(a=>{
     const lv=num(a.level), d=lastDeltas['武学·'+a.name];
     return `<div class="artrow"><b>${esc(a.name)}</b> <span class="trait">${esc(a.style||'刚猛')}</span>
-      <div class="lab" style="display:flex;justify-content:space-between;font-size:12px;color:var(--ink-soft)"><span>熟练</span><span>${lv}${deltaTag(d)}</span></div>
+      <div class="lab" style="display:flex;justify-content:space-between;font-size:calc(12px*var(--fs,1));color:var(--ink-soft)"><span>熟练</span><span>${lv}${deltaTag(d)}</span></div>
       <div class="bar" style="height:5px"><i style="width:${lv}%;background:#8a6d2f"></i></div>
       <div class="idesc">${esc(a.desc||'')}${a.style?`　<span style="color:#8a7a60">（${esc(STYLE_DESC[a.style]||'')}）</span>`:''}</div></div>`;
   }).join(''):'<div class="empty">尚未习得武学</div>';
@@ -5324,7 +5500,7 @@ function renderPanel(){
       const f=factionOf(S.sect.name), rk=sectRank(S.sect.contrib), nx=sectNext(S.sect.contrib);
       $('pSect').innerHTML=`<div class="artrow"><b>${esc(S.sect.name)}</b> <span class="trait">${esc(rk)}</span>
         ${f?`<div class="idesc">${esc(f.alignment)} · 掌门${esc(f.leader||'不详')} · 势力${f.power}</div>`:''}
-        <div class="lab" style="display:flex;justify-content:space-between;font-size:12px;color:var(--ink-soft)"><span>门派贡献</span><span>${S.sect.contrib}${nx?' / '+nx.need:''}${deltaTag(lastDeltas['门派贡献'])}</span></div>
+        <div class="lab" style="display:flex;justify-content:space-between;font-size:calc(12px*var(--fs,1));color:var(--ink-soft)"><span>门派贡献</span><span>${S.sect.contrib}${nx?' / '+nx.need:''}${deltaTag(lastDeltas['门派贡献'])}</span></div>
         <div class="bar" style="height:5px"><i style="width:${nx?Math.min(100,S.sect.contrib/nx.need*100):100}%;background:#4a6b45"></i></div>
         <div class="idesc">${nx?`再积 ${nx.need-S.sect.contrib} 贡献可升为${nx.name}`:'已至掌门之位'}　月例 ${sectStipend()} 两</div></div>`+foundBtn;
     } else $('pSect').innerHTML='<div class="empty">无门无派，食宿全靠自己</div>'+foundBtn;
@@ -5343,7 +5519,7 @@ function renderPanel(){
 }
 function itemHtml(list,color,tag){
   if(!list||!list.length) return '<div class="empty">空空如也</div>';
-  return list.map(x=>`<div class="item"><span class="itag" style="background:${color}">${tag}</span><b>${esc(x.name)}</b>${tag==='兵'&&weaponPower(x)?`<span style="color:var(--accent);font-size:13px">（武功+${weaponPower(x)}）</span>`:(tag!=='兵'&&x.bonus?`<span style="color:var(--accent);font-size:13px">（武功+${x.bonus}）</span>`:'')}<div class="idesc">${esc(x.desc||'')}</div></div>`).join('');
+  return list.map(x=>`<div class="item"><span class="itag" style="background:${color}">${tag}</span><b>${esc(x.name)}</b>${tag==='兵'&&weaponPower(x)?`<span style="color:var(--accent);font-size:calc(13px*var(--fs,1))">（武功+${weaponPower(x)}）</span>`:(tag!=='兵'&&x.bonus?`<span style="color:var(--accent);font-size:calc(13px*var(--fs,1))">（武功+${x.bonus}）</span>`:'')}<div class="idesc">${esc(x.desc||'')}</div></div>`).join('');
 }
 function manualHtml(list){
   if(!list||!list.length) return '<div class="empty">空空如也</div>';
@@ -5355,10 +5531,10 @@ function manualHtml(list){
     let hit=0; for(let r=1;r<=20;r++){ if(r===20||(r!==1&&val+rollMod(r)>=dc)) hit++; }
     const chance=hit*5;
     return `<div class="item"><span class="itag" style="background:#8a6d2f">籍</span><b>${esc(x.name)}</b>
-      <span style="color:var(--accent);font-size:13px">（${esc(m.style)}·武功+${m.power}）</span>
+      <span style="color:var(--accent);font-size:calc(13px*var(--fs,1))">（${esc(m.style)}·武功+${m.power}）</span>
       <div class="idesc">${esc(x.desc||'')}</div>
       <div class="idesc" style="color:#8a7a60">闭关 ${m.months} 个月 · 成算约 <b style="color:var(--accent)">${chance}%</b><br>颖悟+才学/4 = ${val}　难度 ${dc}${m.mastered?'　✦ 已参透':''}</div>
-      ${m.mastered?'':`<button class="mbtn" data-mi="${i}" style="margin-top:6px;padding:4px 12px;font-size:13px">闭关参悟</button>`}</div>`;
+      ${m.mastered?'':`<button class="mbtn" data-mi="${i}" style="margin-top:6px;padding:4px 12px;font-size:calc(13px*var(--fs,1))">闭关参悟</button>`}</div>`;
   }).join('');
 }
 function renderBag(){
@@ -5506,8 +5682,8 @@ function showNpc(n){
   if(ven&&n.alive){
     const cost=Math.max(50,Math.round(ven.heat*15));
     html+=`<div class="secret" style="color:#9c2f24">⚑ 此人正在找你算账：${esc(ven.reason)}（追杀进度 ${Math.min(100,Math.round(ven.heat))}/100）
-      <br><button class="mbtn" id="npcAppease" style="margin-top:6px;padding:4px 12px;font-size:13px" ${S.player.money<cost?'disabled':''}>破财消灾 · ${cost} 两</button>
-      <span style="font-size:12px;color:#8a7a60">${S.player.money<cost?'（家财不够）':'（备重礼赔罪，追杀进度大减）'}</span></div>`;
+      <br><button class="mbtn" id="npcAppease" style="margin-top:6px;padding:4px 12px;font-size:calc(13px*var(--fs,1))" ${S.player.money<cost?'disabled':''}>破财消灾 · ${cost} 两</button>
+      <span style="font-size:calc(12px*var(--fs,1));color:#8a7a60">${S.player.money<cost?'（家财不够）':'（备重礼赔罪，追杀进度大减）'}</span></div>`;
   }
   $('npcMBody').innerHTML=html;
   const sw=$('npcAvSwap');
@@ -5549,13 +5725,13 @@ function renderWorld(){
     const rows=rk.map(r=>({name:r.name,sub:(r.faction||'散人')+(r.note?' · '+r.note:''),w:r['武功'],dead:r.alive===false,me:false}));
     if(S.ranked) rows.push({name:S.player.name,sub:'你 · '+titleOf(S.player),w:S.player.attributes['武功'],dead:false,me:true});
     rows.sort((a,b)=>(a.dead?-1:a.w)-(b.dead?-1:b.w)).reverse();
-    $('wRanking').innerHTML=rows.map((r,i)=>`<div class="rank ${r.me?'me':''} ${r.dead?'deadr':''}"><span class="rn">${r.dead?'—':i+1}</span><span class="rname">${esc(r.name)}<small>${esc(r.sub)}</small></span><span class="rv">${r.w}</span>${(!r.me&&!r.dead)?`<button class="mbtn" data-ch="${esc(r.name)}" style="padding:2px 8px;font-size:12px;margin-left:6px">挑战</button>`:''}</div>`).join('')
-      +((S.world.fallen||[]).length?`<div style="font-size:12px;color:var(--ink-soft);margin-top:6px;border-top:1px dashed var(--paper-edge);padding-top:5px">往生录：${S.world.fallen.slice(-8).map(x=>esc(x.name)).join('、')}</div>`:'')
-      +`<div style="font-size:12px;color:var(--ink-soft);margin-top:5px">${S.ranked?'你已在榜。':'尚未入榜——胜过一位榜上人物才算数。'}上门挑战要跋涉三个月，${cooldownText()}${num(S.world.vacant)>0?`　⚑ 榜上尚有 ${S.world.vacant} 个空缺`:''}</div>`;
+    $('wRanking').innerHTML=rows.map((r,i)=>`<div class="rank ${r.me?'me':''} ${r.dead?'deadr':''}"><span class="rn">${r.dead?'—':i+1}</span><span class="rname">${esc(r.name)}<small>${esc(r.sub)}</small></span><span class="rv">${r.w}</span>${(!r.me&&!r.dead)?`<button class="mbtn" data-ch="${esc(r.name)}" style="padding:2px 8px;font-size:calc(12px*var(--fs,1));margin-left:6px">挑战</button>`:''}</div>`).join('')
+      +((S.world.fallen||[]).length?`<div style="font-size:calc(12px*var(--fs,1));color:var(--ink-soft);margin-top:6px;border-top:1px dashed var(--paper-edge);padding-top:5px">往生录：${S.world.fallen.slice(-8).map(x=>esc(x.name)).join('、')}</div>`:'')
+      +`<div style="font-size:calc(12px*var(--fs,1));color:var(--ink-soft);margin-top:5px">${S.ranked?'你已在榜。':'尚未入榜——胜过一位榜上人物才算数。'}上门挑战要跋涉三个月，${cooldownText()}${num(S.world.vacant)>0?`　⚑ 榜上尚有 ${S.world.vacant} 个空缺`:''}</div>`;
     $('wRanking').querySelectorAll('button[data-ch]').forEach(b=>b.onclick=()=>challengeRanked(b.dataset.ch));
   }
   const fs=S.world&&S.world.factions||[];
-  $('wFactions').innerHTML=fs.length?fs.map(f=>`<div class="faction"><div class="fl"><span><b>${esc(f.name)}</b> <small>${esc(f.alignment)} · ${esc(f.leader)}</small></span><small>势力 ${f.power}</small></div><div class="bar" style="height:6px"><i style="width:${pw(f.power)}%;background:${f.alignment==='邪道'?'#5a3a6a':f.alignment==='正派'?'#4a6b45':'#7a6a50'}"></i></div><div style="font-size:12.5px;color:var(--ink-soft);margin-top:2px">${esc(f.desc)}</div></div>`).join(''):'<div class="empty">尚无</div>';
+  $('wFactions').innerHTML=fs.length?fs.map(f=>`<div class="faction"><div class="fl"><span><b>${esc(f.name)}</b> <small>${esc(f.alignment)} · ${esc(f.leader)}</small></span><small>势力 ${f.power}</small></div><div class="bar" style="height:6px"><i style="width:${pw(f.power)}%;background:${f.alignment==='邪道'?'#5a3a6a':f.alignment==='正派'?'#4a6b45':'#7a6a50'}"></i></div><div style="font-size:calc(12.5px*var(--fs,1));color:var(--ink-soft);margin-top:2px">${esc(f.desc)}</div></div>`).join(''):'<div class="empty">尚无</div>';
   $('wFactions').insertAdjacentHTML('beforeend',worldThreadsHtml());
   const vd=(S.vendettas||[]).filter(v=>v.heat>0);
   $('wVendetta').innerHTML=vd.length?vd.slice().sort((a,b)=>b.heat-a.heat).map(v=>{
@@ -5564,7 +5740,7 @@ function renderWorld(){
       <div class="qd">${esc(v.reason)}</div>
       <div class="qd" style="color:${v.eta!=null&&num(v.eta)<=1?'#9c2f24':'var(--ink-soft)'}">${esc(vStateText(v))}${n?`　武功${n['武功']}${num(n['武功'])<num(S.player.attributes['武功'])*0.6?'（远不如你）':''}`:''}</div>
       <div class="bar"><i style="width:${h}%;background:${h>=70?'#9c2f24':'#8a6d2f'}"></i></div></div>`;
-  }).join('')+'<div style="font-size:12px;color:var(--ink-soft);margin-top:4px">恨意满了他才动身，还得走上几个月才到得了你跟前。武功差你太多的不敢亲自来，但可能花钱请人。与其修好（好感≥45）或破财消灾可平息。</div>':'<div class="empty">暂时没人惦记着要你的命</div>';
+  }).join('')+'<div style="font-size:calc(12px*var(--fs,1));color:var(--ink-soft);margin-top:4px">恨意满了他才动身，还得走上几个月才到得了你跟前。武功差你太多的不敢亲自来，但可能花钱请人。与其修好（好感≥45）或破财消灾可平息。</div>':'<div class="empty">暂时没人惦记着要你的命</div>';
   $('wAch').innerHTML=ACHIEVEMENTS.map(([id,name,_,desc])=>`<span class="ach ${S.achievements.includes(id)?'on':''}" title="${esc(desc)}">${S.achievements.includes(id)?'✦ ':''}${name}</span>`).join('');
   renderHall();
 }
@@ -5806,18 +5982,18 @@ function renderClan(){
   const net=clanNet();
   $('cSect').innerHTML=`
     <div class="artrow" style="border:none;padding-top:0">
-      <b style="font-size:17px">${esc(c.name)}</b> <span class="trait">${esc(c.alignment)}</span>
+      <b style="font-size:calc(17px*var(--fs,1))">${esc(c.name)}</b> <span class="trait">${esc(c.alignment)}</span>
       <div class="idesc">${esc(c.base||'山中')} · 立派于${esc(dateOf(S.ganzhi||0,num(c.founded)))} · 掌门${esc(S.player.name)}</div>
       ${c.creed?`<div class="idesc" style="color:var(--gold)">门规：${esc(c.creed)}</div>`:''}
     </div>
-    <div class="lab" style="display:flex;justify-content:space-between;font-size:12px;color:var(--ink-soft);margin-top:6px"><span>势力</span><span>${c.power}</span></div>
+    <div class="lab" style="display:flex;justify-content:space-between;font-size:calc(12px*var(--fs,1));color:var(--ink-soft);margin-top:6px"><span>势力</span><span>${c.power}</span></div>
     <div class="bar" style="height:6px"><i style="width:${c.power}%;background:${c.alignment==='邪道'?'#5a3a6a':c.alignment==='正派'?'#4a6b45':'#7a6a50'}"></i></div>
-    <div class="lab" style="display:flex;justify-content:space-between;font-size:12px;color:var(--ink-soft);margin-top:5px"><span>威望</span><span>${c.fame}</span></div>
+    <div class="lab" style="display:flex;justify-content:space-between;font-size:calc(12px*var(--fs,1));color:var(--ink-soft);margin-top:5px"><span>威望</span><span>${c.fame}</span></div>
     <div class="bar" style="height:6px"><i style="width:${c.fame}%;background:#8a6d2f"></i></div>
     <div class="clanline"><span>公帐</span><b>${c.treasury} 两</b></div>
     <div class="clanline"><span>上回进出</span><b style="color:${net>=0?'var(--green)':'#9c2f24'}">进 ${c.lastIncome} · 出 ${c.lastCost}${num(c.lastUnpaid)>0?`　<span style="color:#9c2f24">欠饷 ${c.lastUnpaid}</span>`:''}</b></div>
     <div class="clanline"><span>门下</span><b>${ds.length} / ${clanCap()} 人　能战 ${fit.length} 人</b></div>
-    <div style="font-size:12px;color:var(--ink-soft);margin-top:5px;line-height:1.6">月入按 势力＋威望＋经商弟子 算，月支按 位阶＋山门维护 算。公帐不够先掏你自己的腰包，都不够就是欠饷——门下会寒心，久了要散。</div>`;
+    <div style="font-size:calc(12px*var(--fs,1));color:var(--ink-soft);margin-top:5px;line-height:1.6">月入按 势力＋威望＋经商弟子 算，月支按 位阶＋山门维护 算。公帐不够先掏你自己的腰包，都不够就是欠饷——门下会寒心，久了要散。</div>`;
 
   const head=`<div class="csort">${Object.keys(SORTERS).map(k=>`<button data-s="${k}" class="${clanSort===k?'on':''}">${k}</button>`).join('')}
     <button class="auto" id="cAuto" title="按资质与武功自动分派职务">一键分派</button></div>`;
@@ -5834,7 +6010,7 @@ function renderClan(){
         </div>`;
       }).join('')
     : '<div class="empty">门下尚无弟子。势力与威望越高，慕名上山的人越多；也可以去人脉里招揽熟人。</div>')
-    + ((c.fallen||[]).length?`<div style="font-size:12px;color:var(--ink-soft);margin-top:6px;border-top:1px dashed var(--paper-edge);padding-top:5px">来去之人：${c.fallen.slice(-8).map(x=>esc(x.name)+'（'+x.how+'）').join('、')}</div>`:'');
+    + ((c.fallen||[]).length?`<div style="font-size:calc(12px*var(--fs,1));color:var(--ink-soft);margin-top:6px;border-top:1px dashed var(--paper-edge);padding-top:5px">来去之人：${c.fallen.slice(-8).map(x=>esc(x.name)+'（'+x.how+'）').join('、')}</div>`:'');
   $('cRoster').querySelectorAll('.csort button[data-s]').forEach(b=>b.onclick=()=>{ clanSort=b.dataset.s; renderClan(); });
   const ab=$('cAuto'); if(ab) ab.onclick=()=>{
     if(!clanDisciples().length){ toast('门下还没人'); return; }
@@ -5867,7 +6043,7 @@ function showDisc(id){
     <div class="field"><label>位阶　<small style="color:var(--ink-soft)">位阶越高月例越贵，但他也越服你</small></label>
       <div class="seg wrap" id="discRank">${CLAN_RANKS.map(rk=>{
         const left=rankQuotaLeft(rk), full=rk!=='弟子'&&left<=0&&d.rank!==rk;
-        return `<button data-v="${rk}" class="${d.rank===rk?'sel':''}" ${full?'disabled style="opacity:.4"':''}>${rk}${rk==='弟子'?'':`<small style="display:block;font-size:10px;letter-spacing:0">月例${RANK_COST[rk]}两</small>`}</button>`;
+        return `<button data-v="${rk}" class="${d.rank===rk?'sel':''}" ${full?'disabled style="opacity:.4"':''}>${rk}${rk==='弟子'?'':`<small style="display:block;font-size:calc(10px*var(--fs,1));letter-spacing:0">月例${RANK_COST[rk]}两</small>`}</button>`;
       }).join('')}</div></div>`;
   $('discJob').querySelectorAll('button').forEach(b=>b.onclick=()=>{
     setDiscJob(d,b.dataset.v);
@@ -5899,18 +6075,18 @@ function renderRecruit(){
   const cands=recruitCandidates().slice(0,8);
   el.innerHTML=`
     <div class="clanline"><span>张榜招徒</span><b>${postCost()} 两</b></div>
-    <div style="font-size:12.5px;color:var(--ink-soft);margin:3px 0 7px;line-height:1.6">摆下擂台、设宴待客，一次能招进一到三人，来的比自己摸上山的稍强些，还能添两分威望。六个月只能张一次榜。</div>
+    <div style="font-size:calc(12.5px*var(--fs,1));color:var(--ink-soft);margin:3px 0 7px;line-height:1.6">摆下擂台、设宴待客，一次能招进一到三人，来的比自己摸上山的稍强些，还能添两分威望。六个月只能张一次榜。</div>
     <button class="mbtn" id="cPost" style="width:100%" ${pb?'disabled':''}>${pb?esc(pb):'张榜招徒'}</button>
     <div style="margin-top:12px;border-top:1px dashed var(--paper-edge);padding-top:8px">
-      <div style="font-size:13px;color:var(--ink-soft);margin-bottom:5px">名录里够格招揽的人${full?'（山门已满）':''}</div>
+      <div style="font-size:calc(13px*var(--fs,1));color:var(--ink-soft);margin-bottom:5px">名录里够格招揽的人${full?'（山门已满）':''}</div>
       ${cands.length?cands.map(({n,odds})=>`
         <div class="cand">
           <span class="cn">${esc(n.name)}<small>${esc(n.identity||'江湖客')} · ${esc(n.faction||'散人')} · 武功${n['武功']} · 好感${n['好感度']}</small></span>
           <span class="co">${Math.round(odds*100)}%</span>
-          <button class="mbtn" data-rc="${esc(n.name)}" style="flex:0 0 auto;padding:3px 9px;font-size:12px;letter-spacing:1px" ${full?'disabled':''}>招揽</button>
+          <button class="mbtn" data-rc="${esc(n.name)}" style="flex:0 0 auto;padding:3px 9px;font-size:calc(12px*var(--fs,1));letter-spacing:1px" ${full?'disabled':''}>招揽</button>
         </div>`).join('')
       :'<div class="empty">眼下没人够格——交情要到 55，武功还得在你之下，一派之主也请不动</div>'}
-      <div style="font-size:12px;color:var(--ink-soft);margin-top:5px">把握看交情、看你压不压得住他、看门派有没有气象；立场相左、原本另有师门都要打折扣。被回绝了要隔一年才好再开口。</div>
+      <div style="font-size:calc(12px*var(--fs,1));color:var(--ink-soft);margin-top:5px">把握看交情、看你压不压得住他、看门派有没有气象；立场相左、原本另有师门都要打折扣。被回绝了要隔一年才好再开口。</div>
     </div>`;
   const b=$('cPost');
   if(b&&!pb) b.onclick=()=>{
@@ -5945,7 +6121,7 @@ function renderWarCard(){
   const mine=myWarForce();
   el.innerHTML=`
     <div class="clanline"><span>本派可战之力</span><b>${mine}</b></div>
-    <div style="font-size:12.5px;color:var(--ink-soft);margin:3px 0 8px;line-height:1.6">出征的是除护山弟子之外的人。三阵两胜定胜负：先锋、中军由门人厮杀，主将一阵你亲自上。赢了阵还得赢人，才谈得上吞并。</div>
+    <div style="font-size:calc(12.5px*var(--fs,1));color:var(--ink-soft);margin:3px 0 8px;line-height:1.6">出征的是除护山弟子之外的人。三阵两胜定胜负：先锋、中军由门人厮杀，主将一阵你亲自上。赢了阵还得赢人，才谈得上吞并。</div>
     ${fs.length?fs.map(f=>{
       const allied=(c.allies||[]).indexOf(f.name)>=0;
       const why=allied?'已臣服本派':warBlock(f), ff=foeWarForce(f), odd=mine/Math.max(1,mine+ff);
@@ -5956,8 +6132,8 @@ function renderWarCard(){
           <button class="mbtn" data-war="${esc(f.name)}" ${why?'disabled':''} title="${esc(why)}">${why?esc(why.length>12?why.slice(0,12)+'…':why):'出兵 '+warCost(f)+'两'}</button></div>
       </div>`;
     }).join(''):'<div class="empty">江湖上已无别派——该去看看「一统江湖」了</div>'}
-    ${(c.annexed||[]).length?`<div style="font-size:12px;color:var(--gold);margin-top:6px;border-top:1px dashed var(--paper-edge);padding-top:5px">已吞并：${c.annexed.map(esc).join('、')}</div>`:''}
-    ${(c.wars||[]).length?`<div style="font-size:12px;color:var(--ink-soft);margin-top:5px">战史：${c.wars.slice(-6).map(x=>esc(x.foe)+(x.result==='lose'?'（败）':x.result==='rout'?'（大胜）':'（惨胜）')).join('、')}</div>`:''}`;
+    ${(c.annexed||[]).length?`<div style="font-size:calc(12px*var(--fs,1));color:var(--gold);margin-top:6px;border-top:1px dashed var(--paper-edge);padding-top:5px">已吞并：${c.annexed.map(esc).join('、')}</div>`:''}
+    ${(c.wars||[]).length?`<div style="font-size:calc(12px*var(--fs,1));color:var(--ink-soft);margin-top:5px">战史：${c.wars.slice(-6).map(x=>esc(x.foe)+(x.result==='lose'?'（败）':x.result==='rout'?'（大胜）':'（惨胜）')).join('、')}</div>`:''}`;
   el.querySelectorAll('button[data-war]').forEach(b=>b.onclick=()=>askWar(b.dataset.war));
 }
 function askWar(name){
@@ -5990,7 +6166,7 @@ function renderWarActions(){
   }else if(war.stage==='主将'){
     const need=war.me>=2?'两阵已胜，但赢了阵还得赢人——吞并要看你这一场':
                war.them>=2?'两阵已失，只剩你这一场了':'一胜一负，这一场定胜负';
-    el.innerHTML=`<div style="font-size:13px;color:var(--ink-soft);margin-bottom:7px;text-align:center">${need}</div>`
+    el.innerHTML=`<div style="font-size:calc(13px*var(--fs,1));color:var(--ink-soft);margin-bottom:7px;text-align:center">${need}</div>`
       +btn('wGo','点将——你亲自上','primary');
     $('wGo').onclick=warDuel;
   }else el.innerHTML='';
@@ -6004,21 +6180,21 @@ function renderLeague(){
   const rivals=rivalFactions(), allies=alliedFactions();
   if(c.unified){
     el.innerHTML=`<div style="text-align:center;padding:6px 0">
-      <div style="font-size:19px;color:var(--gold);letter-spacing:6px;font-weight:700">一 统 江 湖</div>
-      <div style="font-size:13px;color:var(--ink-soft);margin-top:5px">${c.unifiedWay==='盟'?'群雄俯首，盟约在手':'诸派扫平，再无异声'}</div></div>
+      <div style="font-size:calc(19px*var(--fs,1));color:var(--gold);letter-spacing:6px;font-weight:700">一 统 江 湖</div>
+      <div style="font-size:calc(13px*var(--fs,1));color:var(--ink-soft);margin-top:5px">${c.unifiedWay==='盟'?'群雄俯首，盟约在手':'诸派扫平，再无异声'}</div></div>
       <button class="mbtn" id="cUnifyView" style="width:100%;margin-top:8px">看看这份江山</button>`;
     const b=$('cUnifyView'); if(b) b.onclick=showUnify;
     return;
   }
   const why=leagueBlock();
   el.innerHTML=`
-    <div style="font-size:12.5px;color:var(--ink-soft);margin-bottom:7px;line-height:1.6">两条路：把各派一家家打光，或者威望够了召开武林大会，让他们自己签下盟约。不服的当场翻脸。</div>
+    <div style="font-size:calc(12.5px*var(--fs,1));color:var(--ink-soft);margin-bottom:7px;line-height:1.6">两条路：把各派一家家打光，或者威望够了召开武林大会，让他们自己签下盟约。不服的当场翻脸。</div>
     <div class="clanline"><span>武路</span><b>还剩 ${rivals.length} 家未服${(c.annexed||[]).length?`（已吞并 ${c.annexed.length} 家）`:''}</b></div>
     <div class="clanline"><span>文路</span><b>${c.leagueLeader?'你已是武林盟主':'尚未推戴盟主'}${allies.length?`　已臣服 ${allies.length} 家`:''}</b></div>
     ${leagueNeed().map(x=>`<div class="clanline"><span>${x.k}</span><b style="color:${x.ok?'var(--green)':'var(--ink-soft)'}">${x.have} / ${x.need}${x.ok?' ✓':''}</b></div>`).join('')}
     <div class="clanline"><span>开销</span><b>${leagueCost()} 两</b></div>
     <button class="mbtn ${why?'':'gold'}" id="cLeagueGo" style="width:100%;margin-top:8px" ${why?'disabled':''}>${why?esc(why):'召开武林大会'}</button>
-    ${allies.length?`<div style="font-size:12px;color:var(--gold);margin-top:6px">盟下：${allies.map(f=>esc(f.name)).join('、')}　每年供奉 ${allyTribute()} 两</div>`:''}`;
+    ${allies.length?`<div style="font-size:calc(12px*var(--fs,1));color:var(--gold);margin-top:6px">盟下：${allies.map(f=>esc(f.name)).join('、')}　每年供奉 ${allyTribute()} 两</div>`:''}`;
   const b=$('cLeagueGo');
   if(b&&!why) b.onclick=()=>{
     if(!confirm(`遍邀群雄，开销 ${leagueCost()} 两。肯低头的签下盟约，不肯的当场翻脸——从此就是死对头。确定？`)) return;
@@ -6038,7 +6214,7 @@ function showLeagueResult(r){
       <span class="lv">${x.yes?'签':'拂袖'}</span>
     </div>`).join('')
     + (r.leader?`<div style="margin-top:10px;text-align:center;color:var(--gold);letter-spacing:3px;font-weight:700">群雄推戴　武林盟主</div>`:'')
-    + `<div style="font-size:12.5px;color:var(--ink-soft);margin-top:8px;line-height:1.6">${
+    + `<div style="font-size:calc(12.5px*var(--fs,1));color:var(--ink-soft);margin-top:8px;line-height:1.6">${
         r.unified?'再无一家不服——江湖是你的了。':
         r.res.some(x=>!x.yes)?'不肯低头的那几家，往后要么再开一次大会，要么就只能刀兵相见。':'各派都签了。'}</div>`;
   $('leagueMask').classList.add('on');
@@ -6059,7 +6235,7 @@ function showUnify(){
     <div class="nrow"><b>臣服</b><span>${(c.allies||[]).length?(c.allies||[]).map(esc).join('、'):'无'}</span></div>
     <div class="nrow"><b>战史</b><span>${num(c.wins)} 胜 ${num(c.losses)} 负${(c.fallen||[]).filter(x=>x.how==='亡故').length?`　门下阵亡 ${(c.fallen||[]).filter(x=>x.how==='亡故').length} 人`:''}</span></div>
     <div class="nrow"><b>评分</b><span>${scoreOf()}　成就 ${S.achievements.length} 项</span></div>
-    <div style="font-size:13px;color:var(--ink-soft);margin-top:12px;line-height:1.75">${
+    <div style="font-size:calc(13px*var(--fs,1));color:var(--ink-soft);margin-top:12px;line-height:1.75">${
       c.unifiedWay==='盟'?'你没把江湖杀光，只是让所有人都同意，话该由你来说。往后的日子，是坐这把椅子的日子。'
                         :'刀兵所至，诸派俯首。江湖清净了——清净得有点空。'}</div>`;
   $('unifyMask').classList.add('on');
@@ -6077,7 +6253,7 @@ function setBusy(b,msg){
   $('loading').classList.toggle('on',b);
   if(msg) $('loadingText').textContent=msg;
   $('sendBtn').disabled=b;
-  for(const id of ['btnNew','btnImport','cfgFreedom','cfgMem'])if($(id))$(id).disabled=b;
+  for(const id of ['btnNew','btnImport','cfgFreedom','cfgMem','cfgStyle'])if($(id))$(id).disabled=b;
   if($('cancelTurn'))$('cancelTurn').hidden=!b||!activeTurnAbort;
   document.querySelectorAll('.opt').forEach(x=>x.disabled=b);
 }
@@ -6088,7 +6264,7 @@ const BACKGROUNDS=[
  ['为奴作婢','大户人家为奴，看尽脸色'],['道观寺庙','出家人抚养长大'],['绿林山寨','山寨里长大，亦正亦邪'],['铁匠人家','炉火里长大，一身力气'],
  ['客栈人家','迎来送往，消息灵通'],['年幼失怙','父母早亡，独自闯荡'],
 ];
-let crSel={gender:'随机',bg:'随机',difficulty:'normal',freedom:'mid',avatar:null};
+let crSel={gender:'随机',bg:'随机',difficulty:'normal',freedom:'mid',style:'jinyong',avatar:null};
 // 捏人时按性别列出可选的脸；性别随机就把男女都摆出来
 function renderAvatarPick(){
   const box=$('crAvatar');
@@ -6128,10 +6304,14 @@ function openCreate(){
     grid.querySelectorAll('.bgopt').forEach(el=>el.onclick=()=>{ grid.querySelectorAll('.bgopt').forEach(x=>x.classList.remove('sel')); el.classList.add('sel'); crSel.bg=BACKGROUNDS[+el.dataset.i][0]; });
     $('crGender').querySelectorAll('button').forEach(b=>b.onclick=()=>{ $('crGender').querySelectorAll('button').forEach(x=>x.classList.remove('sel')); b.classList.add('sel'); crSel.gender=b.dataset.v; crSel.avatar=null; renderAvatarPick(); });
     $('crDiff').querySelectorAll('button').forEach(b=>b.onclick=()=>{ $('crDiff').querySelectorAll('button').forEach(x=>x.classList.remove('sel')); b.classList.add('sel'); crSel.difficulty=b.dataset.v; });
+    const sg=$('styleGrid');
+    sg.innerHTML=STYLE_IDS.map(id=>`<div class="bgopt${id===crSel.style?' sel':''}" data-s="${id}">${WRITING_STYLES[id].label}<small>${WRITING_STYLES[id].tag}</small></div>`).join('');
+    sg.querySelectorAll('.bgopt').forEach(el=>el.onclick=()=>{ sg.querySelectorAll('.bgopt').forEach(x=>x.classList.remove('sel')); el.classList.add('sel'); crSel.style=el.dataset.s; $('crStyleNote').textContent=stylePreview(crSel.style); });
     $('crFree').querySelectorAll('button').forEach(b=>b.onclick=()=>{ $('crFree').querySelectorAll('button').forEach(x=>x.classList.remove('sel')); b.classList.add('sel'); crSel.freedom=b.dataset.v; $('crFreeNote').textContent=freedomNote(crSel.freedom); });
   }
   $('crCancel').style.display=S?'block':'none';
   $('crFreeNote').textContent=freedomNote(crSel.freedom);
+  $('crStyleNote').textContent=stylePreview(crSel.style);
   renderAvatarPick();
   $('createMask').classList.add('on');
 }
@@ -6139,7 +6319,7 @@ $('crCancel').onclick=()=>$('createMask').classList.remove('on');
 $('crStart').onclick=()=>{
   const bg=BACKGROUNDS.find(b=>b[0]===crSel.bg);
   $('createMask').classList.remove('on');
-  startNewGame({name:$('crName').value.trim()||null,gender:crSel.gender,bg:crSel.bg,bgDesc:bg?bg[1]:'',difficulty:crSel.difficulty,freedom:crSel.freedom,avatar:crSel.avatar});
+  startNewGame({name:$('crName').value.trim()||null,gender:crSel.gender,bg:crSel.bg,bgDesc:bg?bg[1]:'',difficulty:crSel.difficulty,freedom:crSel.freedom,style:crSel.style,avatar:crSel.avatar});
 };
 
 async function startNewGame(opts){
@@ -6151,12 +6331,14 @@ async function startNewGame(opts){
   if(opts.startMonth==null) opts.startMonth=Math.floor(Math.random()*12);
   $('story').innerHTML=''; $('choices').innerHTML='';
   S=null; saveWipe();
+  startStyle=WRITING_STYLES[opts.style]?opts.style:'jinyong';
   setBusy(true,'天地初开，正在铸造你的江湖身世……');
   beginChapter('楔子','',null,null);
   try{
     const worldP=llmJSON(worldPrompt(opts),null,{maxTokens:6000}).catch(e=>{ console.warn('world gen failed',e); return null; });
     const d=await llmJSON(initSchemaPrompt(opts),raw=>{ const t=extractPartialField(raw,'opening')||extractPartialField(raw,'backstory'); if(t) updateChapterNarrative(t); });
     applyInit(d,opts);
+    startStyle=null;
     updateChapterNarrative(d.opening);
     finishChapter({date:S.date,rumors:d.rumors,npcEvents:null},null,null);
     renderPanel(); const _o=dedupeOptions(d.options); renderOptions(_o); S.lastOptions=_o; saveGame();
@@ -6173,6 +6355,7 @@ async function startNewGame(opts){
     retry.onclick=()=>startNewGame(opts);
     $('choices').appendChild(retry);
   }
+  startStyle=null;
   setBusy(false);
 }
 async function forgeWorld(){
@@ -6652,8 +6835,8 @@ function saveOk(){ const b=document.getElementById('saveWarn'); if(b) b.remove()
 function saveFail(){
   if(document.getElementById('saveWarn')) return;
   const b=document.createElement('div'); b.id='saveWarn';
-  b.style.cssText='position:fixed;left:0;right:0;top:0;z-index:9999;background:#8b2c20;color:#fff;font-size:14px;line-height:1.5;padding:8px 14px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,.35)';
-  b.innerHTML='这一回没存上，刷新页面会丢进度。先点「存档」导出一份文件。<button style="margin-left:10px;padding:2px 10px;font-size:13px">导出</button>';
+  b.style.cssText='position:fixed;left:0;right:0;top:0;z-index:9999;background:#8b2c20;color:#fff;font-size:calc(14px*var(--fs,1));line-height:1.5;padding:8px 14px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,.35)';
+  b.innerHTML='这一回没存上，刷新页面会丢进度。先点「存档」导出一份文件。<button style="margin-left:10px;padding:2px 10px;font-size:calc(13px*var(--fs,1))">导出</button>';
   b.querySelector('button').onclick=()=>{ try{ download(`存档_${S.player.name}_第${S.turn}回.json`, JSON.stringify(typeof withFaces==='function'?withFaces(S):S,null,1), 'application/json'); }catch(_){} };
   document.body.appendChild(b);
 }
@@ -6787,9 +6970,9 @@ function renderSlots(){
       <b>存档位 ${i}</b>
       <div class="idesc">${m?`${esc(m.player.name)} · ${esc(titleOf(m.player))} · ${esc(m.date||'')} · 第${m.turn}回 · ${m.player.age}岁${m.over?' · 已终局':''}`:'（空）'}</div>
       <div class="mbtnrow" style="margin-top:6px">
-        <button class="mbtn" data-sv="${i}" style="padding:4px 12px;font-size:13px">存入</button>
-        <button class="mbtn" data-ld="${i}" style="padding:4px 12px;font-size:13px" ${m?'':'disabled'}>读取</button>
-        <button class="mbtn" data-dl="${i}" style="padding:4px 12px;font-size:13px" ${m?'':'disabled'}>清空</button>
+        <button class="mbtn" data-sv="${i}" style="padding:4px 12px;font-size:calc(13px*var(--fs,1))">存入</button>
+        <button class="mbtn" data-ld="${i}" style="padding:4px 12px;font-size:calc(13px*var(--fs,1))" ${m?'':'disabled'}>读取</button>
+        <button class="mbtn" data-dl="${i}" style="padding:4px 12px;font-size:calc(13px*var(--fs,1))" ${m?'':'disabled'}>清空</button>
       </div></div>`;
   }
   box.innerHTML=h;
@@ -6856,8 +7039,11 @@ function openSettings(){
   $('cfgBase').value=cfg.base; $('cfgKey').value=cfg.key; $('cfgModel').value=cfg.model;
   $('cfgThink').value=cfg.think?'on':'off';
   $('cfgFont').value=String(cfg.fontSize||16);
+  syncPcFields();
   $('cfgFreeWrap').style.display=S?'block':'none';
   $('cfgMemWrap').style.display=S?'block':'none';
+  $('cfgStyleWrap').style.display=S?'block':'none';
+  if(S){ $('cfgStyle').value=styleId(); $('cfgStyleNote').textContent=stylePreview(styleId()); }
   if(S){ $('cfgFreedom').value=S.freedom||'mid'; $('cfgFreeNote').textContent=freedomNote(S.freedom||'mid');
          $('cfgMem').value=S.memLong===false?'short':'long'; $('cfgMemNote').textContent=memNote(); }
   $('settingsMask').classList.add('on');
@@ -6879,6 +7065,103 @@ function applyFreedomChange(){
 $('btnSettings').onclick=openSettings;
 ['cfgBase','cfgKey','cfgModel','cfgThink'].forEach(id=>$(id).addEventListener('change',saveCfgFromFields));
 $('cfgFreedom').addEventListener('change',applyFreedomChange);
+$('cfgStyle').innerHTML=STYLE_IDS.map(id=>`<option value="${id}">${WRITING_STYLES[id].label} —— ${WRITING_STYLES[id].tag}</option>`).join('');
+$('cfgStyle').addEventListener('change',()=>{
+  if(!S) return;
+  const v=$('cfgStyle').value; if(!WRITING_STYLES[v]||v===styleId()) return;
+  S.style=v; $('cfgStyleNote').textContent=stylePreview(v); saveGame();
+  toast('文风已改为「'+WRITING_STYLES[v].label+'」，下一回合起生效');
+});
+
+/* ================= 电脑端字体 / 字号 ================= */
+const LS_PCTYPE='wuxia_pc_type';
+const PC_FONT_DEFAULT='"Kaiti SC","STKaiti","KaiTi","Noto Serif SC","Songti SC",serif';
+const PC_FONTS=[
+  ['楷体（默认）',''],
+  ['宋体',['Songti SC','STSong','SimSun','NSimSun']],
+  ['思源宋体',['Source Han Serif SC','Source Han Serif CN','Noto Serif SC','Noto Serif CJK SC']],
+  ['仿宋',['STFangsong','FangSong','FangSong_GB2312']],
+  ['霞鹜文楷',['LXGW WenKai','LXGW WenKai Screen','霞鹜文楷']],
+  ['行楷',['Xingkai SC','STXingkai','华文行楷']],
+  ['隶书',['Libian SC','STLiti','LiSu','华文隶书']],
+  ['魏碑',['Weibei SC','华文新魏','STXinwei']],
+  ['圆体',['Yuanti SC','YouYuan']],
+  ['苹方',['PingFang SC']],
+  ['兰亭黑',['Lantinghei SC']],
+  ['黑体',['Heiti SC','STHeiti','SimHei']],
+  ['微软雅黑',['Microsoft YaHei']],
+  ['思源黑体',['Source Han Sans SC','Noto Sans SC','Noto Sans CJK SC']],
+];
+let pcType={font:'',size:100};
+try{ pcType=Object.assign(pcType, JSON.parse(localStorage.getItem(LS_PCTYPE)||'{}')); }catch(_){}
+function pcFontInstalled(name){
+  try{
+    const c=pcFontInstalled._c||(pcFontInstalled._c=document.createElement('canvas').getContext('2d'));
+    const t='江湖夜雨十年灯 mmmWWlli 0123';
+    return ['monospace','serif','sans-serif'].some(b=>{
+      c.font='40px '+b; const w0=c.measureText(t).width;
+      c.font='40px "'+name.replace(/"/g,'')+'",'+b; return c.measureText(t).width!==w0;
+    });
+  }catch(_){ return false; }
+}
+function pcQuote(n){ return '"'+String(n).replace(/"/g,'').trim()+'"'; }
+function pcFontStack(v){ return v ? pcQuote(v)+','+PC_FONT_DEFAULT : ''; }
+function applyPcType(){
+  const r=document.documentElement;
+  const size=Math.min(160,Math.max(80,Number(pcType.size)||100));
+  r.style.setProperty('--pc-fs',String(size/100));
+  if(pcType.font){ r.style.setProperty('--pc-font',pcFontStack(pcType.font)); r.classList.add('pcfont'); }
+  else{ r.style.removeProperty('--pc-font'); r.classList.remove('pcfont'); }
+}
+function savePcType(){ try{ localStorage.setItem(LS_PCTYPE,JSON.stringify(pcType)); }catch(_){} applyPcType(); }
+let pcAllFonts=null;
+function fillPcFontSelect(){
+  const sel=$('pcFont'); if(!sel) return;
+  let h='';
+  PC_FONTS.forEach(([lab,names])=>{
+    if(!names){ h+=`<option value="">${lab}</option>`; return; }
+    const hit=names.find(pcFontInstalled);
+    if(hit) h+=`<option value="${esc(hit)}">${lab}</option>`;
+  });
+  if(pcAllFonts&&pcAllFonts.length){
+    h+='<optgroup label="本机全部字体">'+pcAllFonts.map(f=>`<option value="${esc(f)}">${esc(f)}</option>`).join('')+'</optgroup>';
+  }
+  sel.innerHTML=h;
+  const cur=pcType.font||'';
+  if(cur && ![...sel.options].some(o=>o.value===cur)){
+    sel.insertAdjacentHTML('beforeend',`<option value="${esc(cur)}">${esc(cur)}</option>`);
+  }
+  sel.value=cur;
+}
+function syncPcFields(){
+  if(!$('pcFont')) return;
+  fillPcFontSelect();
+  $('pcFontCustom').value='';
+  $('pcSize').value=String(pcType.size||100);
+  $('pcSizeVal').textContent=(pcType.size||100)+'%';
+  $('pcFontPreview').style.fontFamily=pcType.font?pcFontStack(pcType.font):PC_FONT_DEFAULT;
+  $('pcFontScan').style.display=('queryLocalFonts' in window)?'':'none';
+}
+if($('pcFont')){
+  $('pcFont').addEventListener('change',()=>{ pcType.font=$('pcFont').value; savePcType(); syncPcFields(); });
+  $('pcFontCustom').addEventListener('change',()=>{
+    const v=$('pcFontCustom').value.trim(); if(!v) return;
+    if(!pcFontInstalled(v)){ toast('本机没找到「'+v+'」这款字体，名字要和字体册里的一致'); return; }
+    pcType.font=v; savePcType(); syncPcFields();
+  });
+  $('pcSize').addEventListener('input',()=>{ pcType.size=Number($('pcSize').value)||100; $('pcSizeVal').textContent=pcType.size+'%'; savePcType(); });
+  $('pcReset').addEventListener('click',()=>{ pcType={font:'',size:100}; savePcType(); syncPcFields(); });
+  $('pcFontScan').addEventListener('click',async()=>{
+    try{
+      const list=await window.queryLocalFonts();
+      const fam=[...new Set(list.map(f=>f.family))].filter(Boolean);
+      const cjk=/[\u4e00-\u9fff]|SC$|TC$|CN$|GB|Hei|Song|Kai|Ming|Fang|PingFang|YaHei|Han|CJK|WenKai/i;
+      fam.sort((a,b)=>(cjk.test(b)-cjk.test(a))||a.localeCompare(b,'zh'));
+      pcAllFonts=fam; fillPcFontSelect();
+      toast('读到本机字体 '+fam.length+' 款，中文字体排在前面');
+    }catch(e){ toast('没能读取本机字体：'+(e&&e.message||'未授权')); }
+  });
+}
 function applyReadingSize(){const n=[16,18,20].includes(Number(cfg.fontSize))?Number(cfg.fontSize):16;document.documentElement.style.setProperty('--reading-size',n+'px');}
 $('cfgFont').addEventListener('change',()=>{cfg.fontSize=Number($('cfgFont').value);localStorage.setItem(LS_CFG,JSON.stringify(cfg));applyReadingSize();});
 function memNote(){
@@ -6990,6 +7273,7 @@ function showDemo(){
 /* ================= 启动 ================= */
 (async function boot(){
   applyReadingSize();
+  applyPcType();
   await slotsLoad();
   if(await loadGame()){ saveGame(); toast('已载入上次进度'); return; }
   if(!cfg.key){ showDemo(); return; }
