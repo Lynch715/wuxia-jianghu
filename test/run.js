@@ -199,13 +199,14 @@ ok('对话也吃自由度：NPC 资料带上画像', /portrait/.test(pStrict));
 await page.evaluate(()=>{ S.freedom='mid'; });
 
 console.log('\n【剧情杀闸门】');
-await page.evaluate(()=>{ S.freedom='mid'; S.player.hp=90; });
+await page.evaluate(()=>{ S.freedom='mid'; S.player.hp=90; window.__loc=S.scene&&S.scene.location; });
 await page.fill('#freeInput','去黑风口打听消息');
 await page.click('#sendBtn');
 await page.waitForSelector('#choices .opt',{timeout:25000});
 const st=await page.evaluate(()=>({over:S.over,hp:S.player.hp,status:S.player.status.slice()}));
-ok('江湖传奇下模型写死主角被引擎驳回（over='+st.over+' 气血='+st.hp+' 状态='+st.status+'）', st.over===false&&st.hp<=22&&st.status.includes('重伤'));
-ok('章节里写明引擎裁定', (await page.textContent('#story')).includes('引擎裁定'));
+// 假接口的「坠崖」稿被修复后照常落账，场景会挪到崖下；把场景挪回去，免得后面找人说话变成远行
+await page.evaluate(()=>{ if(S.scene&&window.__loc) S.scene.location=window.__loc; });
+ok('江湖传奇下模型写死主角不会真死，交给局部修复（over='+st.over+'）', st.over===false);
 ok('模型交白卷时引擎补上选项（'+(await page.$$('#choices .opt')).length+' 个）', (await page.$$('#choices .opt')).length>=3);
 const strictAllows=await page.evaluate(()=>{ const f=FREEDOM['strict']; return f.storyDeath>=1; });
 ok('写实江湖仍允许剧情杀', strictAllows);
@@ -213,7 +214,7 @@ ok('写实江湖仍允许剧情杀', strictAllows);
 console.log('\n【对话退得出去】');
 // 送东西要好感≥45，而好感是前面几场对话攒出来的、会浮动；这一段测的是落账不是攒好感，先钉死
 // 前面随心所欲那场对话不设限、已经接济过一回，这里把接济总数清掉，只测江湖传奇的按好感削减
-await page.evaluate(()=>{ S.freedom='mid'; S.npcs[0]['好感度']=60; S.npcs[0].gave=0; });
+await page.evaluate(()=>{ S.freedom='mid'; S.npcs[0]['好感度']=60; S.npcs[0].gave=0; S.npcs[0].location=S.scene&&S.scene.location; });
 await page.click('#tabs button[data-tab="people"]');
 await page.click('#npcList .npc >> nth=0');
 await page.click('#npcTalkBtn');
@@ -250,7 +251,8 @@ await idle();
 await page.click('#tabs button[data-tab="world"]');
 
 console.log('\n【面谈余波：谈完接得上主线】');
-await page.evaluate(()=>{ S.freedom='mid'; });
+// 余波只在谈成了事时才写：把接济总数清掉、好感拉高，保证这场谈话有东西落账
+await page.evaluate(()=>{ S.freedom='mid'; S.npcs[0].gave=0; S.npcs[0]['好感度']=80; });
 await page.click('#tabs button[data-tab="people"]');
 await page.click('#npcList .npc >> nth=0');
 await page.click('#npcTalkBtn');

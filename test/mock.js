@@ -81,7 +81,7 @@ function pickBody(prompt){
   }
   if(prompt.includes('你现在扮演武侠世界中的人物')) return {
     reply:'（她抬眼看你）「师弟，你脸色不好，这瓶伤药拿去。」',innerThought:'他又在想他爹的事',mood:'关切',favor:4,
-    attempt:{type:'求助',attr:'谈吐',need:40,total:60,success:true},revealSecret:false,endTalk:false,
+    attempt:{type:'求助',attr:'谈吐',need:10,total:60,success:true},revealSecret:false,endTalk:false,
     effects:{money:300,give:[{cat:'医药',name:'白玉续命膏',desc:'师姐私藏的伤药'}],hp:25,
              info:'黑风口近来有埋伏',quest:{title:'替师姐带一封信',desc:'送到山下的镖局'}},
     summary:'与沈师姐说了几句'};
