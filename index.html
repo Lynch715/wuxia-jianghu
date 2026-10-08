@@ -3104,7 +3104,7 @@ function judgeBlock(judge){
     :`- 本回合是大凶，但引擎没有定死实损：写成小挫折、丢脸、误会、白跑一趟，不必伤筋动骨，但也别写成因祸得福。\n`;
   if(judge.check){
     const c=judge.check;
-    s+=`- 属性判定：${c.attr}${c.val}，掷骰${c.roll}（修正${c.mod>=0?'+':''}${c.mod}）＝${c.total}，难度${c.need}，判定【${c.success?'成功':'失败'}】${c.crit?'（'+c.crit+'）':''}。剧情必须如实体现这个结果。\n`;
+    s+=`- 属性判定：${c.attr}${c.val}，掷骰${c.roll}（修正${c.mod>=0?'+':''}${c.mod}）＝${c.total}，难度${c.need}，判定【${c.success?'成功':'失败'}】${c.crit?'（'+c.crit+'）':''}。剧情必须如实体现这个结果；输出里 check 填 null，引擎会自己填。\n`;
     if(!c.success&&fdm().freeAct) s+=`  本局口径宽松：失败只写成绕了弯路、小小丢脸、暂时没成，不必伤筋动骨。\n`;
   }else if(judge.duel||judge.convo){
     s+=judge.duel?`- 属性判定：比武已由引擎结算，本回合不另作判定，check 为 null。\n`:`- 属性判定：谈话里的成败已在对话中判过，余波不另作判定，check 为 null。\n`;
@@ -3431,22 +3431,24 @@ function repairJSON(t){
 }
 
 async function llmJSON(prompt, onPartial, opt){
-  let raw;
+  let raw, raw1, e1;
   try{
     raw = await callLLM(prompt,onPartial,opt);
     const d=parseJSONLoose(raw);return opt&&opt.validate?opt.validate(d):d;
   }catch(e){
     if(e.message && (e.message.startsWith('接口调用失败')||e.message==='请先在设置中填写密钥')) throw e;
+    raw1=raw; e1=e;
     const truncated = lastFinish==='length';
-    toast(truncated?'回复超长被截断，正在精简重试……':'回复格式有误，正在重试……');
+    toast(truncated?'回复太长被截断，正在补写……':'这一回有点小毛病，正在补写……');
     const extra = truncated
       ? '\n\n（注意：上次输出因过长被截断。请精简篇幅：剧情压缩到250字内，newNpcs最多1人，其余照常，务必输出完整合法的单个JSON对象）'
       : '\n\n（上次输出未通过校验：'+e.message+'。请修正上述问题并重写本回，输出完整合法JSON，保持玩家行动方向与引擎判定。）';
-    raw = await callLLM(prompt+extra,onPartial,opt);
+    // 补写时不往屏幕上流，第一版留着给玩家看，补好了再整段换上
+    raw = await callLLM(prompt+extra,null,opt);
     let e2;
     try{ const d=parseJSONLoose(raw);return opt&&opt.validate?opt.validate(d):d; }
     catch(err){ e2=err; }
-    if(opt&&opt.salvage){ try{ return opt.salvage(raw,e2); }catch(_){} }
+    if(opt&&opt.salvage){ try{ return opt.salvage(raw,e2); }catch(_){} try{ if(raw1) return opt.salvage(raw1,e1); }catch(_){} }
     if(lastFinish==='length') throw new Error('回复两次都被截断，请稍后重试或换用思考模式关闭的flash模型');
     const why=e2&&e2.hard?e2.message:(e2&&/JSON|Unexpected|token|position/i.test(e2.message)?'回复不是完整的 JSON':(e2&&e2.message)||'格式不对');
     throw new Error('模型两次都没写对（'+why+'），请重试');
@@ -3543,7 +3545,7 @@ function validateTurn(d,action,judge,state){
       if(!asked&&!(sd>=1||sd>0&&state.player.hp<30))throw turnHardError('本局不允许剧情直接写死主角，请把正文改写为获救或重伤未死，gameOver填false',true);
     }
     if(judge.check){
-      if(d.check&&typeof d.check.success==='boolean'&&d.check.success!==judge.check.success)throw turnHardError('叙事判定与引擎结果矛盾，请按引擎成败重写',true);
+      if(d.check&&typeof d.check.success==='boolean'&&d.check.success!==judge.check.success)fix('模型回填的判定与引擎相反，按引擎结果');
       d.check=Object.assign({},judge.check);
     }else if(d.check&&!judge.duel&&!judge.convo&&!fdm().freeAct){
       numeric(d.check,['need']);const need=num(d.check.need);
@@ -3551,8 +3553,9 @@ function validateTurn(d,action,judge,state){
       else{
         const total=attrVal(state.player,d.check.attr)+fdm().check+rollMod(judge.fate);
         const success=total>=need;
-        if(typeof d.check.success==='boolean'&&d.check.success!==success)throw turnHardError('成败计算不正确：总值'+total+'，难度'+need+'，应当'+(success?'成功':'失败')+'，请按此重写',true);
-        d.check.total=total;d.check.success=success;
+        // 难度本来就是模型自己定的：它按成写就让难度落在总值上，按败写就比总值高一点，不为算错整回重写
+        if(typeof d.check.success==='boolean'&&d.check.success!==success){ fix('自拟判定算错（总值'+total+'，难度'+need+'），按模型写的'+(d.check.success?'成功':'失败')+'调整难度'); d.check.need=d.check.success?total:total+1; }
+        d.check.total=total;d.check.success=d.check.total>=num(d.check.need);
       }
     }else if(fdm().freeAct)d.check=null;
     const last=state.recent&&state.recent[state.recent.length-1];
@@ -5366,20 +5369,25 @@ function applyConvoEffects(n, eff, attemptOk){
 }
 
 function validateConvo(d,npc,roll){
-  if(!d||typeof d!=='object'||typeof d.reply!=='string'||!d.reply.trim())throw new Error('对话缺少有效reply');
-  if(d.effects!=null&&(typeof d.effects!=='object'||Array.isArray(d.effects)))throw new Error('effects必须为对象');
+  if(!d||typeof d!=='object')throw new Error('对话回复不是 JSON 对象');
+  if(d.reply!=null&&typeof d.reply!=='string')d.reply=plain(d.reply);
+  if(typeof d.reply!=='string'||!d.reply.trim())throw new Error('对话缺少有效reply');
+  if(d.effects!=null&&(typeof d.effects!=='object'||Array.isArray(d.effects)))d.effects=null;
   if(d.effects){
-    for(const k of ['give','take'])if(d.effects[k]!=null&&!Array.isArray(d.effects[k]))throw new Error(k+'必须为数组');
-    for(const k of ['money','hp','contrib'])if(d.effects[k]!=null&&(typeof d.effects[k]!=='number'||!Number.isFinite(d.effects[k])))throw new Error(k+'必须为数字');
+    const e=d.effects;
+    for(const k of ['give','take'])if(e[k]!=null&&!Array.isArray(e[k]))e[k]=(typeof e[k]==='object'||typeof e[k]==='string')?[e[k]]:null;
+    for(const k of ['money','hp','contrib'])if(e[k]!=null&&(typeof e[k]!=='number'||!Number.isFinite(e[k]))){ const n=typeof e[k]==='string'?Number(e[k].replace(/[+\s两]/g,'')):NaN; e[k]=Number.isFinite(n)?n:null; }
   }
   if(fdm().freeAct){d.attempt=null;return d;}
-  if(d.attempt){
+  if(d.attempt&&typeof d.attempt==='object'){
     const a=d.attempt,attr=a.attr||'谈吐';
-    if(!['武功','谈吐','才学','颖悟'].includes(attr)||typeof a.need!=='number'||a.need<0||a.need>100)throw new Error('对话判定属性或难度无效');
-    const total=attrVal(S.player,attr)+fdm().check+rollMod(roll),success=total>=a.need;
-    if(a.success!==success)throw new Error('对话成败与引擎矛盾：总值'+total+'，难度'+a.need+'，请按'+(success?'成功':'失败')+'重写言行与effects');
-    a.total=total;a.attr=attr;
-  }
+    if(typeof a.need==='string')a.need=Number(a.need);
+    if(!['武功','谈吐','才学','颖悟'].includes(attr)||typeof a.need!=='number'||!Number.isFinite(a.need)){ d.attempt=null; return d; }
+    const total=attrVal(S.player,attr)+fdm().check+rollMod(roll);
+    // 言行是按模型认定的成败写的：算错了就把难度挪到对得上的地方，不让玩家等它重说一遍
+    if(typeof a.success==='boolean'&&a.success!==(total>=a.need)){ console.info('[对话判定校正]','总值',total,'难度',a.need,'按',a.success?'成功':'失败'); a.need=a.success?total:total+1; }
+    a.total=total;a.attr=attr;a.success=total>=a.need;
+  }else d.attempt=null;
   return d;
 }
 function removeOneItem(item){

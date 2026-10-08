@@ -405,7 +405,7 @@ const mem=await page.evaluate(()=>{
     hasLedgerBlock:/已成定局的旧事/.test(sb)};
 });
 ok(`加长档：卷录 ${mem.M.vol}×${mem.M.volLen} 字、提要 ${mem.M.sum} 条、正文 ${mem.M.recent} 回（其中 ${mem.M.recentFull} 回全文）、往来 ${mem.M.npcMem} 条、台账 ${mem.M.ledger} 条`,
-   mem.M.vol===10&&mem.M.sum===30&&mem.M.recent===5&&mem.M.recentFull===3&&mem.M.npcMem===8);
+   mem.M.vol===10&&mem.M.sum===30&&mem.M.recent===5&&mem.M.recentFull===3&&mem.M.npcMem===6&&mem.M.ledger===50);
 ok(`标准档明显更短（${mem.sbLen} 字 → ${mem.sbShortLen} 字）`, mem.short.sum===16&&mem.sbShortLen<mem.sbLen);
 ok('主线提示词终于带上了 NPC 的往来记录', mem.npcHasMemo);
 ok('提示词里有事实台账一栏', mem.hasLedgerBlock);
