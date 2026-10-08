@@ -29,6 +29,7 @@ await page.route('**/chat/completions',async route=>{
       if(turnCalls===1){ const body=pickBody(prompt); body.narrative='第一版：李昭身中数刀，倒在血泊里，再没起来。'; body.gameOver=true; body.ending='死于乱刀'; return route.fulfill(SSE(sse(body))); }
       return route.fulfill(SSE(sse({narrative:'改好的：李昭身中数刀倒地，被路过的郎中拖回草庐，捡回一条命。'})));
     }
+    if(mode==='checkhard'){ const body=pickBody(prompt); body.narrative=turnCalls===2?'改了一半：掌柜还是被他说动了。':'掌柜被他三言两语说动，当场拿出五十两。'; body.check={attr:'谈吐',success:true}; body.playerChanges=Object.assign({},body.playerChanges,{money:50}); return route.fulfill(SSE(sse(body))); }
     if(mode==='nonarr') return route.fulfill(SSE(rawSSE('{"summary":"啥也没写"}')));
   }
   await route.fulfill(SSE(sse(pickBody(prompt))));
@@ -57,11 +58,18 @@ const r=await page.evaluate(()=>{
   x=run(Object.assign(base(),{check:{attr:'武功',need:tot+20,success:true}})); out.selfNoBend=!x.ok&&x.repair&&x.conflicts[0].includes('难度'+(tot+20));
   x=run(Object.assign(base(),{check:{attr:'武功',need:tot+20,success:true}}),null,{acceptConflicts:true}); out.selfAccept=x.ok&&x.d.check.need===tot+20&&x.d.check.success===false;
   x=run(Object.assign(base(),{gameOver:true})); out.death=!x.ok&&x.repair;
+  x=run(Object.assign(base(),{check:{attr:'武功',success:true},playerChanges:{money:50,attributes:{武功:2},itemsAdd:{其他:[{name:'玉佩'}]}}}),{fate:10,check:{attr:'武功',need:90,success:false,total:30}},{acceptConflicts:true});
+  out.strip=x.ok&&x.d.playerChanges.money===0&&!x.d.playerChanges.attributes.武功&&!Object.keys(x.d.playerChanges.itemsAdd).length;
+  x=run(Object.assign(base(),{check:null}),{fate:10,check:{attr:'武功',need:90,success:false,total:30}}); out.noEcho=x.ok&&x.d.check.success===false&&x.fixes.some(t=>/没回填/.test(t));
+  { const S0=S; S=st; const t=turnPrompt('试着说服掌柜',{fate:10,months:0,check:{attr:'谈吐',val:40,roll:10,mod:-2,total:38,need:70,success:false}}); S=S0;
+    out.mustKeep=t.lastIndexOf('【本回合必守')>t.indexOf('【玩家本回合行动】')&&t.includes('照抄：{"attr":"谈吐","success":false}')&&t.includes('不许把主角写死'); }
   { const S0=S; S=st; const n=st.npcs[0]; const t2=attrVal(st.player,'谈吐')+fdm().check+rollMod(10);
     const v=(d,o)=>{ try{ return validateConvo(d,n,10,o); }catch(e){ return {err:e.message,repair:!!e.repair}; } };
     let c=v({reply:'好说。',attempt:{attr:'谈吐',need:t2+15,success:true}}); out.convoRepair=!!c.repair;
     c=v({reply:'好说。',attempt:{attr:'谈吐',need:t2+15,success:true}},{accept:true}); out.convoAccept=!c.err&&c.attempt.success===false&&c.attempt.need===t2+15;
     c=v({reply:'拿去。',effects:{money:'30两',give:{cat:'其他',name:'玉佩'}}}); out.convoFmt=!c.err&&c.effects.money===30&&Array.isArray(c.effects.give);
+    c=v({reply:'罢了。',attempt:{type:'套话',attr:'口才',need:'很难'}}); out.convoFill=!c.err&&c.attempt.attr==='谈吐'&&c.attempt.need===85&&typeof c.attempt.success==='boolean';
+    c=v({reply:'拿去吧。',attempt:{attr:'谈吐',need:t2+15,success:false},revealSecret:true,effects:{money:100,give:[{cat:'其他',name:'玉佩'}],vendetta:null}}); out.convoStrip=!c.err&&c.effects===null&&c.revealSecret===false;
     S=S0; }
   return out;
 });
@@ -80,6 +88,11 @@ ok('不允许时写死主角 → 局部修复', r.death);
 ok('对话判定算错 → 局部修复', r.convoRepair);
 ok('对话修复不成时按引擎算成败、难度不动', r.convoAccept);
 ok('对话 effects「30两」转数、单件礼物包成数组', r.convoFmt);
+ok('判定失败却写成办成、修不好时：正向收益收回', r.strip);
+ok('模型没回填判定：按引擎结果记，不打回', r.noEcho);
+ok('末尾有本回合必守，判定要照抄', r.mustKeep);
+ok('对话判定属性难度填坏：引擎按类型补上（套话→谈吐/85）', r.convoFill);
+ok('对话判失败：给钱给物清掉，秘密不算吐露', r.convoStrip);
 
 const step=async(m)=>{ mode=m; turnCalls=0; prompts=[]; await page.click('#choices .opt'); await page.waitForFunction(()=>!busy,null,{timeout:30000}); mode=null;
   return page.evaluate(()=>({turn:S.turn,money:S.player.money,over:!!S.over,story:document.querySelector('#story .chapter:last-child').textContent,toast:document.getElementById('toast').textContent})); };
@@ -100,6 +113,17 @@ ok(`调用 ${turnCalls} 次（首发 + 修复）`, turnCalls===2);
 ok('修复请求带着第一版正文和冲突', prompts[1]&&prompts[1].includes('【与引擎对不上的地方】')&&prompts[1].includes('第一版：李昭身中数刀'));
 ok('正文换成了改好的', a.story.includes('改好的：李昭身中数刀倒地'));
 ok('主角没死、回合照常推进', !a.over&&a.turn===b0+1);
+
+console.log('\n【判定失败却硬写成办成：修复 → 重写 → 以引擎为准】');
+b0=await page.evaluate(()=>({turn:S.turn,money:S.player.money}));
+mode='checkhard'; turnCalls=0; prompts=[];
+await page.evaluate(()=>{ const a=S.player.attributes['谈吐']; runTurn('试着说服掌柜借钱',{fate:10,months:0,worldEvent:null,check:{attr:'谈吐',val:a,roll:10,mod:-2,total:a-2,need:99,success:false}},{}); });
+await page.waitForTimeout(300); await page.waitForFunction(()=>!busy,null,{timeout:30000}); mode=null;
+a=await page.evaluate(()=>({turn:S.turn,money:S.player.money}));
+ok(`调用 ${turnCalls} 次（首发 + 修复 + 重写）`, turnCalls===3);
+ok('修复请求要求回填判定', prompts[1]&&prompts[1].includes('"check":{"attr":"谈吐"'));
+ok('五十两没落账：'+b0.money+' → '+a.money, a.money<=b0.money);
+ok('回合照常推进', a.turn===b0.turn+1);
 
 console.log('\n【闲聊完不再多调一次余波】');
 await page.evaluate(()=>openConvo(S.npcs.find(n=>n.alive)));

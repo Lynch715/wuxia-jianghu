@@ -39,7 +39,7 @@ const r=await page.evaluate(()=>{
   const judge={fate:10,check:null,months:1};
   const t1=turnPrompt('即日动身回孟津渡口，赴陆青崖召见',judge);
   // 下一回合：时间走了、多一段剧情、多一条提要和台账、在场的人换了
-  S.turn++; S.date=S.date+'后'; S.recent.push({action:zh(14),narrative:zh(480)}); S.history.push({turn:117,action:zh(14),summary:zh(28)}); S.ledger.push(zh(30)); S.scene.present=[S.npcs[5].name];
+  S.turn++; S.date=S.date+'后'; S.recent.push({action:zh(14),narrative:zh(480)}); S.history.push({turn:117,action:zh(14),summary:zh(28)}); ledger(zh(30)); S.scene.present=[S.npcs[5].name];
   const t2=turnPrompt('在渡口打听陆青崖的下落',{fate:4,check:null,months:1});
   convo={npc:S.npcs[5],msgs:Array.from({length:10},(_,k)=>({role:k%2?'npc':'me',text:zh(80)}))};
   const c1=convoPrompt(S.npcs[5],'你说的那桩旧事，到底是怎么回事？',10,null);
@@ -47,28 +47,30 @@ const r=await page.evaluate(()=>{
   const c2=convoPrompt(S.npcs[5],'那我再问一句。',6,null);
   const duel={opp:S.npcs[5],log:Array.from({length:8},()=>({plain:zh(40)})),resultText:'主角胜'};
   const d1=duelAftermathPrompt('与人比武',{fate:10,check:null,months:1,duel:true},duel);
-  return {sys:sys.length,t1:t1.length,t2:t2.length,turnCache:sys.length+pre(t1,t2),c1:c1.length,convoCache:sys.length+pre(c1,c2),d1:d1.length,t2txt:t2,c2txt:c2,d1txt:d1,
+  const stableEnd=t2.indexOf('【别处的旧识'); return {duelCache:sys.length+pre(t2,d1),stableEnd,brk:t2.slice(pre(t1,t2),pre(t1,t2)+30),sys:sys.length,t1:t1.length,t2:t2.length,turnCache:sys.length+pre(t1,t2),c1:c1.length,convoCache:sys.length+pre(c1,c2),d1:d1.length,t2txt:t2,c2txt:c2,d1txt:d1,
     present:S.npcs[5].name,away:S.npcs[6].name,awaySecret:S.npcs[6].secret,presentSecret:S.npcs[5].secret};
 });
 const row=(k,v)=>console.log(String(v).padStart(7)+'  '+k);
 console.log('\n【体积（字）】'+path.basename(file));
 row('system',r.sys); row('普通回合 输入',r.t1); row('  其中两回合之间开头相同、可走缓存',r.turnCache+'（'+Math.round(r.turnCache/(r.sys+r.t2)*100)+'%）');
 row('对话 每句输入',r.c1); row('  其中同一场对话里可走缓存',r.convoCache+'（'+Math.round(r.convoCache/(r.sys+r.c1)*100)+'%）');
-row('比武余波 输入',r.d1);
+row('比武余波 输入',r.d1); row('  其中与上一回合开头相同、可走缓存',r.duelCache+'（'+Math.round(r.duelCache/(r.sys+r.d1)*100)+'%）'); console.log('  （两回合之间缓存断在：'+r.brk+'……）');
 if(!process.env.HTML){
   console.log('\n【要求一条没少】');
   const t=r.t2txt;
-  for(const k of ['请推演本回合。要求','剧情一般200-350字','options一般给3个','NPC对象格式','输出格式：','"worldUpdates"','你必须只输出一个合法的JSON对象','【玩家本回合行动】在渡口打听','【本回合引擎判定','【主角面板】','【眼下要紧的人】','【前尘卷录','【前情提要】','【最近剧情原文】','【已成定局的旧事','【主角身世】','【江湖格局】','【当前江湖事件'])
+  for(const k of ['回合通则','剧情250-500字','options给3至5个','至少1个有风险的check','【本回合必守','secret必填','NPC对象格式','输出格式：','"worldUpdates"','你必须只输出一个合法的JSON对象','【玩家本回合行动】在渡口打听','【本回合引擎判定','【主角面板】','【眼下要紧的人】','【前尘卷录','【前情提要】','【最近剧情原文】','【已成定局的旧事','【主角身世】','【江湖格局】','【当前江湖事件'])
     ok('回合提示词含「'+k+'」', t.includes(k));
   ok('在场的人给全（带画像与秘密）', t.includes('"name":"'+r.present+'"')&&t.includes(r.presentSecret));
   ok('不在场的人压成一行，仍带秘密', t.includes('- '+r.away+'（')&&t.includes(r.awaySecret));
-  ok('要求在前、本回合行动在后', t.indexOf('请推演本回合')<t.indexOf('【当前时间】')&&t.indexOf('【当前时间】')<t.indexOf('【玩家本回合行动】'));
-  ok('末尾有提醒', /只输出一个JSON对象。）$/.test(t));
+  ok('要求在前、本回合行动在后', t.indexOf('回合通则')<t.indexOf('【当前时间】')&&t.indexOf('【当前时间】')<t.indexOf('【玩家本回合行动】'));
+  ok('末尾是本回合必守', /字段按开头的输出格式。$/.test(t)&&t.lastIndexOf('【本回合必守')>t.indexOf('【玩家本回合行动】'));
+  ok('多记一条账，缓存仍盖住旧账与江湖格局', r.turnCache-r.sys>=r.stableEnd);
+  ok('比武余波接得上上一回合的缓存', r.duelCache-r.sys>=r.stableEnd);
   const c=r.c2txt;
   for(const k of ['规则：','effects','输出：{"reply"','你必须只输出一个合法的JSON对象','【对话至今】','【主角这一句/这一举动】那我再问一句','【引擎掷骰】']) ok('对话提示词含「'+k+'」', c.includes(k));
   ok('对话规则在资料之前', c.indexOf('规则：')<c.indexOf('的资料】'));
   const d=r.d1txt;
-  for(const k of ['请把这场比武写成','输出格式同常规回合','【比武实录','【比武结果】','【主角面板】']) ok('比武余波含「'+k+'」', d.includes(k));
+  for(const k of ['请把这场比武写成','输出格式同开头的回合格式','【比武实录','【比武结果】','【主角面板】']) ok('比武余波含「'+k+'」', d.includes(k));
   ok('页面无报错'+(errs.length?'：'+errs.join(' | '):''), errs.length===0);
   console.log(`\n结果：${oks.length} 通过，${fails.length} 失败`); if(fails.length) console.log('失败项：'+fails.join('；'));
 }

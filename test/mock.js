@@ -59,7 +59,7 @@ function pickBody(prompt){
              {text:aftVary(1),hint:'',type:'normal',months:1},
              {text:aftVary(2),hint:'',type:'rest',months:1}],
     gameOver:false,ending:null}; }
-  if(prompt.includes('闭关参悟') || prompt.includes('请推演本回合')){
+  if(prompt.includes('闭关参悟') || prompt.includes('回合通则')){
     turnNo++;
     const body={
       narrative:'这一段日子过得飞快。\n李昭把那本残卷翻了又翻。',summary:'第'+turnNo+'回的事',

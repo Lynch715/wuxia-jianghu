@@ -37,8 +37,8 @@ await test('半月精度一致，两个半月合计一个月',({run})=>{run('adv
 await test('自由输入半年闭关和短等待解析正确',({run})=>{assert.equal(run(`optMonths(null,'闭关半年，钻研伏虎拳')`),6);assert.equal(run(`optMonths(null,'等待三天')`),0.1);assert.equal(run(`optMonths(null,'问一句路怎么走')`),1/30);});
 await test('同一榜上人物每年只老化与判成长一次',({run})=>{run(`S.npcs=[normNpc({name:'岳师伯',age:39,武功:80,alive:true})];S.world.ranking=[{name:'岳师伯',age:39,武功:80,alive:true}];Math.random=()=>0;npcYearTick();`);assert.equal(run('S.npcs[0].age'),40);assert.equal(run('S.world.ranking[0].age'),40);assert.equal(run('S.npcs[0]["武功"]'),run('S.world.ranking[0]["武功"]'));});
 await test('远方变动不刷新见面时间，转场清空旧在场人',({run,val})=>{run(`S.npcs=[normNpc({name:'岳师伯',alive:true})];S.npcs[0].lastSeen=1;S.scene.present=['岳师伯'];applyTurn({npcUpdates:[{name:'岳师伯',mood:'悲伤',location:'华山'}],scene:{location:'杭州'}},'赶路',{months:0,fate:10});`);assert.equal(run('S.npcs[0].lastSeen'),1);assert.deepEqual(val('S.scene.present'),[]);});
-await test('坏回合缺正文、错类型与未知人物被拒绝',({run})=>{assert.throws(()=>run(`validateTurn({summary:'没正文'},'休息',{fate:10},S)`),/narrative/);assert.throws(()=>run(`validateTurn({narrative:'有正文',summary:'休息',playerChanges:{artsTrain:{}}},'休息',{fate:10},S)`),/artsTrain/);assert.throws(()=>run(`validateTurn({narrative:'有正文',summary:'休息',npcUpdates:[{name:'不存在'}]},'休息',{fate:10},S)`),/未知人物/);});
-await test('预设成败矛盾需重写；自由判定按前端复核',({run})=>{assert.throws(()=>run(`validateTurn({narrative:'说服了他',summary:'说服',check:{success:true}},'说服',{fate:10,check:{success:false}},S)`),/矛盾/);assert.throws(()=>run(`validateTurn({narrative:'说服了他',summary:'说服',check:{attr:'谈吐',need:99,success:true}},'说服',{fate:10},S)`),/成败计算/);});
+await test('坏回合缺正文被拒绝；错类型与未知人物就地纠正',({run,val})=>{assert.throws(()=>run(`validateTurn({summary:'没正文'},'休息',{fate:10},S)`),/narrative/);assert.ok(Array.isArray(val(`validateTurn({narrative:'有正文',summary:'休息',playerChanges:{artsTrain:{}}},'休息',{fate:10},S).playerChanges.artsTrain`)));assert.deepEqual(val(`validateTurn({narrative:'有正文',summary:'休息',npcUpdates:[{name:'不存在'}]},'休息',{fate:10},S).npcUpdates`),[]);});
+await test('预设成败矛盾、自拟判定算错都交给局部修复',({run})=>{assert.throws(()=>run(`validateTurn({narrative:'说服了他',summary:'说服',check:{success:true}},'说服',{fate:10,check:{attr:'谈吐',success:false}},S)`),/对不上/);assert.throws(()=>run(`validateTurn({narrative:'说服了他',summary:'说服',check:{attr:'谈吐',need:99,success:true}},'说服',{fate:10},S)`),/对不上/);});
 await test('有效回合只提交一次，预演不改主存档',({run})=>{run(`const owner=S;const judge={fate:10,months:2};const forecast=forecastTurn(S,judge,'练拳');`);assert.equal(run('S.months'),0);assert.equal(run('forecast.state.months'),2);run(`const d=validateTurn(${body},'练拳',judge,forecast.state);S=settleTurnOnce(owner,d,'练拳',judge,'tx-1',forecast);const money=S.player.money;const power=S.player.attributes.武功;S=settleTurnOnce(S,d,'练拳',judge,'tx-1',forecast);`);assert.equal(run('S.months'),2);assert.equal(run('S.turn'),21);assert.equal(run('S.player.money'),run('money'));assert.equal(run('S.player.attributes.武功'),run('power'));});
 await test('结算中途异常回滚，不污染主状态或carryDeltas',({run})=>{run(`const owner=S;const originalMoney=S.player.money;const real=applyTurn;applyTurn=(...a)=>{real(...a);throw new Error('注入结算错误')};carryDeltas={武功:2};`);assert.throws(()=>run(`settleTurnOnce(owner,${body},'练拳',{fate:10,months:1},'bad')`),/注入/);assert.equal(run('S'),run('owner'));assert.equal(run('S.player.money'),run('originalMoney'));assert.equal(run('S.turn'),20);assert.equal(run('carryDeltas.武功'),2);});
 await test('老存档迁移事件与天数，重复迁移不重新生成',({run})=>{run(`const old=JSON.parse(JSON.stringify(S));old.v=10;old.months=5;delete old.elapsedDays;delete old.world.threads;old.world.events=['镖局失镖'];const migrated=migrate(old);const id=migrated.world.threads[0].id;migrate(migrated);`);assert.equal(run('migrated.v'),11);assert.equal(run('migrated.elapsedDays'),150);assert.equal(run('migrated.world.threads.length'),1);assert.equal(run('migrated.world.threads[0].id'),run('id'));});
@@ -61,7 +61,7 @@ await test('新局不会接收旧回合的模型回复',async({run})=>{
 });
 await test('对话计算矛盾被拒绝、赠礼只移除一份',({run})=>{
   run(`S.npcs=[normNpc({name:'沈师姐',alive:true})];S.player.items.医药=[{name:'金创药'},{name:'金创药'}];`);
-  assert.throws(()=>run(`validateConvo({reply:'答应了',attempt:{attr:'谈吐',need:99,success:true}},S.npcs[0],10)`),/矛盾/);
+  assert.throws(()=>run(`validateConvo({reply:'答应了',attempt:{attr:'谈吐',need:99,success:true}},S.npcs[0],10)`),/对不上/);
   run(`removeOneItem('金创药')`);assert.equal(run('S.player.items.医药.length'),1);
 });
 
@@ -105,11 +105,11 @@ await test('追查已故人物的旧案不因受害者早已死亡而自动结�
   run(`S.npcs=[{name:'镖师',alive:false}];const e=addWorldThread({title:'追查镖师死因',cause:'发现遗书',actors:['镖师']},'调查');tickWorldThreads();`);
   assert.equal(run('e.stage'),'发生');
 });
-await test('重复新建活动事件与照抄旧结果复发都被拒绝',({run})=>{
+await test('重复新建活动事件与照抄旧结果复发都被丢掉',({run,val})=>{
   run(`const e=addWorldThread({title:'追查失镖案',cause:'镖师求助'},'接案');`);
-  assert.throws(()=>run(`validateTurn({narrative:'继续调查',summary:'调查',newWorldEvents:[{title:e.title,cause:'又听说了'}]},'调查',{fate:10},S)`),/重复新建/);
+  assert.deepEqual(val(`validateTurn({narrative:'继续调查',summary:'调查',newWorldEvents:[{title:e.title,cause:'又听说了'}]},'调查',{fate:10},S).newWorldEvents`),[]);
   run(`closeWorldThread(e,'追回镖银');`);
-  assert.throws(()=>run(`validateTurn({narrative:'旧案重开',summary:'又发生',newWorldEvents:[{title:e.title,cause:e.result,recurrenceOf:e.id}]},'调查',{fate:10},S)`),/不能重播/);
+  assert.deepEqual(val(`validateTurn({narrative:'旧案重开',summary:'又发生',newWorldEvents:[{title:e.title,cause:e.result,recurrenceOf:e.id}]},'调查',{fate:10},S).newWorldEvents`),[]);
 });
 await test('统一选项规则不再禁止连续练功或强制月耗时和风闻',({run})=>{
   assert(!run('OPTIONS_RULE.includes("连着练了两回")'));
