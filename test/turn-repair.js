@@ -61,6 +61,24 @@ const r=await page.evaluate(()=>{
   x=run(Object.assign(base(),{check:{attr:'武功',success:true},playerChanges:{money:50,attributes:{武功:2},itemsAdd:{其他:[{name:'玉佩'}]}}}),{fate:10,check:{attr:'武功',need:90,success:false,total:30}},{acceptConflicts:true});
   out.strip=x.ok&&x.d.playerChanges.money===0&&!x.d.playerChanges.attributes.武功&&!Object.keys(x.d.playerChanges.itemsAdd).length;
   x=run(Object.assign(base(),{check:null}),{fate:10,check:{attr:'武功',need:90,success:false,total:30}}); out.noEcho=x.ok&&x.d.check.success===false&&x.fixes.some(t=>/没回填/.test(t));
+  { const nm0=st.npcs[0].name;
+    x=run(Object.assign(base(),{newNpcs:[{name:nm0+'姐',gender:'女',identity:'冒名的'},{name:'过路客',gender:'男',identity:'镖师',secret:'有赌债'}]}));
+    out.dupNew=x.ok&&x.d.newNpcs.length===1&&x.d.newNpcs[0].name==='过路客';
+    const dead=JSON.parse(JSON.stringify(st)); dead.npcs[1].alive=false; const dn=dead.npcs[1].name;
+    try{ const y=validateTurn(Object.assign(base(),{newNpcs:[{name:dn,gender:'男'}]}),'走走',{fate:10},dead); out.deadNew=y.newNpcs.length===0; }catch(e){ out.deadNew=false; }
+    x=run(Object.assign(base(),{newNpcs:[]}),{fate:10}); 
+    try{ const y=validateTurn(base(),'（我那失散的妹妹，名叫苏小婉，找来了）',{fate:10},st); out.playerNpc=y.newNpcs.some(n=>n.name==='苏小婉'); }catch(e){ out.playerNpc=false; } }
+  { const S0=S; S=JSON.parse(JSON.stringify(st)); const n=S.npcs[0]; n.alive=true; n.notes='与主角有杀父之仇'; n.identity='华山掌门'; n.memory=[]; n.past=[];
+    const L0=(S.ledger||[]).length;
+    applyTurn({narrative:'x',summary:'x',npcUpdates:[{name:n.name,notes:'近来心情不好',identity:'华山派太上长老',好感度:90,武功:30}],playerChanges:{artsAdd:[{name:'天外飞仙',style:'绝学',level:99},{name:'第二门',style:'刚猛',level:20}],itemsAdd:{其他:[{name:'甲'},{name:'乙'},{name:'丙'},{name:'丁'}],武器:[]}}},'走走',{fate:10,months:1});
+    out.notesKeep=/杀父之仇/.test(n.notes)&&/心情不好/.test(n.notes);
+    out.identLedger=S.ledger.slice(L0).some(t=>/身份：华山掌门 → 华山派太上长老/.test(t));
+    out.capFavor=n['好感度']<=Math.min(100,st.npcs[0]['好感度']+50);
+    out.capWu=n['武功']<=clampW(st.npcs[0]['武功']+5);
+    const a=S.player.arts.find(x=>x.name==='天外飞仙'); out.capArt=!!a&&a.level<=35&&!S.player.arts.find(x=>x.name==='第二门');
+    out.capItems=(S.player.items['其他']||[]).filter(x=>['甲','乙','丙','丁'].includes(x.name)).length===3;
+    for(let i=0;i<10;i++) pushMemory(n,'第'+i+'件事'); out.past=n.memory.length===MEM().npcMem&&n.past.length===2&&n.past[0]==='第0件事';
+    S=S0; }
   { const S0=S; S=st; const t=turnPrompt('试着说服掌柜',{fate:10,months:0,check:{attr:'谈吐',val:40,roll:10,mod:-2,total:38,need:70,success:false}}); S=S0;
     out.mustKeep=t.lastIndexOf('【本回合必守')>t.indexOf('【玩家本回合行动】')&&t.includes('照抄：{"attr":"谈吐","success":false}')&&t.includes('不许把主角写死'); }
   { const S0=S; S=st; const n=st.npcs[0]; const t2=attrVal(st.player,'谈吐')+fdm().check+rollMod(10);
@@ -93,6 +111,16 @@ ok('模型没回填判定：按引擎结果记，不打回', r.noEcho);
 ok('末尾有本回合必守，判定要照抄', r.mustKeep);
 ok('对话判定属性难度填坏：引擎按类型补上（套话→谈吐/85）', r.convoFill);
 ok('对话判失败：给钱给物清掉，秘密不算吐露', r.convoStrip);
+ok('新人和名册里的人只差一字：不另建档', r.dupNew);
+ok('新人借了死人的名字：不建档', r.deadNew);
+ok('玩家写的「名叫苏小婉」模型没入档：引擎补上', r.playerNpc);
+ok('备注追加不覆盖（杀父之仇还在）', r.notesKeep);
+ok('身份变化记进台账', r.identLedger);
+ok('NPC 好感单次最多 ±50', r.capFavor);
+ok('NPC 武功单次最多 +5', r.capWu);
+ok('新武学熟练度封顶 35、一回合只收一门', r.capArt);
+ok('一回合新物品至多 3 件', r.capItems);
+ok('往来第 9 条起旧的挪进旧往来', r.past);
 
 const step=async(m)=>{ mode=m; turnCalls=0; prompts=[]; await page.click('#choices .opt'); await page.waitForFunction(()=>!busy,null,{timeout:30000}); mode=null;
   return page.evaluate(()=>({turn:S.turn,money:S.player.money,over:!!S.over,story:document.querySelector('#story .chapter:last-child').textContent,toast:document.getElementById('toast').textContent})); };
@@ -114,13 +142,13 @@ ok('修复请求带着第一版正文和冲突', prompts[1]&&prompts[1].includes
 ok('正文换成了改好的', a.story.includes('改好的：李昭身中数刀倒地'));
 ok('主角没死、回合照常推进', !a.over&&a.turn===b0+1);
 
-console.log('\n【判定失败却硬写成办成：修复 → 重写 → 以引擎为准】');
+console.log('\n【判定失败却硬写成办成：修两次 → 以引擎为准】');
 b0=await page.evaluate(()=>({turn:S.turn,money:S.player.money}));
 mode='checkhard'; turnCalls=0; prompts=[];
 await page.evaluate(()=>{ const a=S.player.attributes['谈吐']; runTurn('试着说服掌柜借钱',{fate:10,months:0,worldEvent:null,check:{attr:'谈吐',val:a,roll:10,mod:-2,total:a-2,need:99,success:false}},{}); });
 await page.waitForTimeout(300); await page.waitForFunction(()=>!busy,null,{timeout:30000}); mode=null;
 a=await page.evaluate(()=>({turn:S.turn,money:S.player.money}));
-ok(`调用 ${turnCalls} 次（首发 + 修复 + 重写）`, turnCalls===3);
+ok(`调用 ${turnCalls} 次（首发 + 两次局部修复，不整回重写）`, turnCalls===3&&prompts[2].includes('【与引擎对不上的地方】'));
 ok('修复请求要求回填判定', prompts[1]&&prompts[1].includes('"check":{"attr":"谈吐"'));
 ok('五十两没落账：'+b0.money+' → '+a.money, a.money<=b0.money);
 ok('回合照常推进', a.turn===b0.turn+1);
